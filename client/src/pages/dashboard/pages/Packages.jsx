@@ -281,6 +281,7 @@ const Packages = () => {
             placeholder: "قیمت فی کیلو ($)",
             type: "number",
           },
+          { name: "recip", placeholder: "دریافتی ($)", type: "number" }, // ✅ new input
           { name: "remain", placeholder: "باقی مانده ($)", type: "number" },
           { name: "totalCash", placeholder: "مجموع پول ($)", type: "number" },
         ].map((item) => (

@@ -50,7 +50,7 @@ export const createPackage = async (req, res) => {
         <p><strong>وزن:</strong> ${pkg.goodWeight} کیلوگرام</p>
         <p><strong>تعداد:</strong> ${pkg.piece}</p>
         <p><strong>قیمت انتقال هر کیلو:</strong> ${pkg.perKgCash} افغانی</p>
-    <p><strong>دریافتی:</strong> ${pkg.totalCash - pkg.remain} افغانی</p>
+    <p><strong>دریافتی:</strong> ${pkg.recip} افغانی</p>
         <p><strong> باقی:</strong> ${pkg.remain} افغانی</p>
         <p><strong>مجموع:</strong> ${pkg.totalCash} افغانی</p>
         <br/>

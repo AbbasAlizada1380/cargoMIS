@@ -151,7 +151,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
                   className={ "text-لقثثد-600" 
                   }
                 >
-                  {formatCurrency(data.totalCash-data.remain)}
+                  {formatCurrency(data.recip)}
                 </span>
               </div>{" "}
               <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
