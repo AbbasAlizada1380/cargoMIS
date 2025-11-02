@@ -32,8 +32,8 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
         >
           {/* Header */}
           <div className="bg-gradient-to-l from-blue-800 to-blue-600 text-white p-4 text-center border-b-4 border-blue-900">
-            <h1 className="text-xl font-bold mb-1">تـمـدن کارگو</h1>
-            <p className="text-sm opacity-90">Tamadon Cargo Services</p>
+            <h1 className="text-xl font-bold mb-1">افغان کارگو</h1>
+            <p className="text-sm opacity-90">Afghan Cargo Services</p>
             <div className="flex justify-between items-center mt-2 text-xs">
               <span>شماره بل: {billNumber}</span>
               <span>تاریخ: {today}</span>
@@ -146,6 +146,15 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
                 </span>
               </div>
               <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
+                <span className={"text-green-600"}>دریافتی:</span>
+                <span
+                  className={ "text-لقثثد-600" 
+                  }
+                >
+                  {formatCurrency(data.totalCash-data.remain)}
+                </span>
+              </div>{" "}
+              <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
                 <span
                   className={
                     data.remain > 0 ? "text-red-600" : "text-green-600"
@@ -171,7 +180,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               <span>تماس: ۰۷۸۹ـــ۶۷۸۸۹۶</span>
             </div>
             <p className="text-blue-200">
-              از اعتماد شما به تمدن کارگو سپاس‌گزاریم!
+              از اعتماد شما به افغان کارگو سپاس‌گزاریم!
             </p>
           </div>
         </div>
