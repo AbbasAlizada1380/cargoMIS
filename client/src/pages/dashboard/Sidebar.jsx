@@ -120,10 +120,10 @@ const Sidebar = ({ setActiveComponent }) => {
     <>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="lg:hidden fixed top-0 left-0 right-0 bg-gradient-to-r from-cyan-700 to-cyan-800 shadow-lg z-50">
+        <div className="lg:hidden fixed top-0 left-0 right-0 bg-gradient-to-r  from-yellow-500 to-yellow-300 shadow-lg z-50">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center p-1 bg-white rounded-full">
+              <div className="flex items-center justify-center p-1  rounded-full">
                 <img
                   src="/logo.png"
                   alt="Logo"
@@ -157,7 +157,7 @@ const Sidebar = ({ setActiveComponent }) => {
       <div
         className={`
           h-full transition-all duration-300 ease-in-out 
-          bg-gradient-to-b from-cyan-800 to-cyan-900 
+          bg-gradient-to-r  from-yellow-500 to-yellow-300
           overflow-y-auto
           ${
             isMobile
@@ -171,16 +171,16 @@ const Sidebar = ({ setActiveComponent }) => {
       >
         {/* Desktop Header */}
         {!isMobile && (
-          <header className="flex items-center gap-5 p-5 text-white font-bold text-xl sticky top-0 bg-cyan-800 z-10">
-            <div className="flex items-center justify-center p-1 bg-white rounded-full">
+          <header className="flex items-center gap-5 p-5 text-white font-bold text-xl sticky top-0 bg-gradient-to-r  from-yellow-500 to-yellow-300 z-10">
+            <div className="flex items-center justify-center p-1  rounded-full">
               <img
                 src="/logo.png"
                 alt="Logo"
-                className="h-8 w-8 rounded-full"
+                className="h-20 w-20 rounded-full"
               />
             </div>
             <span className="text-lg font-semibold text-white whitespace-nowrap">
-              رستورانت
+              افغان کارگو
             </span>
           </header>
         )}
@@ -251,7 +251,7 @@ const Sidebar = ({ setActiveComponent }) => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">
-                {currentUser?.name || "کاربر"}
+                {currentUser?.fullname || "کاربر"}
               </p>
               <p className="text-cyan-200 text-xs truncate">
                 {currentUser?.role === "admin"

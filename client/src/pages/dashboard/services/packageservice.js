@@ -163,6 +163,25 @@ export const packageService = {
       throw error;
     }
   },
+  updateBulkLocations: async (packageIds, location) => {
+    try {
+      const promises = packageIds.map((packageId) =>
+        api.patch(`/packages/${packageId}`, { location })
+      );
+      const results = await Promise.all(promises);
+      return {
+        success: true,
+        message: `${packageIds.length} بسته با موفقیت به‌روزرسانی شدند`,
+        data: results.map((r) => r.data),
+      };
+    } catch (error) {
+      console.error("Error updating bulk package locations:", error);
+      return {
+        success: false,
+        message: "خطا در به‌روزرسانی موقعیت بسته‌ها",
+      };
+    }
+  },
 };
 
 // Utility functions for package data validation

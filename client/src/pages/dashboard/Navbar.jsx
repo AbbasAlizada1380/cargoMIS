@@ -102,8 +102,8 @@ const Navbar = () => {
               <MdDashboard size={20} className="text-white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-gray-800">رستورانت</h1>
-              <p className="text-xs text-gray-500">سیستم مدیریت رستورانت</p>
+              <h1 className="text-lg font-bold text-gray-800"> افغان کارگو</h1>
+              <p className="text-xs text-gray-500">سیستم مدیریت افغان کارگو</p>
             </div>
           </div>
         </div>
