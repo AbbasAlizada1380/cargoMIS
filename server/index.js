@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 import OrderRoute from "./routes/OrdersRoute.js";
 import packageRouter from "./routes/PackageRouter.js";
+import PackageReportRouter from "./routes/ordersReportRout.js";
 const FRONT_URL = process.env.FRONT_URL;
 const port = 8038;
 const app = express();
@@ -55,6 +56,7 @@ app.use("/uploads", express.static(uploadsDirectory));
 
 // Routes
 app.use("/users", userRout);
+app.use("/report", PackageReportRouter);
 app.use("/packages", packageRouter);
 
 // Sync database and start server

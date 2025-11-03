@@ -1,4 +1,3 @@
-// services/packageService.js
 import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -15,31 +14,25 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // You can add authentication tokens here if needed
-    // const token = localStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Add response interceptor to handle common errors
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response) {
-      // Server responded with error status
       console.error("API Error:", error.response.status, error.response.data);
 
       switch (error.response.status) {
         case 401:
           console.error("Unauthorized - Please login again");
-          // You can redirect to login page here
           break;
         case 403:
           console.error("Forbidden - You do not have permission");
@@ -54,10 +47,8 @@ api.interceptors.response.use(
           console.error("Unexpected error occurred");
       }
     } else if (error.request) {
-      // Request was made but no response received
       console.error("Network error - Please check your connection");
     } else {
-      // Something else happened
       console.error("Error:", error.message);
     }
 
@@ -68,13 +59,9 @@ api.interceptors.response.use(
 export const packageService = {
   /**
    * Create a new package
-   * @param {Object} data - Package data
-   * @returns {Promise} API response
    */
   create: async (data) => {
     try {
-      console.log(data);
-      
       const response = await api.post("/packages", data);
       return response.data;
     } catch (error) {
@@ -84,9 +71,6 @@ export const packageService = {
 
   /**
    * Get all packages with pagination
-   * @param {number} page - Page number (default: 1)
-   * @param {number} limit - Items per page (default: 20)
-   * @returns {Promise} API response with packages and meta data
    */
   getAll: async (page = 1, limit = 20) => {
     try {
@@ -99,8 +83,6 @@ export const packageService = {
 
   /**
    * Get single package by ID
-   * @param {string|number} id - Package ID
-   * @returns {Promise} API response with package data
    */
   getById: async (id) => {
     try {
@@ -113,9 +95,6 @@ export const packageService = {
 
   /**
    * Update package by ID
-   * @param {string|number} id - Package ID
-   * @param {Object} data - Updated package data
-   * @returns {Promise} API response
    */
   update: async (id, data) => {
     try {
@@ -128,8 +107,6 @@ export const packageService = {
 
   /**
    * Delete package by ID
-   * @param {string|number} id - Package ID
-   * @returns {Promise} API response
    */
   delete: async (id) => {
     try {
@@ -141,11 +118,7 @@ export const packageService = {
   },
 
   /**
-   * Search packages by various criteria
-   * @param {Object} criteria - Search criteria
-   * @param {number} page - Page number
-   * @param {number} limit - Items per page
-   * @returns {Promise} API response with search results
+   * Search packages by criteria
    */
   search: async (criteria, page = 1, limit = 20) => {
     try {
@@ -163,7 +136,6 @@ export const packageService = {
 
   /**
    * Get package statistics
-   * @returns {Promise} API response with statistics
    */
   getStats: async () => {
     try {
@@ -173,58 +145,50 @@ export const packageService = {
       throw error;
     }
   },
+
+  /**
+   * ✅ Update only the location of a package
+   * @param {number|string} packageId
+   * @param {string} location
+   * @returns {Promise<Object>} API response
+   */
+  updateLocation: async (packageId, location) => {
+    try {
+      const response = await api.patch(`/packages/${packageId}`, {
+        location,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error updating package location:", error);
+      throw error;
+    }
+  },
 };
 
 // Utility functions for package data validation
 export const packageUtils = {
-  /**
-   * Validate package data before submission
-   * @param {Object} data - Package data to validate
-   * @returns {Object} Validation result { isValid: boolean, errors: array }
-   */
   validatePackage: (data) => {
     const errors = [];
 
-    // Required fields validation
-    if (!data.receiverName?.trim()) {
-      errors.push("نام گیرنده الزامی است");
-    }
-
-    if (!data.receiverPhone?.trim()) {
+    if (!data.receiverName?.trim()) errors.push("نام گیرنده الزامی است");
+    if (!data.receiverPhone?.trim())
       errors.push("شماره تماس گیرنده الزامی است");
-    }
-
-    if (!data.senderName?.trim()) {
-      errors.push("نام فرستنده الزامی است");
-    }
-
-    if (!data.senderPhone?.trim()) {
-      errors.push("شماره تماس فرستنده الزامی است");
-    }
-
-    if (!data.goodWeight || data.goodWeight <= 0) {
+    if (!data.senderName?.trim()) errors.push("نام فرستنده الزامی است");
+    if (!data.senderPhone?.trim()) errors.push("شماره تماس فرستنده الزامی است");
+    if (!data.goodWeight || data.goodWeight <= 0)
       errors.push("وزن بسته باید بیشتر از صفر باشد");
-    }
 
-    // Email validation (if provided)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (data.receiverEmail && !emailRegex.test(data.receiverEmail)) {
+    if (data.receiverEmail && !emailRegex.test(data.receiverEmail))
       errors.push("ایمیل گیرنده معتبر نیست");
-    }
-
-    if (data.senderEmail && !emailRegex.test(data.senderEmail)) {
+    if (data.senderEmail && !emailRegex.test(data.senderEmail))
       errors.push("ایمیل فرستنده معتبر نیست");
-    }
 
-    // Phone number basic validation (if needed)
     const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-    if (data.receiverPhone && !phoneRegex.test(data.receiverPhone)) {
+    if (data.receiverPhone && !phoneRegex.test(data.receiverPhone))
       errors.push("شماره تماس گیرنده معتبر نیست");
-    }
-
-    if (data.senderPhone && !phoneRegex.test(data.senderPhone)) {
+    if (data.senderPhone && !phoneRegex.test(data.senderPhone))
       errors.push("شماره تماس فرستنده معتبر نیست");
-    }
 
     return {
       isValid: errors.length === 0,
@@ -232,35 +196,21 @@ export const packageUtils = {
     };
   },
 
-  /**
-   * Calculate total cash based on weight and price per kg
-   * @param {number} weight - Weight in kg
-   * @param {number} pricePerKg - Price per kg
-   * @param {number} piece - Number of pieces
-   * @returns {number} Calculated total cash
-   */
   calculateTotalCash: (weight, pricePerKg, piece = 1) => {
     return (weight * pricePerKg * piece).toFixed(2);
   },
 
-  /**
-   * Format package data for display
-   * @param {Object} packageData - Raw package data
-   * @returns {Object} Formatted package data
-   */
-  formatForDisplay: (packageData) => {
-    return {
-      ...packageData,
-      goodWeight: packageData.goodWeight
-        ? `${packageData.goodWeight} kg`
-        : "0 kg",
-      totalCash: packageData.totalCash ? `$${packageData.totalCash}` : "$0",
-      goodsValue: packageData.goodsValue ? `$${packageData.goodsValue}` : "$0",
-      createdAt: packageData.createdAt
-        ? new Date(packageData.createdAt).toLocaleDateString("fa-IR")
-        : "N/A",
-    };
-  },
+  formatForDisplay: (packageData) => ({
+    ...packageData,
+    goodWeight: packageData.goodWeight
+      ? `${packageData.goodWeight} kg`
+      : "0 kg",
+    totalCash: packageData.totalCash ? `$${packageData.totalCash}` : "$0",
+    goodsValue: packageData.goodsValue ? `$${packageData.goodsValue}` : "$0",
+    createdAt: packageData.createdAt
+      ? new Date(packageData.createdAt).toLocaleDateString("fa-IR")
+      : "N/A",
+  }),
 };
 
 export default packageService;

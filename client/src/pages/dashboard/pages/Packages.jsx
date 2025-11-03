@@ -1,7 +1,7 @@
 // Packages.jsx
 import React, { useState, useEffect } from "react";
 import PackageList from "./PackageList";
-import { packageService } from "../services/packageService";
+import { packageService } from "../services/packageservice.js";
 import {
   calculateTotalCash,
   calculateRemainingCash,

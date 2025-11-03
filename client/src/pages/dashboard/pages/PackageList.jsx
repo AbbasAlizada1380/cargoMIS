@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { packageService } from "../services/packageService";
 import Pagination from "../pagination/Pagination";
 import { FaEdit, FaPrint } from "react-icons/fa";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdUpdate } from "react-icons/md";
 import PrintShippingBill from "../pages/PrintShippingBill"; // ✅ import the bill component
-
+import { packageService } from "../services/packageservice.js";
 const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
   const [packages, setPackages] = useState([]);
   const [page, setPage] = useState(1);
@@ -30,10 +29,17 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
       setLoading(false);
     }
   };
-
+const handleUpdateLocation = async (id,location) => {
+  const res = await packageService.updateLocation(id, location);
+  if (res.success) {
+    alert("موقعیت بسته با موفقیت به‌روزرسانی شد ✅");
+  } else {
+    alert("خطا در به‌روزرسانی موقعیت ❌");
+  }
+};
   useEffect(() => {
     fetchPackages(page);
-  }, [page, refreshTrigger]);
+  }, [page, refreshTrigger,]);
 
   const handlePrintBill = (pkg) => {
     setSelectedPackage(pkg);
@@ -108,6 +114,14 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                           title="چاپ بل"
                         >
                           <FaPrint size={18} />
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateLocation(pkg.id, "in transit")
+                          }
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <MdUpdate size={20} />
                         </button>
                       </div>
                     </td>

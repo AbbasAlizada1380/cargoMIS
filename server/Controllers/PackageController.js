@@ -98,7 +98,7 @@ export const getPackages = async (req, res) => {
     const { count, rows } = await Package.findAndCountAll({
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order: [["id", "DESC"]],
     });
 
     return res.json({
@@ -182,5 +182,77 @@ export const deletePackage = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Server error", error: err.message });
+  }
+};
+// Optional: Predefined common locations
+const COMMON_LOCATIONS = [
+  "cargo stock in kabul",
+  "in transit",
+  "at sorting facility",
+  "out for delivery",
+  "delivered",
+  "returned to sender",
+  "held at customs",
+  "lost in transit",
+];
+
+/**
+ * Update package location with validation
+ */
+export const updatePackageLocationValidated = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { location, customLocation } = req.body;
+    console.log(location);
+
+    // Validate input
+    if (!location && !customLocation) {
+      return res.status(400).json({
+        success: false,
+        message: "Either location or customLocation is required",
+      });
+    }
+
+    const finalLocation = customLocation || location;
+
+    // Optional: Validate against common locations
+    if (location && !COMMON_LOCATIONS.includes(location) && !customLocation) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid location. Use customLocation for non-standard locations.",
+        validLocations: COMMON_LOCATIONS,
+      });
+    }
+
+    const pkg = await Package.findByPk(id);
+    if (!pkg) {
+      return res.status(404).json({
+        success: false,
+        message: "Package not found",
+      });
+    }
+
+    const oldLocation = pkg.location;
+    await pkg.update({ location: finalLocation });
+
+    return res.status(200).json({
+      success: true,
+      message: "Package location updated successfully",
+      data: {
+        packageId: pkg.id,
+        receiverName: pkg.receiverName,
+        oldLocation,
+        newLocation: finalLocation,
+        updatedAt: pkg.updatedAt,
+      },
+    });
+  } catch (err) {
+    console.error("updatePackageLocationValidated error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating package location",
+      error: err.message,
+    });
   }
 };

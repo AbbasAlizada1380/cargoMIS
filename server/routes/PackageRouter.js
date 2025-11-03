@@ -7,6 +7,7 @@ import {
   getPackageById,
   updatePackage,
   deletePackage,
+  updatePackageLocationValidated,
 } from "../Controllers/PackageController.js"
 
 const packageRouter = express.Router();
@@ -28,6 +29,7 @@ packageRouter.post("/", upload.single("image"), createPackage);
 packageRouter.get("/", getPackages);
 packageRouter.get("/:id", getPackageById);
 packageRouter.put("/:id", upload.single("image"), updatePackage);
+packageRouter.patch("/:id",  updatePackageLocationValidated);
 packageRouter.delete("/:id", deletePackage);
 
 export default packageRouter;
