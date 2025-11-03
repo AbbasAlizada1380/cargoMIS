@@ -8,6 +8,7 @@ import nodemailer from "nodemailer";
 export const createPackage = async (req, res) => {
   try {
     const payload = req.body;
+    console.log(payload);
 
     // Auto calculate totalCash if not provided
     if (
@@ -35,30 +36,33 @@ export const createPackage = async (req, res) => {
     });
 
     // ✅ Email message content (HTML for nice styling)
+
     const emailBody = `
-      <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
-        <h2 style="color:#0d9488">افغان کارگو</h2>
-        <p>بسته شما توسط تیم <strong>Afghan Cargo</strong> ثبت گردید.</p>
-        <p>شما به زودی از موقعیت بسته تان آگاه خواهید شد.</p>
-        <hr />
-        <h3>جزئیات بسته</h3>
-        <p><strong>کد بسته:</strong> ${pkg.id}</p>
-        <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
-        <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
-        <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
-        <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
-        <p><strong>وزن:</strong> ${pkg.goodWeight} کیلوگرام</p>
-        <p><strong>تعداد:</strong> ${pkg.piece}</p>
-        <p><strong>قیمت انتقال هر کیلو:</strong> ${pkg.perKgCash} افغانی</p>
-    <p><strong>دریافتی:</strong> ${pkg.recip} افغانی</p>
-        <p><strong> باقی:</strong> ${pkg.remain} افغانی</p>
-        <p><strong>مجموع:</strong> ${pkg.totalCash} افغانی</p>
-        <br/>
-        <p style="font-size:13px;color:#666">
-          از اعتماد شما به افغان کارگو سپاس‌گزاریم.
-        </p>
-      </div>
-    `;
+  <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
+    <h2 style="color:#0d9488">تمدن کارگو</h2>
+    <p>بسته شما توسط تیم <strong>Afghan Cargo</strong> ثبت گردید.</p>
+    <p>شما به زودی از موقعیت بسته تان آگاه خواهید شد.</p>
+    <hr />
+    <h3>جزئیات بسته</h3>
+    <p><strong>کد بسته:</strong> ${pkg.id}</p>
+    <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
+    <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
+    <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
+    <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
+    
+        <p><strong>موقعیت:</strong> ${pkg.location}</p>
+    <p><strong>وزن:</strong> ${pkg.goodWeight} کیلوگرام</p>
+    <p><strong>تعداد:</strong> ${pkg.piece}</p>
+    <p><strong>قیمت هر کیلو:</strong> ${pkg.perKgCash} افغانی</p>
+    <p><strong>مجموع:</strong> ${pkg.totalCash} افغانی</p>
+    <p><strong>باقیمانده:</strong> ${pkg.remain} افغانی</p>
+    <p><strong>دریافتی:</strong> ${pkg.totalCash - pkg.remain} افغانی</p>
+    <br/>
+    <p style="font-size:13px;color:#666">
+      از اعتماد شما به تمدن کارگو سپاس‌گزاریم.
+    </p>
+  </div>
+`;
 
     // ✅ Send email to both sender & receiver
     const recipients = [pkg.senderEmail, pkg.receiverEmail].filter(Boolean); // ignore empty ones

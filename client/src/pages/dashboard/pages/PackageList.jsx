@@ -63,7 +63,10 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                 <th className="p-2 border">کشور</th>
                 <th className="p-2 border">نام فرستنده</th>
                 <th className="p-2 border">وزن (کیلوگرام)</th>
-                <th className="p-2 border">مقدار پول</th>
+                <th className="p-2 border">دریافتی</th>
+                <th className="p-2 border">باقی</th>
+                <th className="p-2 border">مجموعی</th>
+                <th className="p-2 border">موفقیت</th>
                 <th className="p-2 border">عملیات</th>
               </tr>
             </thead>
@@ -76,7 +79,10 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                     <td className="p-2 border">{pkg.country}</td>
                     <td className="p-2 border">{pkg.senderName}</td>
                     <td className="p-2 border text-center">{pkg.goodWeight}</td>
+                    <td className="p-2 border text-center">{pkg.recip}</td>
+                    <td className="p-2 border text-center">{pkg.remain}</td>
                     <td className="p-2 border text-center">{pkg.totalCash}</td>
+                    <td className="p-2 border text-center">{pkg.location}</td>
                     <td className="p-2 border text-center">
                       <div className="flex justify-center space-x-2 space-x-reverse">
                         <button

@@ -73,6 +73,10 @@ const Package = sequelize.define(
       type: DataTypes.DECIMAL(12, 2),
       allowNull: true,
     },
+    location: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
 
     perKgCash: {
       type: DataTypes.DECIMAL(12, 2),
