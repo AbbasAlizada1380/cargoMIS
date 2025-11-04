@@ -1,125 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Pagination from "../pagination/Pagination";
 import { FaEdit, FaPrint } from "react-icons/fa";
 import { MdDelete, MdUpdate } from "react-icons/md";
 import PrintShippingBill from "../pages/PrintShippingBill";
-import { packageService } from "../services/packageservice.js";
+import { usePackageList } from "../pages/hooks/usePackageList.js";
 
 const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
-  const [packages, setPackages] = useState([]);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(20);
-  const [meta, setMeta] = useState({});
-  const [loading, setLoading] = useState(false);
-
-  // ✅ State for Print Bill modal
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [isBillOpen, setIsBillOpen] = useState(false);
-
-  // ✅ State for bulk location update
-  const [selectedPackages, setSelectedPackages] = useState(new Set());
-  const [bulkLocation, setBulkLocation] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const fetchPackages = async (pageNumber) => {
-    try {
-      setLoading(true);
-      const response = await packageService.getAll(pageNumber, limit);
-      if (response.success) {
-        setPackages(response.data);
-        setMeta(response.meta);
-      }
-    } catch (error) {
-      console.error("Error fetching packages:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateLocation = async (id, location) => {
-    const res = await packageService.updateLocation(id, location);
-    if (res.success) {
-      alert("موقعیت بسته با موفقیت به‌روزرسانی شد ✅");
-      fetchPackages(page); // Refresh the list
-    } else {
-      alert("خطا در به‌روزرسانی موقعیت ❌");
-    }
-  };
-
-  // ✅ Bulk location update handler
-  const handleBulkLocationUpdate = async () => {
-    if (selectedPackages.size === 0) {
-      alert("لطفاً حداقل یک بسته را انتخاب کنید");
-      return;
-    }
-
-    if (!bulkLocation) {
-      alert("لطفاً موقعیت جدید را انتخاب کنید");
-      return;
-    }
-
-    setIsUpdating(true);
-    try {
-      const packageIds = Array.from(selectedPackages);
-      const res = await packageService.updateBulkLocations(
-        packageIds,
-        bulkLocation
-      );
-
-      if (res.success) {
-        alert(res.message);
-        setSelectedPackages(new Set()); // Clear selection
-        setBulkLocation(""); // Reset location
-        fetchPackages(page); // Refresh the list
-      } else {
-        alert(res.message);
-      }
-    } catch (error) {
-      alert("خطا در به‌روزرسانی موقعیت بسته‌ها");
-      console.error("Bulk update error:", error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  // ✅ Handle package selection
-  const handlePackageSelect = (packageId) => {
-    const newSelected = new Set(selectedPackages);
-    if (newSelected.has(packageId)) {
-      newSelected.delete(packageId);
-    } else {
-      newSelected.add(packageId);
-    }
-    setSelectedPackages(newSelected);
-  };
-
-  // ✅ Select all packages on current page
-  const handleSelectAll = () => {
-    if (selectedPackages.size === packages.length) {
-      // If all are selected, deselect all
-      setSelectedPackages(new Set());
-    } else {
-      // Select all packages on current page
-      const allPackageIds = packages.map((pkg) => pkg.id);
-      setSelectedPackages(new Set(allPackageIds));
-    }
-  };
-
-  useEffect(() => {
-    fetchPackages(page);
-    // Clear selection when page changes
-    setSelectedPackages(new Set());
-  }, [page, refreshTrigger]);
-
-  const handlePrintBill = (pkg) => {
-    setSelectedPackage(pkg);
-    setIsBillOpen(true);
-  };
-
-  const handleCloseBill = () => {
-    setIsBillOpen(false);
-    setSelectedPackage(null);
-  };
+  const {
+    packages,
+    page,
+    meta,
+    loading,
+    selectedPackage,
+    isBillOpen,
+    selectedPackages,
+    bulkLocation,
+    isUpdating,
+    setPage,
+    setBulkLocation,
+    handleUpdateLocation,
+    handleBulkLocationUpdate,
+    handlePackageSelect,
+    handleSelectAll,
+    handlePrintBill,
+    handleCloseBill,
+    COMMON_LOCATIONS
+  } = usePackageList(refreshTrigger, onEdit, onDelete);
 
   return (
     <div className="p-6">
@@ -141,11 +47,11 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">انتخاب موقعیت جدید</option>
-              <option value="in transit">در حال انتقال</option>
-              <option value="delivered">تحویل داده شده</option>
-              <option value="pending">در انتظار</option>
-              <option value="returned">مرجوع شده</option>
-              <option value="warehouse">در انبار</option>
+              {COMMON_LOCATIONS.map((loc) => (
+                <option key={loc} value={loc}>
+                  {locationLabels[loc]}
+                </option>
+              ))}
             </select>
 
             <button
@@ -244,7 +150,6 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                           <FaPrint size={18} />
                         </button>
 
-                        {/* Single update button (optional - you can remove this if you only want bulk updates) */}
                         <button
                           onClick={() =>
                             handleUpdateLocation(pkg.id, "in transit")

@@ -5,6 +5,7 @@ import Report from "./pages/reports";
 import AddUser from "./pages/AddUser";
 import MenuManagement from "./pages/MenuManagement";
 import Packages from "./pages/Packages";
+import PackageList from "./pages/PackageList";
 const MainContent = ({ activeComponent }) => {
   const renderContent = () => {
     switch (activeComponent) {
@@ -28,8 +29,8 @@ const MainContent = ({ activeComponent }) => {
         return <Fees />;
       case "Packages":
         return <Packages />;
-      case "OrdersList":
-        return <OrderList />;
+      case "PackageList":
+        return <PackageList />;
       case "AddUser":
         return <AddUser />;
 
