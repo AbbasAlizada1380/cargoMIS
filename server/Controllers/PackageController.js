@@ -203,7 +203,6 @@ export const updatePackageLocationValidated = async (req, res) => {
   try {
     const { id } = req.params;
     const { location, customLocation } = req.body;
-    console.log(location);
 
     // Validate input
     if (!location && !customLocation) {
@@ -215,7 +214,7 @@ export const updatePackageLocationValidated = async (req, res) => {
 
     const finalLocation = customLocation || location;
 
-    // Optional: Validate against common locations
+    // Validate standard locations
     if (location && !COMMON_LOCATIONS.includes(location) && !customLocation) {
       return res.status(400).json({
         success: false,
@@ -225,6 +224,7 @@ export const updatePackageLocationValidated = async (req, res) => {
       });
     }
 
+    // Find package
     const pkg = await Package.findByPk(id);
     if (!pkg) {
       return res.status(404).json({
@@ -236,19 +236,61 @@ export const updatePackageLocationValidated = async (req, res) => {
     const oldLocation = pkg.location;
     await pkg.update({ location: finalLocation });
 
+    // ✅ Setup nodemailer
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    // ✅ Email body
+    const emailBody = `
+      <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
+        <h2 style="color:#0d9488">تمدن کارگو</h2>
+        <p>موقعیت بسته شما تغییر یافته است.</p>
+        <hr/>
+        <h3>جزئیات بسته</h3>
+        <p><strong>کد بسته:</strong> ${pkg.id}</p>
+        <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
+        <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
+        <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
+        <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
+        <p><strong>موقعیت قدیمی:</strong> ${oldLocation}</p>
+        <p><strong>موقعیت جدید:</strong> ${finalLocation}</p>
+        <br/>
+        <p style="font-size:13px;color:#666">
+          از اعتماد شما به تمدن کارگو سپاس‌گزاریم.
+        </p>
+      </div>
+    `;
+
+    // Send email to sender & receiver
+    const recipients = [pkg.senderEmail, pkg.receiverEmail].filter(Boolean);
+    if (recipients.length > 0) {
+      await transporter.sendMail({
+        from: `"Afghan Cargo Team" <${process.env.EMAIL}>`,
+        to: recipients,
+        subject: "📍 به‌روزرسانی موقعیت بسته شما",
+        html: emailBody,
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      message: "Package location updated successfully",
+      message: "Package location updated and notifications sent",
       data: {
         packageId: pkg.id,
-        receiverName: pkg.receiverName,
         oldLocation,
         newLocation: finalLocation,
         updatedAt: pkg.updatedAt,
       },
     });
   } catch (err) {
-    console.error("updatePackageLocationValidated error:", err);
+    console.error("updatePackageLocationWithEmail error:", err);
     return res.status(500).json({
       success: false,
       message: "Server error while updating package location",

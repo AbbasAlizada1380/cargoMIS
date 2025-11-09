@@ -24,7 +24,7 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
     handleSelectAll,
     handlePrintBill,
     handleCloseBill,
-    COMMON_LOCATIONS
+    locationLabels,
   } = usePackageList(refreshTrigger, onEdit, onDelete);
 
   return (
@@ -47,9 +47,9 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">انتخاب موقعیت جدید</option>
-              {COMMON_LOCATIONS.map((loc) => (
-                <option key={loc} value={loc}>
-                  {locationLabels[loc]}
+              {Object.entries(locationLabels).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
                 </option>
               ))}
             </select>

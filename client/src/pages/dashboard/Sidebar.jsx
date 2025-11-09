@@ -59,7 +59,7 @@ const Sidebar = ({ setActiveComponent }) => {
     { name: "صفحه اصلی", value: "home", icon: <MdOutlineDashboardCustomize /> },
     { name: "بسته جدید", value: "Packages", icon: <MdAddShoppingCart /> },
     { name: "لیست بسته ها", value: "PackageList", icon: <FaList /> },
-    { name: "مدیریت مینیو", value: "MenuManagement", icon: <FaList /> },
+    // { name: "مدیریت مینیو", value: "MenuManagement", icon: <FaList /> },
     {
       name: "ثبت کاربر جدید",
       value: "AddUser",
