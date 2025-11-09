@@ -231,7 +231,7 @@ const Packages = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-8">
+    <div className=" bg-white p-8 rounded-2xl shadow-lg mt-8">
       <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
         {editingId ? "ویرایش بسته" : "ثبت بسته جدید"} 📦
       </h2>

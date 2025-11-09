@@ -120,12 +120,12 @@ const Sidebar = ({ setActiveComponent }) => {
     <>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="lg:hidden fixed top-0 left-0 right-0 bg-gradient-to-r  from-yellow-500 to-yellow-300 shadow-lg z-50">
+        <div className="lg:hidden fixed top-0 left-0 right-0 shadow-lg z-50">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center p-1  rounded-full">
                 <img
-                  src="/logo.png"
+                  src="/ac.png"
                   alt="Logo"
                   className="h-8 w-8 rounded-full"
                 />
@@ -157,7 +157,7 @@ const Sidebar = ({ setActiveComponent }) => {
       <div
         className={`
           h-full transition-all duration-300 ease-in-out 
-          bg-gradient-to-r  from-yellow-500 to-yellow-300
+        bg-[#0F3A76]
           overflow-y-auto
           ${
             isMobile
@@ -171,7 +171,7 @@ const Sidebar = ({ setActiveComponent }) => {
       >
         {/* Desktop Header */}
         {!isMobile && (
-          <header className="flex items-center gap-5 p-5 text-white font-bold text-xl sticky top-0 bg-gradient-to-r  from-yellow-500 to-yellow-300 z-10">
+          <header className="flex items-center gap-x-1 px-1 text-white font-bold text-xl sticky top-0  z-10">
             <div className="flex items-center justify-center p-1  rounded-full">
               <img
                 src="/logo.png"
@@ -179,20 +179,20 @@ const Sidebar = ({ setActiveComponent }) => {
                 className="h-20 w-20 rounded-full"
               />
             </div>
-            <span className="text-lg font-semibold text-white whitespace-nowrap">
+            <span className="text-2xl font-semibold text-amber-500 whitespace-nowrap">
               افغان کارگو
             </span>
           </header>
         )}
 
         {/* Navigation Items */}
-        <ul className="mr-1 px-3 py-4">
+        <ul className="mr-1 px-3">
           {accessibleComponents.map((component, index) => (
-            <li key={index} className="relative group cursor-pointer mb-2">
+            <li key={index} className="relative group cursor-pointer mb-1">
               {component.value === "signout" ? (
                 <button
                   onClick={handleSignOutClick}
-                  className={`relative flex items-center w-full px-6 py-3 transition-all duration-300 rounded-xl
+                  className={`relative flex items-center w-full px-6 py-2.5 transition-all duration-300 rounded-xl
                     hover:transform hover:scale-105
                     ${
                       activeC === component.value
@@ -215,12 +215,12 @@ const Sidebar = ({ setActiveComponent }) => {
                   onClick={() => handleComponentClick(component.value)}
                   onMouseEnter={() => setActiveC(component.value)}
                   onMouseLeave={() => setActiveC(selectedC)}
-                  className={`relative flex items-center w-full px-6 py-3 transition-all duration-300 rounded-xl
+                  className={`relative flex items-center w-full px-6 py-2.5 transition-all duration-300 rounded-xl
                     hover:transform hover:scale-105
                     ${
                       activeC === component.value
-                        ? "bg-white text-cyan-800 shadow-lg font-bold"
-                        : "hover:bg-white hover:bg-opacity-20 text-white hover:text-white"
+                        ? "bg-gray-200 text-[#0F3A76] shadow-lg font-bold"
+                        : "hover:bg-gray-200 hover:bg-opacity-20 text-white hover:text-white"
                     }`}
                 >
                   <span className="text-xl transform transition-transform duration-300 group-hover:scale-110">
@@ -232,7 +232,7 @@ const Sidebar = ({ setActiveComponent }) => {
 
                   {/* Active indicator */}
                   {activeC === component.value && (
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-full" />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-full" />
                   )}
 
                   {/* Hover effect */}
@@ -244,7 +244,7 @@ const Sidebar = ({ setActiveComponent }) => {
         </ul>
 
         {/* User Info Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-cyan-700 bg-cyan-800">
+        <div className="absolute bottom-0 left-0 right-0 px-4 py-2 border-t-2 border-gray-200">
           <div className="flex items-center gap-3 text-white">
             <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
               <span className="text-lg">👤</span>
