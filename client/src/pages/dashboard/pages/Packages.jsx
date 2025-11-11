@@ -27,7 +27,7 @@ const Packages = () => {
     perKgCash: "",
     remain: 0,
     totalCash: "",
-    recip: "", // Added recip field
+    recip: "",
   });
 
   const [editingId, setEditingId] = useState(null);
@@ -39,7 +39,7 @@ const Packages = () => {
     if (shouldAutoCalculate(formData)) {
       const calculatedTotal = calculateTotalCash(
         formData.goodWeight,
-        formData.perKgCash,
+        formData.perKgCash
       );
 
       setFormData((prev) => ({
@@ -231,239 +231,334 @@ const Packages = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-8">
-      <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
-        {editingId ? "ویرایش بسته" : "ثبت بسته جدید"} 📦
-      </h2>
-
-      {editingId && (
-        <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 rounded-lg">
-          <p className="text-yellow-800 text-center">
-            در حال ویرایش بسته شماره {editingId}
-            <button
-              onClick={cancelEdit}
-              className="mr-4 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
-            >
-              لغو ویرایش
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+            {editingId ? "ویرایش بسته" : "ثبت بسته جدید"}
+            <span className="mr-2">📦</span>
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            {editingId
+              ? "در حال ویرایش اطلاعات بسته موجود"
+              : "فرم زیر را برای ثبت بسته جدید پر کنید"}
           </p>
         </div>
-      )}
 
-      <form
-        onSubmit={(e) => handleFormSubmit(e, formData, setFormData)}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      >
-        {/* Receiver Info */}
-        <h3 className="col-span-2 text-lg font-bold text-gray-700 mt-4">
-          معلومات گیرنده 📩
-        </h3>
-        <input
-          type="text"
-          name="receiverName"
-          value={formData.receiverName}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="نام گیرنده"
-          className="p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          name="receiverPhone"
-          value={formData.receiverPhone}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="شماره تماس گیرنده"
-          className="p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          name="receiverEmail"
-          value={formData.receiverEmail}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="ایمیل گیرنده"
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          name="receiverAddress"
-          value={formData.receiverAddress}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="آدرس گیرنده"
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          name="country"
-          value={formData.country}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="کشور گیرنده"
-          className="p-2 border rounded"
-        />
-
-        {/* Sender Info */}
-        <h3 className="col-span-2 text-lg font-bold text-gray-700 mt-4">
-          معلومات فرستنده 📨
-        </h3>
-        <input
-          type="text"
-          name="senderName"
-          value={formData.senderName}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="نام فرستنده"
-          className="p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          name="senderPhone"
-          value={formData.senderPhone}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="شماره تماس فرستنده"
-          className="p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          name="senderEmail"
-          value={formData.senderEmail}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="ایمیل فرستنده"
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          name="senderAddress"
-          value={formData.senderAddress}
-          onChange={(e) => handleFormChange(e, formData, setFormData)}
-          placeholder="آدرس فرستنده"
-          className="p-2 border rounded"
-        />
-
-        {/* Package Info */}
-        <h3 className="col-span-2 text-lg font-bold text-gray-700 mt-4">
-          معلومات بسته 📦
-        </h3>
-
-        {[
-          {
-            name: "goodsDetails",
-            placeholder: "جزئیات جنس (مثلاً لباس)",
-            type: "text",
-          },
-          { name: "goodWeight", placeholder: "وزن (کیلوگرام)", type: "number" },
-          { name: "piece", placeholder: "تعداد", type: "number" },
-          { name: "goodsValue", placeholder: "ارزش جنس ($)", type: "number" },
-          {
-            name: "perKgCash",
-            placeholder: "قیمت انتقال فی کیلو ($)",
-            type: "number",
-          },
-          { name: "recip", placeholder: "دریافتی ($)", type: "number" },
-        ].map((item) => (
-          <div key={item.name} className="flex flex-col">
-            <label
-              htmlFor={item.name}
-              className="text-sm font-medium text-gray-700 mb-1"
-            >
-              {item.placeholder}
-            </label>
-            <input
-              id={item.name}
-              type={item.type}
-              name={item.name}
-              value={formData[item.name]}
-              onChange={(e) => handleFormChange(e, formData, setFormData)}
-              placeholder={item.placeholder}
-              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-        ))}
-
-        {/* Total Cash with auto-calculation indicator */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-700 mb-1">
-            مجموع پول ($)
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              name="totalCash"
-              value={formData.totalCash}
-              onChange={(e) => handleFormChange(e, formData, setFormData)}
-              placeholder="مجموع پول ($)"
-              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-full pr-20"
-            />
-            {!isTotalCashManual &&
-              formData.goodWeight &&
-              formData.perKgCash && (
-                <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                  محاسبه خودکار
-                </span>
-              )}
-            {isTotalCashManual && (
+        {/* Edit Mode Banner */}
+        {editingId && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl shadow-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex items-center mb-3 sm:mb-0">
+                <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse mr-3"></div>
+                <p className="text-amber-800 font-medium">
+                  در حال ویرایش بسته شماره{" "}
+                  <span className="font-bold">{editingId}</span>
+                </p>
+              </div>
               <button
-                type="button"
-                onClick={recalculateTotal}
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200"
+                onClick={cancelEdit}
+                className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
               >
-                محاسبه مجدد
+                لغو ویرایش
               </button>
-            )}
-          </div>
-        </div>
-
-        {/* Remain field (auto-calculated) */}
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-700 mb-1">
-            باقی مانده ($)
-          </label>
-          <input
-            type="number"
-            name="remain"
-            value={formData.remain}
-            readOnly
-            className="p-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-            placeholder="باقی مانده ($)"
-          />
-        </div>
-
-        {/* Auto-calculation info */}
-        {formData.goodWeight && formData.perKgCash && (
-          <div className="col-span-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border">
-            <p className="font-medium">محاسبه خودکار:</p>
-            <p>
-              {formData.goodWeight} kg × {formData.perKgCash} $/kg
-              {formData.piece > 1 ? ` × ${formData.piece} عدد` : ""}={" "}
-              {calculateTotalCash(
-                formData.goodWeight,
-                formData.perKgCash,
-                formData.piece
-              )}{" "}
-              $
-            </p>
-            {isTotalCashManual && (
-              <p className="text-yellow-600 mt-1 text-xs">
-                ✓ مقدار به صورت دستی ویرایش شده است
-              </p>
-            )}
+            </div>
           </div>
         )}
 
-        {/* Submit */}
-        <button
-          type="submit"
-          className="col-span-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition duration-200"
-        >
-          {editingId ? "بروزرسانی بسته" : "ثبت بسته"}
-        </button>
-      </form>
+        {/* Main Form Card */}
+        <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
+          <form
+            onSubmit={(e) => handleFormSubmit(e, formData, setFormData)}
+            className="p-6 md:p-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 p-6 md:gap-x-5 gap-y-5">
+              {/* Receiver Info Section */}
+              <div className="md:col-span-3">
+                <div className="flex items-center pb-4 border-b border-gray-100">
+                  <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                    <span className="ml-2">📩</span>
+                    معلومات گیرنده
+                  </h3>
+                </div>
+              </div>
 
-      <PackageList
-        refreshTrigger={refreshList}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+              {[
+                {
+                  name: "receiverName",
+                  placeholder: "نام گیرنده",
+                  type: "text",
+                  required: true,
+                },
+                {
+                  name: "receiverPhone",
+                  placeholder: "شماره تماس گیرنده",
+                  type: "text",
+                  required: true,
+                },
+                {
+                  name: "receiverEmail",
+                  placeholder: "ایمیل گیرنده",
+                  type: "email",
+                },
+                {
+                  name: "receiverAddress",
+                  placeholder: "آدرس گیرنده",
+                  type: "text",
+                },
+                { name: "country", placeholder: "کشور گیرنده", type: "text" },
+              ].map((field) => (
+                <div key={field.name} className="flex flex-col">
+                  <label
+                    htmlFor={field.name}
+                    className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
+                  >
+                    {field.placeholder}
+                    {field.required && (
+                      <span className="text-red-500 mr-1">*</span>
+                    )}
+                  </label>
+                  <input
+                    id={field.name}
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={(e) => handleFormChange(e, formData, setFormData)}
+                    className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
+                    required={field.required}
+                  />
+                </div>
+              ))}
+
+              {/* Sender Info Section */}
+              <div className="md:col-span-3 mt-4">
+                <div className="flex items-center mb-6 pb-4 border-b border-gray-100">
+                  <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                    <span className="ml-2">📨</span>
+                    معلومات فرستنده
+                  </h3>
+                </div>
+              </div>
+
+              {[
+                {
+                  name: "senderName",
+                  placeholder: "نام فرستنده",
+                  type: "text",
+                  required: true,
+                },
+                {
+                  name: "senderPhone",
+                  placeholder: "شماره تماس فرستنده",
+                  type: "text",
+                  required: true,
+                },
+                {
+                  name: "senderEmail",
+                  placeholder: "ایمیل فرستنده",
+                  type: "email",
+                },
+                {
+                  name: "senderAddress",
+                  placeholder: "آدرس فرستنده",
+                  type: "text",
+                },
+              ].map((field) => (
+                <div key={field.name} className="flex flex-col">
+                  <label
+                    htmlFor={field.name}
+                    className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
+                  >
+                    {field.placeholder}
+                    {field.required && (
+                      <span className="text-red-500 mr-1">*</span>
+                    )}
+                  </label>
+                  <input
+                    id={field.name}
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={(e) => handleFormChange(e, formData, setFormData)}
+                    className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
+                    required={field.required}
+                  />
+                </div>
+              ))}
+
+              {/* Package Info Section */}
+              <div className="md:col-span-3 mt-4">
+                <div className="flex items-center mb-6 pb-4 border-b border-gray-100">
+                  <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                    <span className="ml-2">📦</span>
+                    معلومات بسته
+                  </h3>
+                </div>
+              </div>
+
+              {[
+                {
+                  name: "goodsDetails",
+                  placeholder: "جزئیات جنس (مثلاً لباس)",
+                  type: "text",
+                },
+                {
+                  name: "goodWeight",
+                  placeholder: "وزن (کیلوگرام)",
+                  type: "number",
+                  step: "0.1",
+                },
+                {
+                  name: "piece",
+                  placeholder: "تعداد",
+                  type: "number",
+                  min: "1",
+                },
+                {
+                  name: "goodsValue",
+                  placeholder: "ارزش جنس ($)",
+                  type: "number",
+                  step: "0.01",
+                },
+                {
+                  name: "perKgCash",
+                  placeholder: "قیمت انتقال فی کیلو ($)",
+                  type: "number",
+                  step: "0.01",
+                },
+                {
+                  name: "recip",
+                  placeholder: "دریافتی ($)",
+                  type: "number",
+                  step: "0.01",
+                },
+              ].map((field) => (
+                <div key={field.name} className="flex flex-col">
+                  <label
+                    htmlFor={field.name}
+                    className="text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    {field.placeholder}
+                  </label>
+                  <input
+                    id={field.name}
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={(e) => handleFormChange(e, formData, setFormData)}
+                    min={field.min}
+                    step={field.step}
+                    className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
+                  />
+                </div>
+              ))}
+
+              {/* Total Cash with auto-calculation indicator */}
+              <div className="flex flex-col">
+                <label className="text-sm font-semibold text-gray-700 mb-2">
+                  مجموع پول ($)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="totalCash"
+                    value={formData.totalCash}
+                    onChange={(e) => handleFormChange(e, formData, setFormData)}
+                    step="0.01"
+                    className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
+                    placeholder="0.00"
+                  />
+                  {!isTotalCashManual &&
+                    formData.goodWeight &&
+                    formData.perKgCash && (
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-green-700 bg-green-100 px-3 py-1.5 rounded-full font-medium border border-green-200">
+                        محاسبه خودکار
+                      </span>
+                    )}
+                  {isTotalCashManual && (
+                    <button
+                      type="button"
+                      onClick={recalculateTotal}
+                      className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
+                    >
+                      محاسبه مجدد
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Remain field (auto-calculated) */}
+              <div className="flex flex-col">
+                <label className="text-sm font-semibold text-gray-700 mb-2">
+                  باقی مانده ($)
+                </label>
+                <input
+                  type="number"
+                  name="remain"
+                  value={formData.remain}
+                  readOnly
+                  step="0.01"
+                  className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Auto-calculation info */}
+              {formData.goodWeight && formData.perKgCash && (
+                <div className="col-span-2 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                  <div className="flex items-center mb-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                    <p className="font-semibold text-blue-800">
+                      محاسبه خودکار:
+                    </p>
+                  </div>
+                  <div className="text-sm text-blue-700 bg-white p-3 rounded-lg border border-blue-100">
+                    <p className="font-mono text-center">
+                      {formData.goodWeight} kg × {formData.perKgCash} $/kg
+                      {formData.piece > 1
+                        ? ` × ${formData.piece} عدد`
+                        : ""} ={" "}
+                      <span className="font-bold text-green-600">
+                        {calculateTotalCash(
+                          formData.goodWeight,
+                          formData.perKgCash,
+                          formData.piece
+                        )}{" "}
+                        $
+                      </span>
+                    </p>
+                    {isTotalCashManual && (
+                      <p className="text-amber-600 mt-2 text-xs text-center font-medium bg-amber-50 p-2 rounded border border-amber-200">
+                        ✓ مقدار به صورت دستی ویرایش شده است
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="md:col-span-3 flex justify-center items-center mt-6">
+                <button
+                  type="submit"
+                  className=" bg-gradient-to-r px-5 from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  {editingId ? "بروزرسانی بسته" : "ثبت بسته جدید"}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Package List */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <PackageList
+            refreshTrigger={refreshList}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
+      </div>
     </div>
   );
 };

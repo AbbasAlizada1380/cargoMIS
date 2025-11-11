@@ -14,7 +14,7 @@ const Dashboard = () => {
       {/* Render the FinancialReports component */}
       <div className="mt-6">
         <DashboardHome />
-        <AnalyticsDashboard />
+        {/* <AnalyticsDashboard /> */}
       </div>
     </div>
   );
