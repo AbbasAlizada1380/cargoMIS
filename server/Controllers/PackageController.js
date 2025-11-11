@@ -38,30 +38,29 @@ export const createPackage = async (req, res) => {
     // ✅ Email message content (HTML for nice styling)
 
     const emailBody = `
-  <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
-    <h2 style="color:#0d9488">تمدن کارگو</h2>
-    <p>بسته شما توسط تیم <strong>Afghan Cargo</strong> ثبت گردید.</p>
-    <p>شما به زودی از موقعیت بسته تان آگاه خواهید شد.</p>
-    <hr />
-    <h3>جزئیات بسته</h3>
-    <p><strong>کد بسته:</strong> ${pkg.id}</p>
-    <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
-    <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
-    <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
-    <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
-    
+       <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
+        <h2 style="color:#0d9488">افغان کارگو</h2>
+        <p>بسته شما توسط تیم <strong>Afghan Cargo</strong> ثبت گردید.</p>
+        <p>شما به زودی از موقعیت بسته تان آگاه خواهید شد.</p>
+        <hr />
+        <h3>جزئیات بسته</h3>
+        <p><strong>کد بسته:</strong> ${pkg.id}</p>
+        <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
+        <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
+        <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
+        <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
         <p><strong>موقعیت:</strong> ${pkg.location}</p>
-    <p><strong>وزن:</strong> ${pkg.goodWeight} کیلوگرام</p>
-    <p><strong>تعداد:</strong> ${pkg.piece}</p>
-    <p><strong>قیمت هر کیلو:</strong> ${pkg.perKgCash} افغانی</p>
-    <p><strong>مجموع:</strong> ${pkg.totalCash} افغانی</p>
-    <p><strong>باقیمانده:</strong> ${pkg.remain} افغانی</p>
-    <p><strong>دریافتی:</strong> ${pkg.totalCash - pkg.remain} افغانی</p>
-    <br/>
-    <p style="font-size:13px;color:#666">
-      از اعتماد شما به تمدن کارگو سپاس‌گزاریم.
-    </p>
-  </div>
+        <p><strong>وزن:</strong> ${pkg.goodWeight} کیلوگرام</p>
+        <p><strong>تعداد:</strong> ${pkg.piece}</p>
+        <p><strong>قیمت هر کیلو:</strong> ${pkg.perKgCash} افغانی</p>
+        <p><strong>مجموع:</strong> ${pkg.totalCash} افغانی</p>
+        <p><strong>باقیمانده:</strong> ${pkg.remain} افغانی</p>
+        <p><strong>دریافتی:</strong> ${pkg.totalCash - pkg.remain} افغانی</p>
+        <br/>
+        <p style="font-size:13px;color:#666">
+          از اعتماد شما به <strong>افغان کارگو</strong> سپاس‌گزاریم.
+        </p>
+      </div>
 `;
 
     // ✅ Send email to both sender & receiver
@@ -86,6 +85,36 @@ export const createPackage = async (req, res) => {
   }
 };
 
+export const getPackagesByDateRange = async (req, res) => {
+  try {
+    const { start, end } = req.query;
+
+    if (!start || !end) {
+      return res.status(400).json({
+        success: false,
+        message: "تاریخ شروع و ختم الزامی است.",
+      });
+    }
+
+    const packages = await Package.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [new Date(start), new Date(end)],
+        },
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({ success: true, data: packages });
+  } catch (err) {
+    console.error("getPackagesByDateRange error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
 /**
  * Get all packages (with optional pagination)
  */
@@ -248,25 +277,27 @@ export const updatePackageLocationValidated = async (req, res) => {
     });
 
     // ✅ Email body
-    const emailBody = `
-      <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
-        <h2 style="color:#0d9488">تمدن کارگو</h2>
-        <p>موقعیت بسته شما تغییر یافته است.</p>
-        <hr/>
-        <h3>جزئیات بسته</h3>
-        <p><strong>کد بسته:</strong> ${pkg.id}</p>
-        <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
-        <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
-        <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
-        <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
-        <p><strong>موقعیت قدیمی:</strong> ${oldLocation}</p>
-        <p><strong>موقعیت جدید:</strong> ${finalLocation}</p>
-        <br/>
-        <p style="font-size:13px;color:#666">
-          از اعتماد شما به تمدن کارگو سپاس‌گزاریم.
-        </p>
-      </div>
-    `;
+const emailBody = `
+  <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
+    <h2 style="color:#0d9488">افغان کارگو</h2>
+    <p>موقعیت بسته شما تغییر یافته است.</p>
+    <hr/>
+    <h3>جزئیات بسته</h3>
+    <p><strong>کد بسته:</strong> ${pkg.id}</p>
+    <p><strong>نام فرستنده:</strong> ${pkg.senderName}</p>
+    <p><strong>شماره تماس فرستنده:</strong> ${pkg.senderPhone}</p>
+    <p><strong>نام گیرنده:</strong> ${pkg.receiverName}</p>
+    <p><strong>شماره تماس گیرنده:</strong> ${pkg.receiverPhone}</p>
+    <p><strong>موقعیت قدیمی:</strong> ${oldLocation}</p>
+    <p><strong>موقعیت جدید:</strong> ${finalLocation}</p>
+    <br/>
+    <p style="font-size:13px;color:#666">
+      از اعتماد شما به <strong>افغان کارگو</strong> سپاس‌گزاریم.
+    </p>
+  </div>
+`;
+
+
 
     // Send email to sender & receiver
     const recipients = [pkg.senderEmail, pkg.receiverEmail].filter(Boolean);

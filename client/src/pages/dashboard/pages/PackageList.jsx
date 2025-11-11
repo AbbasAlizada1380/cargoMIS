@@ -150,15 +150,6 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                           <FaPrint size={18} />
                         </button>
 
-                        <button
-                          onClick={() =>
-                            handleUpdateLocation(pkg.id, "in transit")
-                          }
-                          className="text-purple-600 hover:text-purple-800 transition-colors"
-                          title="به‌روزرسانی موقعیت"
-                        >
-                          <MdUpdate size={20} />
-                        </button>
                       </div>
                     </td>
                   </tr>

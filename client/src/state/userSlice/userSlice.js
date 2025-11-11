@@ -21,11 +21,10 @@ export const signIn = createAsyncThunk(
         `${BASE_URL}/users/login/`,
         credentials
       );
-      const { access, refresh, user } = response.data;
+      const { token, user } = response.data;
 
       return {
-        accessToken: access,
-        refreshToken: refresh,
+        accessToken: token,
         userData: user,
       };
     } catch (error) {
