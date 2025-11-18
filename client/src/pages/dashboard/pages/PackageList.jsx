@@ -5,7 +5,7 @@ import { MdDelete, MdUpdate, MdLocalShipping } from "react-icons/md";
 import { IoLocationSharp } from "react-icons/io5";
 import PrintShippingBill from "../pages/PrintShippingBill";
 import { usePackageList } from "../pages/hooks/usePackageList.js";
-
+import { useSelector } from "react-redux";
 const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
   const {
     packages,
@@ -27,7 +27,7 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
     handleCloseBill,
     locationLabels,
   } = usePackageList(refreshTrigger, onEdit, onDelete);
-
+  const token = useSelector((state) => state.user.accessToken);
   // Status badge styling
   const getStatusBadge = (location) => {
     const statusColors = {

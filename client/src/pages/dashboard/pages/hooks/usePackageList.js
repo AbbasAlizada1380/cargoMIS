@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { packageService } from "../../services/packageservice.js";
+import { useSelector } from "react-redux";
 
 export const usePackageList = (refreshTrigger, onEdit, onDelete) => {
+  const token = useSelector((state) => state.user.accessToken);
   const [packages, setPackages] = useState([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
@@ -16,7 +18,7 @@ export const usePackageList = (refreshTrigger, onEdit, onDelete) => {
   const fetchPackages = async (pageNumber) => {
     try {
       setLoading(true);
-      const response = await packageService.getAll(pageNumber, limit);
+      const response = await packageService.getAll(pageNumber, limit, token);
       if (response.success) {
         setPackages(response.data);
         setMeta(response.meta);

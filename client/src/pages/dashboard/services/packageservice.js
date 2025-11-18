@@ -72,9 +72,13 @@ export const packageService = {
   /**
    * Get all packages with pagination
    */
-  getAll: async (page = 1, limit = 20) => {
+  getAll: async (page = 1, limit = 20, token) => {
     try {
-      const response = await api.get(`/packages?page=${page}&limit=${limit}`);
+      const response = await api.get(`/packages?page=${page}&limit=${limit}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     } catch (error) {
       throw error;
