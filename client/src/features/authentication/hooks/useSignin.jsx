@@ -10,30 +10,40 @@ const useSignin = () => {
   const navigate = useNavigate(); // optional
   const { loading, error, currentUser } = useSelector((state) => state.user);
 
-  const handleSignin = async (e) => {
-    e.preventDefault();
+const handleSignin = async (e) => {
+  e.preventDefault();
 
-    // Basic validation before sending request
-    if (!email || !password) {
-      alert("Please enter both email and password");
-      return;
+  if (!email || !password) {
+    alert("Please enter both email and password");
+    return;
+  }
+
+  try {
+    const resultAction = await dispatch(signIn({ email, password }));
+
+    if (signIn.fulfilled.match(resultAction)) {
+      const { accessToken, userData } = resultAction.payload;
+
+      console.log("✅ Login successful:", resultAction.payload);
+
+      // Save to localStorage so data persists after refresh
+      localStorage.setItem(
+        "authData",
+        JSON.stringify({ accessToken, userData })
+      );
+
+      // Navigate after successful login
+      navigate("/dashboard");
+    } else {
+      console.error("❌ Login failed:", resultAction.payload);
+      alert(resultAction.payload || "Invalid credentials");
     }
+  } catch (err) {
+    console.error("⚠️ Unexpected login error:", err);
+    alert("Something went wrong. Please try again.");
+  }
+};
 
-    try {
-      const resultAction = await dispatch(signIn({ email, password }));
-
-      // Check if login succeeded
-      if (signIn.fulfilled.match(resultAction)) {
-        console.log("✅ Login successful:", resultAction.payload);
-        // optional navigation after login
-        navigate("/dashboard");
-      } else {
-        console.error("❌ Login failed:", resultAction.payload);
-      }
-    } catch (err) {
-      console.error("⚠️ Unexpected error during sign-in:", err);
-    }
-  };
 
   return {
     email,

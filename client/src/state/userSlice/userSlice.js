@@ -21,6 +21,7 @@ export const signIn = createAsyncThunk(
         `${BASE_URL}/users/login/`,
         credentials
       );
+
       const { token, user } = response.data;
 
       return {
@@ -36,6 +37,7 @@ export const signIn = createAsyncThunk(
     }
   }
 );
+
 
 // ✅ CREATE USER (e.g., registration)
 export const createUser = createAsyncThunk(
@@ -121,6 +123,8 @@ const userSlice = createSlice({
       state.refreshToken = null;
       state.error = null;
       state.loading = false;
+      console.log("loggedOut");
+      
     },
     clearUserError: (state) => {
       state.error = null;
@@ -189,6 +193,5 @@ const userSlice = createSlice({
       });
   },
 });
-
 export const { signOutSuccess, clearUserError } = userSlice.actions;
 export default userSlice.reducer;
