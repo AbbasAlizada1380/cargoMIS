@@ -95,6 +95,7 @@ const Packages = () => {
         // Update existing package
         await packageService.update(editingId, formData);
         alert("بسته با موفقیت به‌روزرسانی شد");
+        setIsFormOpen(!isFormOpen)
       } else {
         // Create new package
         await packageService.create(formData);
@@ -139,6 +140,7 @@ const Packages = () => {
       if (response.success) {
         setFormData(response.data);
         setEditingId(id);
+        setIsFormOpen(!isFormOpen)
         setIsTotalCashManual(true); // Assume edited data has manual totalCash
         // Scroll to form
         window.scrollTo({ top: 0, behavior: "smooth" });

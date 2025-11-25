@@ -13,7 +13,7 @@ const SearchBar = forwardRef(({ onResults }, ref) => {
     if (!query.trim()) return;
 
     try {
-      const res = await axios.get(`${BASE_URL}/orders/search?q=${query}`);
+      const res = await axios.get(`${BASE_URL}/packages/search?q=${query}`);
       onResults(res.data);
     } catch (error) {
       console.error("❌ Error searching orders:", error);

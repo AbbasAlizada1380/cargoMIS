@@ -5,10 +5,12 @@ import autoTable from "jspdf-autotable";
 import moment from "moment-jalaali";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import VazirmatnTTF from "../../../../../public/ttf/Vazirmatn.js";
-const OrderDownload = () => {
+
+const PackageDownload = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
+
   const handleDownload = async () => {
     if (!startDate || !endDate) {
       alert("لطفاً تاریخ شروع و پایان را انتخاب کنید");
@@ -18,71 +20,71 @@ const OrderDownload = () => {
     try {
       setLoading(true);
 
+      // 🔥 MATCHING YOUR ROUTE: /packages/Range
       const response = await axios.get(
-        `${BASE_URL}/orders/download?startDate=${startDate}&endDate=${endDate}`
+        `${BASE_URL}/packages/Range?startDate=${startDate}&endDate=${endDate}`
       );
 
-      const orders = response.data.orders;
-      if (!orders || orders.length === 0) {
-        alert("هیچ سفارشی در این بازه زمانی یافت نشد");
+      const packages = response.data;
+
+      if (!packages || packages.length === 0) {
+        alert("هیچ محموله‌ای در این بازه زمانی یافت نشد");
         return;
       }
 
-      // ✅ Create PDF (A4 portrait)
+      // PDF Setup
       const doc = new jsPDF({
         orientation: "p",
         unit: "pt",
         format: "a4",
       });
 
-      // ✅ Add Persian font (Vazirmatn)
-      doc.addFileToVFS("Vazirmatn.ttf", VazirmatnTTF); // Base64 TTF
+      // Add Persian font
+      doc.addFileToVFS("Vazirmatn.ttf", VazirmatnTTF);
       doc.addFont("Vazirmatn.ttf", "Vazirmatn", "normal");
       doc.setFont("Vazirmatn");
 
       doc.setFontSize(14);
       doc.text(
-        `گزارش سفارشات مطبعه اکبر از ${moment(startDate).format(
+        `گزارش محموله‌ها از ${moment(startDate).format(
           "jYYYY/jMM/jDD"
         )} تا ${moment(endDate).format("jYYYY/jMM/jDD")}`,
         550,
         40,
-        {
-          align: "right",
-        }
+        { align: "right" }
       );
 
-      // Table headers in Persian
+      // Table headers
       const headers = [
         [
-          "تحویلی",
           "تاریخ",
-          "باقیمانده",
-          "دریافتی",
+          "موقعیت",
+          "مقدار باقی",
+          "رسید",
           "مجموع",
-          "شماره تماس",
-          "نام مشتری",
-          "شماره بیل",
+          "شماره تحویل گیرنده",
+          "تحویل گیرنده",
+          "کد محموله",
         ],
       ];
 
-      // Table body
-      const data = orders.map((order) => [
-        order.isDelivered ? "بله" : "نخیر",
-        moment(order.createdAt).format("jYYYY/jMM/jDD"),
-        order.remained?.toLocaleString("fa-AF") || 0,
-        order.recip?.toLocaleString("fa-AF") || 0,
-        order.total?.toLocaleString("fa-AF") || 0,
-        order.customer?.phone_number || "-",
-        order.customer?.name || "-",
-        order.id,
+      // Table body      
+      const data = packages.data.map((p) => [
+        moment(p.createdAt).format("jYYYY/jMM/jDD"),
+        p.location || "-",
+        p.remain?.toLocaleString("fa-AF") || 0,
+        p.recip?.toLocaleString("fa-AF") || 0,
+        p.totalCash?.toLocaleString("fa-AF") || 0,
+        p.receiverPhone || "-",
+        p.receiverName || "-",
+        p.id,
       ]);
 
-      // ✅ Generate table with proper Persian headers
+      // Create table
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 60,
+        startY: 70,
         styles: {
           font: "Vazirmatn",
           halign: "center",
@@ -90,30 +92,20 @@ const OrderDownload = () => {
         },
         headStyles: {
           font: "Vazirmatn",
-          fontStyle: "normal", // Use normal for Persian headers
+          fontStyle: "normal",
           halign: "center",
           fillColor: [200, 200, 200],
-          textColor: 20,
         },
         theme: "grid",
-        didParseCell: function (data) {
-          // Force headers and body to use Persian font
-          data.cell.styles.font = "Vazirmatn";
-          if (data.section === "head") {
-            data.cell.styles.fontStyle = "normal";
-            data.cell.styles.halign = "center";
-          }
-        },
       });
 
-      // Signature line
       const finalY = doc.lastAutoTable.finalY + 40;
       doc.text("امضاء و مهر:", 550, finalY, { align: "right" });
       doc.line(400, finalY + 2, 550, finalY + 2);
 
-      doc.save(`Orders_${startDate}_to_${endDate}.pdf`);
+      doc.save(`Packages_${startDate}_to_${endDate}.pdf`);
     } catch (error) {
-      console.error("Error downloading orders:", error);
+      console.error("Error downloading packages:", error);
       alert("خطا در دریافت اطلاعات!");
     } finally {
       setLoading(false);
@@ -122,8 +114,8 @@ const OrderDownload = () => {
 
   return (
     <div className="p-6">
-      <div className="flex gap-4">
-        <label className="" htmlFor="startDate">تاریخ شروع</label>
+      <div className="flex gap-4 items-center">
+        <label htmlFor="startDate">تاریخ شروع</label>
         <input
           name="startDate"
           type="date"
@@ -131,6 +123,7 @@ const OrderDownload = () => {
           onChange={(e) => setStartDate(e.target.value)}
           className="border p-2 rounded"
         />
+
         <label htmlFor="endDate">تاریخ ختم</label>
         <input
           name="endDate"
@@ -139,6 +132,7 @@ const OrderDownload = () => {
           onChange={(e) => setEndDate(e.target.value)}
           className="border p-2 rounded"
         />
+
         <button
           onClick={handleDownload}
           disabled={loading}
@@ -151,4 +145,4 @@ const OrderDownload = () => {
   );
 };
 
-export default OrderDownload;
+export default PackageDownload;

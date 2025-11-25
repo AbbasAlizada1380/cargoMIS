@@ -18,8 +18,8 @@ import {
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import OrderDownload from "./OrderDownload.jsx";
 import { useSelector } from "react-redux";
+import PackageDownload from "./OrderDownload.jsx";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const DashboardHome = () => {
@@ -181,7 +181,7 @@ const DashboardHome = () => {
           </p>
         </div>
       </div>
-      {currentUser.role == "admin" && <OrderDownload />}
+      {currentUser.role == "admin" && <PackageDownload />}
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {visibleCards.map((card, index) => (

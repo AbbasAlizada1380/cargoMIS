@@ -1,5 +1,43 @@
 import Package from "../Models/package.js";
 import nodemailer from "nodemailer";
+import { Op } from "sequelize";
+
+export const searchPackages = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.trim() === "") {
+      return res.status(400).json({ message: "عبارت جستجو الزامی است" });
+    }
+    console.log(q);
+
+    const cleaned = q.trim();
+    const isId = !isNaN(cleaned); // search by ID if number
+
+    const whereClause = isId
+      ? { id: cleaned }
+      : {
+          [Op.or]: [
+            { senderName: { [Op.like]: `%${cleaned}%` } },
+            { receiverName: { [Op.like]: `%${cleaned}%` } },
+            { senderPhone: { [Op.like]: `%${cleaned}%` } },
+            { receiverPhone: { [Op.like]: `%${cleaned}%` } },
+            { country: { [Op.like]: `%${cleaned}%` } },
+            { goodsDetails: { [Op.like]: `%${cleaned}%` } },
+          ],
+        };
+
+    const results = await Package.findAll({
+      where: whereClause,
+      order: [["id", "DESC"]],
+    });
+
+    res.json(results);
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ message: "خطا در جستجوی محموله‌ها" });
+  }
+};
 
 /**
  * Create a new package
@@ -87,9 +125,9 @@ export const createPackage = async (req, res) => {
 
 export const getPackagesByDateRange = async (req, res) => {
   try {
-    const { start, end } = req.query;
+    const { startDate, endDate } = req.query;
 
-    if (!start || !end) {
+    if (!startDate || !endDate) {
       return res.status(400).json({
         success: false,
         message: "تاریخ شروع و ختم الزامی است.",
@@ -99,7 +137,7 @@ export const getPackagesByDateRange = async (req, res) => {
     const packages = await Package.findAll({
       where: {
         createdAt: {
-          [Op.between]: [new Date(start), new Date(end)],
+          [Op.between]: [new Date(startDate), new Date(endDate)],
         },
       },
       order: [["createdAt", "DESC"]],
@@ -277,7 +315,7 @@ export const updatePackageLocationValidated = async (req, res) => {
     });
 
     // ✅ Email body
-const emailBody = `
+    const emailBody = `
   <div style="font-family:'Vazirmatn',sans-serif;line-height:1.6;color:#333">
     <h2 style="color:#0d9488">افغان کارگو</h2>
     <p>موقعیت بسته شما تغییر یافته است.</p>
@@ -296,8 +334,6 @@ const emailBody = `
     </p>
   </div>
 `;
-
-
 
     // Send email to sender & receiver
     const recipients = [pkg.senderEmail, pkg.receiverEmail].filter(Boolean);

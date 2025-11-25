@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import Pagination from "../pagination/Pagination";
 import { FaEdit, FaPrint, FaBox, FaCheckCircle } from "react-icons/fa";
 import { MdDelete, MdUpdate, MdLocalShipping } from "react-icons/md";
@@ -6,6 +6,8 @@ import { IoLocationSharp } from "react-icons/io5";
 import PrintShippingBill from "../pages/PrintShippingBill";
 import { usePackageList } from "../pages/hooks/usePackageList.js";
 import { useSelector } from "react-redux";
+import SearchBar from "../searching/SearchBar.jsx";
+
 const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
   const {
     packages,
@@ -27,7 +29,34 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
     handleCloseBill,
     locationLabels,
   } = usePackageList(refreshTrigger, onEdit, onDelete);
+
+  const [displayedPackages, setDisplayedPackages] = useState(packages);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchBarRef = useRef();
+
   const token = useSelector((state) => state.user.accessToken);
+
+  // Handle search results
+  const handleSearchResults = (searchResults) => {
+    if (searchResults && searchResults.length > 0) {
+      setDisplayedPackages(searchResults);
+      setIsSearching(true);
+    } else {
+      // If no results or empty search, show all packages
+      setDisplayedPackages(packages);
+      setIsSearching(false);
+    }
+  };
+
+  // Reset search when packages change or refresh
+  React.useEffect(() => {
+    setDisplayedPackages(packages);
+    setIsSearching(false);
+    if (searchBarRef.current) {
+      searchBarRef.current.reset();
+    }
+  }, [packages, refreshTrigger]);
+
   // Status badge styling
   const getStatusBadge = (location) => {
     const statusColors = {
@@ -60,8 +89,38 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
           </p>
         </div>
 
+        {/* Search and Bulk Actions Header */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+          {/* Search Bar */}
+          <div className="w-full lg:w-auto">
+            <SearchBar ref={searchBarRef} onResults={handleSearchResults} />
+          </div>
+
+          {/* Search Status */}
+          {isSearching && (
+            <div className="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+              <span className="text-yellow-800 font-medium text-sm">
+                حالت جستجو فعال - {displayedPackages.length} نتیجه یافت شد
+              </span>
+              <button
+                onClick={() => {
+                  setIsSearching(false);
+                  setDisplayedPackages(packages);
+                  if (searchBarRef.current) {
+                    searchBarRef.current.reset();
+                  }
+                }}
+                className="text-yellow-700 hover:text-yellow-900 text-sm font-medium bg-yellow-100 hover:bg-yellow-200 px-3 py-1 rounded-lg transition-colors"
+              >
+                لغو جستجو
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* ✅ Bulk Update Section */}
-        {selectedPackages.size > 0 && (
+        {!isSearching && selectedPackages.size > 0 && (
           <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-100 border border-blue-200 rounded-2xl shadow-lg">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
               <div className="flex items-center">
@@ -123,16 +182,19 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                 <div className="flex items-center">
                   <IoLocationSharp className="text-blue-500 text-xl ml-2" />
                   <h2 className="text-lg font-bold text-gray-800">
-                    لیست کامل بسته‌ها
+                    {isSearching ? "نتایج جستجو" : "لیست کامل بسته‌ها"}
                   </h2>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200">
-                    مجموع: {meta.total || 0} بسته
+                    {isSearching ? "نتایج: " : "مجموع: "}
+                    {displayedPackages.length} بسته
                   </span>
-                  <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                    صفحه {page} از {meta.totalPages || 1}
-                  </span>
+                  {!isSearching && (
+                    <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+                      صفحه {page} از {meta.totalPages || 1}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -142,17 +204,19 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
               <table className="min-w-full text-sm">
                 <thead className="bg-gradient-to-r from-gray-100 to-blue-100">
                   <tr>
-                    <th className="p-4 border-l border-gray-200">
-                      <input
-                        type="checkbox"
-                        checked={
-                          selectedPackages.size === packages.length &&
-                          packages.length > 0
-                        }
-                        onChange={handleSelectAll}
-                        className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
-                      />
-                    </th>
+                    {!isSearching && (
+                      <th className="p-4 border-l border-gray-200">
+                        <input
+                          type="checkbox"
+                          checked={
+                            selectedPackages.size === packages.length &&
+                            packages.length > 0
+                          }
+                          onChange={handleSelectAll}
+                          className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                        />
+                      </th>
+                    )}
                     <th className="p-4 text-right font-bold text-gray-700 border-l border-gray-200">
                       شماره
                     </th>
@@ -186,22 +250,24 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {packages.length > 0 ? (
-                    packages.map((pkg, index) => (
+                  {displayedPackages.length > 0 ? (
+                    displayedPackages.map((pkg, index) => (
                       <tr
                         key={pkg.id}
                         className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${
                           index % 2 === 0 ? "bg-gray-50" : "bg-white"
                         }`}
                       >
-                        <td className="p-4 border-l border-gray-100 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedPackages.has(pkg.id)}
-                            onChange={() => handlePackageSelect(pkg.id)}
-                            className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
-                          />
-                        </td>
+                        {!isSearching && (
+                          <td className="p-4 border-l border-gray-100 text-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedPackages.has(pkg.id)}
+                              onChange={() => handlePackageSelect(pkg.id)}
+                              className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                            />
+                          </td>
+                        )}
                         <td className="p-4 border-l border-gray-100 text-center">
                           <span className="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
                             #{pkg.id}
@@ -284,14 +350,21 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="11" className="p-12 text-center">
+                      <td
+                        colSpan={isSearching ? "10" : "11"}
+                        className="p-12 text-center"
+                      >
                         <div className="flex flex-col items-center justify-center text-gray-500">
                           <FaBox className="text-4xl text-gray-300 mb-4" />
                           <p className="text-lg font-medium mb-2">
-                            هیچ بسته‌ای یافت نشد
+                            {isSearching
+                              ? "هیچ نتیجه‌ای یافت نشد"
+                              : "هیچ بسته‌ای یافت نشد"}
                           </p>
                           <p className="text-sm text-gray-400">
-                            هنوز هیچ بسته‌ای در سیستم ثبت نشده است
+                            {isSearching
+                              ? "لطفاً عبارت جستجوی خود را تغییر دهید"
+                              : "هنوز هیچ بسته‌ای در سیستم ثبت نشده است"}
                           </p>
                         </div>
                       </td>
@@ -302,12 +375,14 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
             </div>
 
             {/* Table Footer */}
-            {packages.length > 0 && (
+            {displayedPackages.length > 0 && (
               <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-200">
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                   <div className="flex items-center text-sm text-gray-600">
                     <FaCheckCircle className="text-green-500 ml-2" />
-                    نمایش {packages.length} بسته از {meta.total} بسته
+                    {isSearching
+                      ? `نمایش ${displayedPackages.length} نتیجه جستجو`
+                      : `نمایش ${displayedPackages.length} بسته از ${meta.total} بسته`}
                   </div>
                   <div className="text-sm text-gray-500">
                     آخرین به‌روزرسانی: هم اکنون
@@ -318,8 +393,8 @@ const PackageList = ({ refreshTrigger, onEdit, onDelete }) => {
           </div>
         )}
 
-        {/* Pagination Component */}
-        {meta.totalPages > 1 && (
+        {/* Pagination Component - Only show when not searching */}
+        {!isSearching && meta.totalPages > 1 && (
           <div className="mt-6 bg-white rounded-2xl shadow-lg p-6">
             <Pagination
               currentPage={meta.page || 1}

@@ -8,7 +8,9 @@ import {
   updatePackage,
   deletePackage,
   updatePackageLocationValidated,
-} from "../Controllers/PackageController.js"
+  getPackagesByDateRange,
+  searchPackages,
+} from "../Controllers/PackageController.js";
 import { authenticate } from "../middleware/auth.js";
 const packageRouter = express.Router();
 // Multer setup for optional package image upload
@@ -24,11 +26,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Routes
-packageRouter.post("/", upload.single("image"), createPackage);
+packageRouter.get("/search", searchPackages);
+packageRouter.get("/Range", getPackagesByDateRange);
+packageRouter.post("/", createPackage);
 packageRouter.get("/", authenticate, getPackages);
 packageRouter.get("/:id", getPackageById);
 packageRouter.put("/:id", upload.single("image"), updatePackage);
-packageRouter.patch("/:id",  updatePackageLocationValidated);
+packageRouter.patch("/:id", updatePackageLocationValidated);
 packageRouter.delete("/:id", deletePackage);
 
 export default packageRouter;
