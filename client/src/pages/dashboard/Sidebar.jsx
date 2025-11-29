@@ -59,7 +59,9 @@ const Sidebar = ({ setActiveComponent }) => {
     { name: "صفحه اصلی", value: "home", icon: <MdOutlineDashboardCustomize /> },
     { name: "بسته جدید", value: "Packages", icon: <MdAddShoppingCart /> },
     { name: "لیست بسته ها", value: "PackageList", icon: <FaList /> },
-    // { name: "مدیریت مینیو", value: "MenuManagement", icon: <FaList /> },
+    { name: "مدیریت زون", value: "ZoneManagement", icon: <FaList /> },
+    { name: "مدیریت ترانزیت", value: "TransitWayManagement", icon: <FaList /> },
+    { name: "مدیریت لیست قیمت ها", value: "PriceListManagement", icon: <FaList /> },
     {
       name: "ثبت کاربر جدید",
       value: "AddUser",
@@ -121,11 +123,11 @@ const Sidebar = ({ setActiveComponent }) => {
       {/* Mobile Header */}
       {isMobile && (
         <div className="lg:hidden fixed top-0 left-0 right-0 shadow-lg z-50">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between p-4 ">
+            <div dir="rtl" className="flex items-center gap-3">
               <div className="flex items-center justify-center p-1  rounded-full">
                 <img
-                  src="/ac.png"
+                  src="/logo.png"
                   alt="Logo"
                   className="h-8 w-8 rounded-full"
                 />
@@ -137,7 +139,7 @@ const Sidebar = ({ setActiveComponent }) => {
 
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="p-2 text-white hover:bg-cyan-600 rounded-lg transition-colors duration-200"
+              className="p-2 hover:bg-cyan-600 rounded-lg transition-colors duration-200"
             >
               {isMobileOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
             </button>

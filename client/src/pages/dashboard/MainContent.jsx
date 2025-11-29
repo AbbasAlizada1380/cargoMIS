@@ -6,13 +6,20 @@ import AddUser from "./pages/AddUser";
 import MenuManagement from "./pages/MenuManagement";
 import Packages from "./pages/Packages";
 import PackageList from "./pages/PackageList";
+import ZoneManager from "./pages/management/ZoneManager";
+import TransitWayManager from "./pages/management/TranistWayManager";
+import PriceListManager from "./pages/management/PriceList";
 const MainContent = ({ activeComponent }) => {
   const renderContent = () => {
     switch (activeComponent) {
       case "dashboard":
         return <Dashboard />;
-      case "MenuManagement":
-        return <MenuManagement />;
+      case "ZoneManagement":
+        return <ZoneManager />;
+      case "TransitWayManagement":
+        return <TransitWayManager />;
+      case "PriceListManagement":
+        return <PriceListManager />;
       case "BlockManager":
         return <BlockManager />;
       case "user managements":

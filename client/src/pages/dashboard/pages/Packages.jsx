@@ -248,9 +248,7 @@ const Packages = () => {
             {isFormOpen ? "بستن فورم" : "باز کردن فورم"}
           </button>{" "}
         </div>
-        {/* <TransitWayManager /> */}
-        <PriceListManager />
-        <ZoneManager/>
+
         {/* Edit Mode Banner */}
         {editingId && (
           <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl shadow-sm">
