@@ -1,80 +1,129 @@
-// Controllers/priceListController.js
-import PriceList from "../Models/PriceList.js";
+// controllers/priceListController.js
+
+import PriceList from "../Models/PriceList.js"
 import Zone from "../Models/Zone.js";
 import TransitWay from "../Models/TransitWay.js";
 
+/**
+ * Create Price List
+ */
 export const createPriceList = async (req, res) => {
   try {
-    const { zoneId, transitId } = req.body;
+    const { zoneId, range, price, transitId } = req.body;
 
-    // Validate foreign keys
-    const zone = await Zone.findByPk(zoneId);
-    if (!zone) return res.status(400).json({ message: "Invalid zoneId" });
+    if (!zoneId || !price || !range || !transitId) {
+      return res.status(400).json({ message: "تمام فیلدها ضروری هستند." });
+    }
 
-    const transit = await TransitWay.findByPk(transitId);
-    if (!transit) return res.status(400).json({ message: "Invalid transitId" });
+    const newRecord = await PriceList.create({
+      zoneId,
+      range,
+      price,
+      transitId,
+    });
 
-    const priceList = await PriceList.create(req.body);
-    res.status(201).json(priceList);
+    res.status(201).json({
+      message: "قیمت‌لیست موفقانه ایجاد شد.",
+      data: newRecord,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Create PriceList error:", error);
+    res.status(500).json({ message: "خطا در ایجاد قیمت‌لیست" });
   }
 };
 
+/**
+ * Get All Price Lists
+ */
 export const getAllPriceLists = async (req, res) => {
   try {
-    const priceLists = await PriceList.findAll({
+    const lists = await PriceList.findAll({
       include: [
-        { model: Zone, attributes: ["name"] },
-        { model: Transit, attributes: ["name"] },
+        { model: Zone, attributes: ["id", "name"] },
+        { model: TransitWay, attributes: ["id", "name"] },
       ],
+      order: [["id", "DESC"]],
     });
-    res.json(priceLists);
+
+    res.json(lists);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get All PriceList error:", error);
+    res.status(500).json({ message: "خطا در دریافت قیمت‌لیست‌ها" });
   }
 };
 
-export const getPriceListById = async (req, res) => {
+/**
+ * Get Single Price List
+ */
+export const getPriceList = async (req, res) => {
   try {
-    const priceList = await PriceList.findByPk(req.params.id, {
+    const id = req.params.id;
+
+    const list = await PriceList.findByPk(id, {
       include: [
-        { model: Zone, attributes: ["name"] },
-        { model: Transit, attributes: ["name"] },
+        { model: Zone, attributes: ["id", "name"] },
+        { model: TransitWay, attributes: ["id", "name"] },
       ],
     });
 
-    if (!priceList)
-      return res.status(404).json({ message: "Price list not found" });
+    if (!list) {
+      return res.status(404).json({ message: "قیمت‌لیست یافت نشد." });
+    }
 
-    res.json(priceList);
+    res.json(list);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get Single PriceList error:", error);
+    res.status(500).json({ message: "خطا در دریافت قیمت‌لیست" });
   }
 };
 
+/**
+ * Update Price List
+ */
 export const updatePriceList = async (req, res) => {
   try {
-    const priceList = await PriceList.findByPk(req.params.id);
-    if (!priceList)
-      return res.status(404).json({ message: "Price list not found" });
+    const id = req.params.id;
+    const { zoneId, range, price, transitId } = req.body;
 
-    await priceList.update(req.body);
-    res.json(priceList);
+    const list = await PriceList.findByPk(id);
+    if (!list) {
+      return res.status(404).json({ message: "قیمت‌لیست یافت نشد." });
+    }
+
+    await list.update({
+      zoneId: zoneId ?? list.zoneId,
+      range: range ?? list.range,
+      price: price ?? list.price,
+      transitId: transitId ?? list.transitId,
+    });
+
+    res.json({
+      message: "قیمت‌لیست با موفقیت آپدیت شد.",
+      data: list,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Update PriceList error:", error);
+    res.status(500).json({ message: "خطا در آپدیت قیمت‌لیست" });
   }
 };
 
+/**
+ * Delete Price List
+ */
 export const deletePriceList = async (req, res) => {
   try {
-    const priceList = await PriceList.findByPk(req.params.id);
-    if (!priceList)
-      return res.status(404).json({ message: "Price list not found" });
+    const id = req.params.id;
 
-    await priceList.destroy();
-    res.json({ message: "Price list deleted successfully" });
+    const list = await PriceList.findByPk(id);
+    if (!list) {
+      return res.status(404).json({ message: "قیمت‌لیست یافت نشد." });
+    }
+
+    await list.destroy();
+
+    res.json({ message: "قیمت‌لیست با موفقیت حذف شد." });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete PriceList error:", error);
+    res.status(500).json({ message: "خطا در حذف قیمت‌لیست" });
   }
 };
