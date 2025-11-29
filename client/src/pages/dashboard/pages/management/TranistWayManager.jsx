@@ -84,69 +84,83 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Transit Way Management
+      <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+        مدیریت طریق ترانزیت
       </h2>
 
       {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white shadow p-4 rounded-xl mb-6 space-y-4"
+        className="bg-white shadow-lg p-5 rounded-2xl mb-6 space-y-5"
       >
         <div className="relative">
           <input
             type="text"
-            className="peer w-full border border-gray-400 rounded-lg px-3 py-3 focus:outline-none focus:border-blue-400"
+            className="peer w-full border border-gray-400 rounded-xl px-3 py-3 
+        focus:outline-none focus:border-blue-500 bg-white"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder=" "
           />
+
           <label
-            className="absolute text-gray-600 left-3 top-3 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-base 
-            peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-500 bg-white px-1"
+            className="absolute text-gray-700 left-3 top-3 transition-all 
+        peer-placeholder-shown:top-3 peer-placeholder-shown:text-base 
+        peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-500 
+        bg-white px-1"
           >
-            Transit Way Name
+            نام طریق ترانزیت
           </label>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 
+      text-white py-3 rounded-xl font-semibold hover:opacity-90 transition"
         >
-          {editId ? "Update Transit Way" : "Add Transit Way"}
+          {editId ? "بروزرسانی طریق ترانزیت" : "اضافه کردن طریق ترانزیت"}
         </button>
       </form>
 
       {/* List */}
-      <div className="bg-white shadow rounded-xl p-4">
-        <h3 className="text-xl font-semibold mb-4">Transit Way List</h3>
+      <div className="bg-white shadow-lg rounded-2xl p-5">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">
+          لست طریق‌های ترانزیت
+        </h3>
 
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="py-2 px-3">ID</th>
-              <th className="py-2 px-3">Name</th>
-              <th className="py-2 px-3">Actions</th>
+            <tr className="bg-gray-100 text-gray-700 text-left">
+              <th className="py-2 px-3">آی‌دی</th>
+              <th className="py-2 px-3">نام</th>
+              <th className="py-2 px-3">عملیات</th>
             </tr>
           </thead>
 
           <tbody>
             {transitWays.map((item) => (
-              <tr key={item.id} className="border-b">
+              <tr
+                key={item.id}
+                className="border-b hover:bg-gray-50 transition"
+              >
                 <td className="py-2 px-3">{item.id}</td>
                 <td className="py-2 px-3">{item.name}</td>
+
                 <td className="py-2 px-3 space-x-2">
                   <button
                     onClick={() => handleEdit(item)}
-                    className="bg-yellow-400 px-3 py-1 rounded text-white"
+                    className="bg-yellow-500 px-4 py-1.5 rounded-lg text-white 
+                shadow hover:bg-yellow-600 transition"
                   >
-                    Edit
+                    ویرایش
                   </button>
+
                   <button
                     onClick={() => handleDelete(item.id)}
-                    className="bg-red-600 px-3 py-1 rounded text-white"
+                    className="bg-red-600 px-4 py-1.5 rounded-lg text-white 
+                shadow hover:bg-red-700 transition"
                   >
-                    Delete
+                    حذف
                   </button>
                 </td>
               </tr>
@@ -155,7 +169,9 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
         </table>
 
         {transitWays.length === 0 && (
-          <p className="text-center text-gray-500 py-4">No records found.</p>
+          <p className="text-center text-gray-500 py-4">
+            هیچ ریکاردی موجود نیست.
+          </p>
         )}
       </div>
     </div>
