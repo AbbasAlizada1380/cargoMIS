@@ -7,6 +7,9 @@ import {
   calculateRemainingCash,
   shouldAutoCalculate,
 } from "../services/formServices";
+import TransitWayManager from "./management/TranistWayManager.jsx";
+import PriceListManager from "./management/PriceList.jsx";
+import ZoneManager from "./management/ZoneManager.jsx";
 
 const Packages = () => {
   const [formData, setFormData] = useState({
@@ -95,7 +98,7 @@ const Packages = () => {
         // Update existing package
         await packageService.update(editingId, formData);
         alert("بسته با موفقیت به‌روزرسانی شد");
-        setIsFormOpen(!isFormOpen)
+        setIsFormOpen(!isFormOpen);
       } else {
         // Create new package
         await packageService.create(formData);
@@ -140,7 +143,7 @@ const Packages = () => {
       if (response.success) {
         setFormData(response.data);
         setEditingId(id);
-        setIsFormOpen(!isFormOpen)
+        setIsFormOpen(!isFormOpen);
         setIsTotalCashManual(true); // Assume edited data has manual totalCash
         // Scroll to form
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -245,7 +248,9 @@ const Packages = () => {
             {isFormOpen ? "بستن فورم" : "باز کردن فورم"}
           </button>{" "}
         </div>
-
+        {/* <TransitWayManager /> */}
+        <PriceListManager />
+        <ZoneManager/>
         {/* Edit Mode Banner */}
         {editingId && (
           <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl shadow-sm">
@@ -266,7 +271,6 @@ const Packages = () => {
             </div>
           </div>
         )}
-
         {/* Main Form Card */}
         {isFormOpen && (
           <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
@@ -559,7 +563,6 @@ const Packages = () => {
             </form>
           </div>
         )}
-
         {/* Package List */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <PackageList

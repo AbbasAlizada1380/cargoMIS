@@ -42,6 +42,8 @@ const DashboardHome = () => {
 
       const response = await axios.get(`${BASE_URL}/report`, { params });
       setReportData(response.data.data);
+      console.log(response.data.data);
+      
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {
@@ -105,6 +107,8 @@ const DashboardHome = () => {
     totalPendingMoney,
     totalOrdersCount,
     timeRange,
+    totalPieces,
+    totalIncome
   } = reportData;
 
   const deliveryRate =
@@ -113,7 +117,7 @@ const DashboardHome = () => {
   const statsCards = [
     {
       title: "مجموع پول همه سفارشات",
-      value: formatCurrency(totalRemainedMoney + totalReceivedMoney),
+      value: formatCurrency(totalIncome),
       icon: FaMoneyBillWave,
       color: "bg-cyan-800",
       description: "کل پول از سفارشات",
@@ -129,40 +133,21 @@ const DashboardHome = () => {
     },
     {
       title: "مجموع پول باقیمانده",
-      value: formatCurrency(totalRemainedMoney),
+      value: formatCurrency(totalPendingMoney),
       icon: FaMoneyBillWave,
       color: "bg-cyan-800",
       description: "کل مبلغ باقیمانده از سفارشات",
       role: "admin",
     },
     {
-      title: "تعداد کل سفارشات",
-      value: formatNumber(totalOrdersCount),
+      title: "تعداد کل بسته ها",
+      value: formatNumber(totalPieces),
       icon: FaBoxOpen,
       color: "bg-purple-600",
       description: "تعداد کل سفارشات",
       role: "reception",
     },
-    {
-      title: "وضعیت سفارشات",
-      value: `${formatNumber(deliveredOrdersCount + notDeliveredOrdersCount)} `,
-      icon: FaBoxOpen,
-      color: "bg-gradient-to-r from-blue-600 to-purple-600",
-      description: "تحویل شده / در انتظار",
-      isCombined: true,
-      delivered: deliveredOrdersCount,
-      pending: notDeliveredOrdersCount,
-      role: "reception",
-    },
-
-    {
-      title: "درصد تحویل",
-      value: `${deliveryRate.toFixed(1)}%`,
-      icon: FaChartLine,
-      color: "bg-cyan-600",
-      description: "نرخ تحویل سفارشات",
-      role: "reception",
-    },
+   
   ];
   // Filter cards based on role
   const visibleCards = statsCards.filter(
@@ -251,14 +236,7 @@ const DashboardHome = () => {
 
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <span className="text-gray-600">مجموع باقیمانده:</span>
-                <span className="font-bold text-blue-600 text-lg">
-                  {formatCurrency(totalRemainedMoney)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                <span className="text-gray-600">مانده در انتظار:</span>
-                <span className="font-bold text-orange-600 text-lg">
+                <span className="font-bold text-red-600 text-lg">
                   {formatCurrency(totalPendingMoney)}
                 </span>
               </div>
@@ -266,56 +244,13 @@ const DashboardHome = () => {
               <div className="flex justify-between items-center py-3 bg-cyan-50 rounded-lg px-4">
                 <span className="text-gray-800 font-semibold">مجموع کل:</span>
                 <span className="font-bold text-cyan-800 text-lg">
-                  {formatCurrency(totalRemainedMoney + totalReceivedMoney)}
+                  {formatCurrency(totalIncome)}
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Delivery Status */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-xl">
-              <FaTruck className="text-white text-xl" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800">وضعیت تحویل</h2>
-          </div>
-
-          <div className="space-y-6">
-            {/* Delivery Progress */}
-            <div>
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>فیصدی تحویل</span>
-                <span>{deliveryRate.toFixed(1)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-1000"
-                  style={{ width: `${deliveryRate}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-xl border border-green-200">
-                <FaCheckCircle className="text-green-600 text-2xl mx-auto mb-2" />
-                <div className="text-2xl font-bold text-green-700">
-                  {formatNumber(deliveredOrdersCount)}
-                </div>
-                <div className="text-green-600 text-sm">تحویل شده</div>
-              </div>
-
-              <div className="text-center p-4 bg-orange-50 rounded-xl border border-orange-200">
-                <FaClock className="text-orange-600 text-2xl mx-auto mb-2" />
-                <div className="text-2xl font-bold text-orange-700">
-                  {formatNumber(notDeliveredOrdersCount)}
-                </div>
-                <div className="text-orange-600 text-sm">در انتظار</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

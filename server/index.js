@@ -9,6 +9,9 @@ import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 import packageRouter from "./routes/PackageRouter.js";
 import PackageReportRouter from "./routes/packageReportRout.js";
+import TransitWayRouter from "./routes/TransitWayRouter.js";
+import ZoneRouter from "./routes/ZoneRouter.js";
+import PriceListRouter from "./routes/PriceListRouter.js";
 const FRONT_URL = process.env.FRONT_URL;
 const port = 8038;
 const app = express();
@@ -57,6 +60,9 @@ app.use("/uploads", express.static(uploadsDirectory));
 app.use("/users", userRout);
 app.use("/report", PackageReportRouter);
 app.use("/packages", packageRouter);
+app.use("/transitWay", TransitWayRouter);
+app.use("/zone", ZoneRouter);
+app.use("/priceList", PriceListRouter);
 
 // Sync database and start server
 sequelize
