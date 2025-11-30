@@ -1,82 +1,46 @@
-// models/package.js
 import { DataTypes } from "sequelize";
 import sequelize from "../dbconnection.js";
 import Customer from "./Customer.js";
-// models/Package.js
 
-export default (sequelize) => {
-  const Package = sequelize.define(
-    "Package",
-    {
-      receiverId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Customers", // customer table name
-          key: "id",
-        },
-      },
-
-      senderId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Customers",
-          key: "id",
-        },
-      },
-
-      totalWeight: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-      },
-
-      piece: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-
-      value: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-
-      oPerKgCash: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-
-      oTotalCash: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-
-      perKgCash: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-
-      totalCash: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-
-      remainder: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-
-      received: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
+const Package = sequelize.define(
+  "Package",
+  {
+    receiver: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
-    {
-      tableName: "packages",
-      timestamps: true,
-    }
-  );
+    sender: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
 
-  return Package;
-};
+    totalWeight: DataTypes.FLOAT,
+    piece: DataTypes.INTEGER,
+    value: DataTypes.FLOAT,
+    transitWay:DataTypes.STRING,
+    OPerKgCash: DataTypes.FLOAT,
+    OTotalCash: DataTypes.FLOAT,
+    perKgCash: DataTypes.FLOAT,
+    totalCash: DataTypes.FLOAT,
+    remain: DataTypes.FLOAT,
+    received: DataTypes.FLOAT,
+  },
+  {
+    tableName: "packages",
+    timestamps: true,
+  }
+);
 
+// ---- ASSOCIATIONS ----
+Package.belongsTo(Customer, {
+  as: "Sender",
+  foreignKey: "sender",
+  targetKey: "id",
+});
+
+Package.belongsTo(Customer, {
+  as: "Receiver",
+  foreignKey: "receiver",
+  targetKey: "id",
+});
+export default Package

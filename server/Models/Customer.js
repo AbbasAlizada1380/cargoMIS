@@ -4,38 +4,17 @@ import sequelize from "../dbconnection.js";
 const Customer = sequelize.define(
   "Customer",
   {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    email: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-        isEmail: true,
-      },
-    },
-
-    phoneNumber: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-
-    country: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+    name: DataTypes.STRING,
+    address: DataTypes.STRING,
+    email: DataTypes.STRING,
+    phoneNumber: DataTypes.STRING,
+    country: DataTypes.STRING,
   },
   {
     tableName: "customers",
     timestamps: true,
   }
 );
+
 
 export default Customer;

@@ -1,577 +1,491 @@
-// Packages.jsx
-import React, { useState, useEffect } from "react";
-import PackageList from "./PackageList";
-import { packageService } from "../services/packageservice.js";
-import {
-  calculateTotalCash,
-  calculateRemainingCash,
-  shouldAutoCalculate,
-} from "../services/formServices";
-import TransitWayManager from "./management/TranistWayManager.jsx";
-import PriceListManager from "./management/PriceList.jsx";
-import ZoneManager from "./management/ZoneManager.jsx";
+// components/PackageCrud.jsx
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const Packages = () => {
-  const [formData, setFormData] = useState({
-    receiverName: "",
-    receiverPhone: "",
-    receiverAddress: "",
-    receiverEmail: "",
-    country: "",
+const PackageCrud = () => {
+  const [packages, setPackages] = useState([]);
+  const [form, setForm] = useState({
+    // Sender fields
     senderName: "",
-    senderPhone: "",
     senderAddress: "",
     senderEmail: "",
-    goodsDetails: "",
-    goodWeight: "",
-    piece: 1,
-    goodsValue: "",
-    location: "cargo stock in kabul",
-    perKgCash: "",
+    senderPhoneNumber: "",
+    senderCountry: "",
+    // Receiver fields
+    receiverName: "",
+    receiverAddress: "",
+    receiverEmail: "",
+    receiverPhoneNumber: "",
+    receiverCountry: "",
+    // Package fields
+    totalWeight: 0,
+    piece: 0,
+    value: 0,
+    perKgCash: 0,
+    OPerKgCash: 0,
+    OTotalCash: 0,
+    transitWay:"",
+    totalCash: 0,
     remain: 0,
-    totalCash: "",
-    recip: "",
+    received: 0,
   });
 
   const [editingId, setEditingId] = useState(null);
-  const [refreshList, setRefreshList] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isTotalCashManual, setIsTotalCashManual] = useState(false);
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-  // Auto-calculate total when goodWeight or perKgCash changes
-  useEffect(() => {
-    if (shouldAutoCalculate(formData)) {
-      const calculatedTotal = calculateTotalCash(
-        formData.goodWeight,
-        formData.perKgCash
-      );
-
-      setFormData((prev) => ({
-        ...prev,
-        totalCash: calculatedTotal,
-      }));
+  // Fetch all packages
+  const fetchPackages = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/packages`);
+      setPackages(res.data);
+    } catch (err) {
+      console.error("Fetch packages error:", err);
     }
-  }, [formData.goodWeight, formData.perKgCash, formData.piece]);
-
-  // Auto-calculate remain when totalCash or recip changes
-  useEffect(() => {
-    if (formData.totalCash || formData.recip) {
-      const calculatedRemain = calculateRemainingCash(
-        formData.totalCash,
-        formData.recip
-      );
-
-      setFormData((prev) => ({
-        ...prev,
-        remain: calculatedRemain,
-      }));
-    }
-  }, [formData.totalCash, formData.recip]);
-
-  // Handle form input changes
-  const handleFormChange = (e, formData, setFormData) => {
-    const { name, value } = e.target;
-
-    // If user manually edits totalCash, set manual mode
-    if (name === "totalCash") {
-      setIsTotalCashManual(true);
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
 
-  // Reset auto-calculation when goodWeight or perKgCash is cleared
   useEffect(() => {
-    if (!formData.goodWeight || !formData.perKgCash) {
-      setIsTotalCashManual(false);
-    }
-  }, [formData.goodWeight, formData.perKgCash]);
+    fetchPackages();
+  }, []);
 
-  // Handle form submission (both create and update)
-  const handleFormSubmit = async (e, formData, setFormData) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const sender = {
+      name: form.senderName,
+      address: form.senderAddress,
+      email: form.senderEmail,
+      phoneNumber: form.senderPhoneNumber,
+      country: form.senderCountry,
+    };
+
+    const receiver = {
+      name: form.receiverName,
+      address: form.receiverAddress,
+      email: form.receiverEmail,
+      phoneNumber: form.receiverPhoneNumber,
+      country: form.receiverCountry,
+    };
+
+    const packageData = {
+      totalWeight: parseFloat(form.totalWeight),
+      piece: parseInt(form.piece),
+      value: parseFloat(form.value),
+      perKgCash: parseFloat(form.perKgCash),
+      OPerKgCash: parseFloat(form.OPerKgCash),
+      OTotalCash: parseFloat(form.OTotalCash),
+      transitWay: form.transitWay,
+      totalCash: parseFloat(form.totalCash),
+      remain: parseFloat(form.remain),
+      received: parseFloat(form.received),
+    };
+
     try {
+      console.log(sender,receiver,packageData);
+      
       if (editingId) {
-        // Update existing package
-        await packageService.update(editingId, formData);
-        alert("بسته با موفقیت به‌روزرسانی شد");
-        setIsFormOpen(!isFormOpen);
+        await axios.put(`${BASE_URL}/packages/${editingId}`, {
+          sender,
+          receiver,
+          packageData,
+        });
+        setEditingId(null);
       } else {
-        // Create new package
-        await packageService.create(formData);
-        alert("بسته جدید با موفقیت ثبت شد");
+        await axios.post(`${BASE_URL}/packages`, {
+          sender,
+          receiver,
+          packageData,
+        });
       }
 
-      // Reset form
-      setFormData({
-        receiverName: "",
-        receiverPhone: "",
-        receiverAddress: "",
-        receiverEmail: "",
-        country: "",
+      setForm({
         senderName: "",
-        senderPhone: "",
         senderAddress: "",
         senderEmail: "",
-        goodsDetails: "",
-        goodWeight: "",
-        piece: 1,
-        goodsValue: "",
-        location: "cargo stock in kabul",
-        perKgCash: "",
+        senderPhoneNumber: "",
+        senderCountry: "",
+        receiverName: "",
+        receiverAddress: "",
+        receiverEmail: "",
+        receiverPhoneNumber: "",
+        receiverCountry: "",
+        totalWeight: 0,
+        piece: 0,
+        value: 0,
+        perKgCash: 0,
+        OPerKgCash: 0,
+        OTotalCash:0,
+        transitWay:"",
+        totalCash: 0,
         remain: 0,
-        totalCash: "",
-        recip: "",
+        received: 0,
       });
 
-      setEditingId(null);
-      setIsTotalCashManual(false);
-      setRefreshList((prev) => !prev); // Trigger list refresh
-    } catch (error) {
-      console.error("Error saving package:", error);
-      alert("خطا در ذخیره بسته");
+      fetchPackages();
+    } catch (err) {
+      console.error("Submit error:", err);
     }
   };
 
-  // Function to handle edit - will be passed to PackageList
-  const handleEdit = async (id) => {
-    try {
-      const response = await packageService.getById(id);
-      if (response.success) {
-        setFormData(response.data);
-        setEditingId(id);
-        setIsFormOpen(!isFormOpen);
-        setIsTotalCashManual(true); // Assume edited data has manual totalCash
-        // Scroll to form
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    } catch (error) {
-      console.error("Error fetching package for edit:", error);
-      alert("خطا در دریافت اطلاعات بسته");
-    }
-  };
+  const handleEdit = (pkg) => {
+    setEditingId(pkg.id);
 
-  // Function to handle delete - will be passed to PackageList
-  const handleDelete = async (id) => {
-    if (window.confirm("آیا از حذف این بسته اطمینان دارید؟")) {
-      try {
-        await packageService.delete(id);
-        alert("بسته با موفقیت حذف شد");
-        setRefreshList((prev) => !prev); // Trigger list refresh
-
-        // If we're editing the deleted package, reset form
-        if (editingId === id) {
-          setEditingId(null);
-          setIsTotalCashManual(false);
-          setFormData({
-            receiverName: "",
-            receiverPhone: "",
-            receiverAddress: "",
-            receiverEmail: "",
-            country: "",
-            senderName: "",
-            senderPhone: "",
-            senderAddress: "",
-            senderEmail: "",
-            goodsDetails: "",
-            goodWeight: "",
-            piece: 1,
-            goodsValue: "",
-            location: "cargo stock in kabul",
-            perKgCash: "",
-            remain: 0,
-            totalCash: "",
-            recip: "",
-          });
-        }
-      } catch (error) {
-        console.error("Error deleting package:", error);
-        alert("خطا در حذف بسته");
-      }
-    }
-  };
-
-  // Cancel edit mode
-  const cancelEdit = () => {
-    setEditingId(null);
-    setIsTotalCashManual(false);
-    setFormData({
-      receiverName: "",
-      receiverPhone: "",
-      receiverAddress: "",
-      receiverEmail: "",
-      country: "",
-      senderName: "",
-      senderPhone: "",
-      senderAddress: "",
-      senderEmail: "",
-      goodsDetails: "",
-      goodWeight: "",
-      piece: 1,
-      goodsValue: "",
-      location: "cargo stock in kabul",
-      perKgCash: "",
-      remain: 0,
-      totalCash: "",
-      recip: "",
+    setForm({
+      senderName: pkg.Sender.name,
+      senderAddress: pkg.Sender.address,
+      senderEmail: pkg.Sender.email || "",
+      senderPhoneNumber: pkg.Sender.phoneNumber,
+      senderCountry: pkg.Sender.country,
+      receiverName: pkg.Receiver.name,
+      receiverAddress: pkg.Receiver.address,
+      receiverEmail: pkg.Receiver.email || "",
+      receiverPhoneNumber: pkg.Receiver.phoneNumber,
+      receiverCountry: pkg.Receiver.country,
+      totalWeight: pkg.totalWeight,
+      piece: pkg.piece,
+      value: pkg.value || 0,
+      perKgCash: pkg.perKgCash,
+      OPerKgCash: pkg. OPerKgCash,
+      OTotalCash:pkg.OTotalCash,
+      transitWay:pkg.transitWay,
+      totalCash: pkg.totalCash,
+      remain: pkg.remain,
+      received: pkg.received,
     });
   };
 
-  // Recalculate total cash manually
-  const recalculateTotal = () => {
-    if (formData.goodWeight && formData.perKgCash) {
-      const calculatedTotal = calculateTotalCash(
-        formData.goodWeight,
-        formData.perKgCash,
-        formData.piece
-      );
-      setFormData((prev) => ({
-        ...prev,
-        totalCash: calculatedTotal,
-      }));
-      setIsTotalCashManual(false);
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/packages/${id}`);
+      fetchPackages();
+    } catch (err) {
+      console.error("Delete error:", err);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className=" mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <button
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-6 py-2 rounded-full border-none shadow-lg transition-all duration-300 m-2 text-lg tracking-wide"
-            onClick={() => setIsFormOpen(!isFormOpen)}
-          >
-            {isFormOpen ? "بستن فورم" : "باز کردن فورم"}
-          </button>{" "}
-        </div>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">
+        {editingId ? "Update Package" : "Create Package"}
+      </h2>
 
-        {/* Edit Mode Banner */}
-        {editingId && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-2xl shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between">
-              <div className="flex items-center mb-3 sm:mb-0">
-                <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse mr-3"></div>
-                <p className="text-amber-800 font-medium">
-                  در حال ویرایش بسته شماره{" "}
-                  <span className="font-bold">{editingId}</span>
-                </p>
-              </div>
-              <button
-                onClick={cancelEdit}
-                className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
-              >
-                لغو ویرایش
-              </button>
-            </div>
-          </div>
-        )}
-        {/* Main Form Card */}
-        {isFormOpen && (
-          <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
-            <form
-              onSubmit={(e) => handleFormSubmit(e, formData, setFormData)}
-              className="p-6 md:p-8"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 p-6 md:gap-x-5 gap-y-5">
-                {/* Receiver Info Section */}
-                <div className="md:col-span-3">
-                  <div className="flex items-center pb-4 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                      <span className="ml-2">📩</span>
-                      معلومات گیرنده
-                    </h3>
-                  </div>
-                </div>
+      <form className="grid grid-cols-2 gap-4 mb-6" onSubmit={handleSubmit}>
+        {/* Sender */}
+        <h3 className="col-span-2 font-semibold text-lg">Sender Info</h3>
 
-                {[
-                  {
-                    name: "receiverName",
-                    placeholder: "نام گیرنده",
-                    type: "text",
-                    required: true,
-                  },
-                  {
-                    name: "receiverPhone",
-                    placeholder: "شماره تماس گیرنده",
-                    type: "text",
-                    required: true,
-                  },
-                  {
-                    name: "receiverEmail",
-                    placeholder: "ایمیل گیرنده",
-                    type: "email",
-                  },
-                  {
-                    name: "receiverAddress",
-                    placeholder: "آدرس گیرنده",
-                    type: "text",
-                  },
-                  { name: "country", placeholder: "کشور گیرنده", type: "text" },
-                ].map((field) => (
-                  <div key={field.name} className="flex flex-col">
-                    <label
-                      htmlFor={field.name}
-                      className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
-                    >
-                      {field.placeholder}
-                      {field.required && (
-                        <span className="text-red-500 mr-1">*</span>
-                      )}
-                    </label>
-                    <input
-                      id={field.name}
-                      type={field.type}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={(e) =>
-                        handleFormChange(e, formData, setFormData)
-                      }
-                      className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
-                      required={field.required}
-                    />
-                  </div>
-                ))}
-
-                {/* Sender Info Section */}
-                <div className="md:col-span-3 mt-4">
-                  <div className="flex items-center mb-6 pb-4 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                      <span className="ml-2">📨</span>
-                      معلومات فرستنده
-                    </h3>
-                  </div>
-                </div>
-
-                {[
-                  {
-                    name: "senderName",
-                    placeholder: "نام فرستنده",
-                    type: "text",
-                    required: true,
-                  },
-                  {
-                    name: "senderPhone",
-                    placeholder: "شماره تماس فرستنده",
-                    type: "text",
-                    required: true,
-                  },
-                  {
-                    name: "senderEmail",
-                    placeholder: "ایمیل فرستنده",
-                    type: "email",
-                  },
-                  {
-                    name: "senderAddress",
-                    placeholder: "آدرس فرستنده",
-                    type: "text",
-                  },
-                ].map((field) => (
-                  <div key={field.name} className="flex flex-col">
-                    <label
-                      htmlFor={field.name}
-                      className="text-sm font-semibold text-gray-700 mb-2 flex items-center"
-                    >
-                      {field.placeholder}
-                      {field.required && (
-                        <span className="text-red-500 mr-1">*</span>
-                      )}
-                    </label>
-                    <input
-                      id={field.name}
-                      type={field.type}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={(e) =>
-                        handleFormChange(e, formData, setFormData)
-                      }
-                      className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
-                      required={field.required}
-                    />
-                  </div>
-                ))}
-
-                {/* Package Info Section */}
-                <div className="md:col-span-3 mt-4">
-                  <div className="flex items-center mb-6 pb-4 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                      <span className="ml-2">📦</span>
-                      معلومات بسته
-                    </h3>
-                  </div>
-                </div>
-
-                {[
-                  {
-                    name: "goodsDetails",
-                    placeholder: "جزئیات جنس (مثلاً لباس)",
-                    type: "text",
-                  },
-                  {
-                    name: "goodWeight",
-                    placeholder: "وزن (کیلوگرام)",
-                    type: "number",
-                    step: "0.1",
-                  },
-                  {
-                    name: "piece",
-                    placeholder: "تعداد",
-                    type: "number",
-                    min: "1",
-                  },
-                  {
-                    name: "goodsValue",
-                    placeholder: "ارزش جنس ($)",
-                    type: "number",
-                    step: "0.01",
-                  },
-                  {
-                    name: "perKgCash",
-                    placeholder: "قیمت انتقال فی کیلو ($)",
-                    type: "number",
-                    step: "0.01",
-                  },
-                  {
-                    name: "recip",
-                    placeholder: "دریافتی ($)",
-                    type: "number",
-                    step: "0.01",
-                  },
-                ].map((field) => (
-                  <div key={field.name} className="flex flex-col">
-                    <label
-                      htmlFor={field.name}
-                      className="text-sm font-semibold text-gray-700 mb-2"
-                    >
-                      {field.placeholder}
-                    </label>
-                    <input
-                      id={field.name}
-                      type={field.type}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={(e) =>
-                        handleFormChange(e, formData, setFormData)
-                      }
-                      min={field.min}
-                      step={field.step}
-                      className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
-                    />
-                  </div>
-                ))}
-
-                {/* Total Cash with auto-calculation indicator */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-semibold text-gray-700 mb-2">
-                    مجموع پول ($)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      name="totalCash"
-                      value={formData.totalCash}
-                      onChange={(e) =>
-                        handleFormChange(e, formData, setFormData)
-                      }
-                      step="0.01"
-                      className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
-                      placeholder="0.00"
-                    />
-                    {!isTotalCashManual &&
-                      formData.goodWeight &&
-                      formData.perKgCash && (
-                        <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-green-700 bg-green-100 px-3 py-1.5 rounded-full font-medium border border-green-200">
-                          محاسبه خودکار
-                        </span>
-                      )}
-                    {isTotalCashManual && (
-                      <button
-                        type="button"
-                        onClick={recalculateTotal}
-                        className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
-                      >
-                        محاسبه مجدد
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Remain field (auto-calculated) */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-semibold text-gray-700 mb-2">
-                    باقی مانده ($)
-                  </label>
-                  <input
-                    type="number"
-                    name="remain"
-                    value={formData.remain}
-                    readOnly
-                    step="0.01"
-                    className="p-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-gray-500 focus:border-blue-500 transition-all duration-200 focus:outline-none bg-gray-200 shadow-sm hover:shadow-md"
-                    placeholder="0.00"
-                  />
-                </div>
-
-                {/* Auto-calculation info */}
-                {formData.goodWeight && formData.perKgCash && (
-                  <div className="col-span-2 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                    <div className="flex items-center mb-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                      <p className="font-semibold text-blue-800">
-                        محاسبه خودکار:
-                      </p>
-                    </div>
-                    <div className="text-sm text-blue-700 bg-white p-3 rounded-lg border border-blue-100">
-                      <p className="font-mono text-center">
-                        {formData.goodWeight} kg × {formData.perKgCash} $/kg
-                        {formData.piece > 1
-                          ? ` × ${formData.piece} عدد`
-                          : ""} ={" "}
-                        <span className="font-bold text-green-600">
-                          {calculateTotalCash(
-                            formData.goodWeight,
-                            formData.perKgCash,
-                            formData.piece
-                          )}{" "}
-                          $
-                        </span>
-                      </p>
-                      {isTotalCashManual && (
-                        <p className="text-amber-600 mt-2 text-xs text-center font-medium bg-amber-50 p-2 rounded border border-amber-200">
-                          ✓ مقدار به صورت دستی ویرایش شده است
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <div className="md:col-span-3 flex justify-center items-center mt-6">
-                  <button
-                    type="submit"
-                    className=" bg-gradient-to-r px-5 from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    {editingId ? "بروزرسانی بسته" : "ثبت بسته جدید"}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        )}
-        {/* Package List */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <PackageList
-            refreshTrigger={refreshList}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Sender Name</span>
+          <input
+            type="text"
+            name="senderName"
+            placeholder="Sender Name"
+            value={form.senderName}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
           />
-        </div>
-      </div>
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Sender Address</span>
+          <input
+            type="text"
+            name="senderAddress"
+            placeholder="Sender Address"
+            value={form.senderAddress}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Sender Email</span>
+          <input
+            type="email"
+            name="senderEmail"
+            placeholder="Sender Email"
+            value={form.senderEmail}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Sender Phone</span>
+          <input
+            type="text"
+            name="senderPhoneNumber"
+            placeholder="Sender Phone"
+            value={form.senderPhoneNumber}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Sender Country</span>
+          <input
+            type="text"
+            name="senderCountry"
+            placeholder="Sender Country"
+            value={form.senderCountry}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        {/* Receiver */}
+        <h3 className="col-span-2 font-semibold text-lg">Receiver Info</h3>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Receiver Name</span>
+          <input
+            type="text"
+            name="receiverName"
+            placeholder="Receiver Name"
+            value={form.receiverName}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Receiver Address</span>
+          <input
+            type="text"
+            name="receiverAddress"
+            placeholder="Receiver Address"
+            value={form.receiverAddress}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Receiver Email</span>
+          <input
+            type="email"
+            name="receiverEmail"
+            placeholder="Receiver Email"
+            value={form.receiverEmail}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Receiver Phone</span>
+          <input
+            type="text"
+            name="receiverPhoneNumber"
+            placeholder="Receiver Phone"
+            value={form.receiverPhoneNumber}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Receiver Country</span>
+          <input
+            type="text"
+            name="receiverCountry"
+            placeholder="Receiver Country"
+            value={form.receiverCountry}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        {/* Package */}
+        <h3 className="col-span-2 font-semibold text-lg">Package Info</h3>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Total Weight (KG)</span>
+          <input
+            type="number"
+            name="totalWeight"
+            placeholder="Total Weight"
+            value={form.totalWeight}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Piece</span>
+          <input
+            type="number"
+            name="piece"
+            placeholder="Piece"
+            value={form.piece}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Value</span>
+          <input
+            type="number"
+            name="value"
+            placeholder="Value"
+            value={form.value}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Per Kg Cash</span>
+          <input
+            type="number"
+            name="perKgCash"
+            placeholder="Per Kg Cash"
+            value={form.perKgCash}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Office Per Kg Cash</span>
+          <input
+            type="number"
+            name="OPerKgCash"
+            placeholder="Per Kg Cash"
+            value={form.OPerKgCash}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Office total Cash</span>
+          <input
+            type="number"
+            name="OTotalCash"
+            placeholder="Per Kg Cash"
+            value={form.OTotalCash}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Transit way</span>
+          <input
+            type="text"
+            name="transitWay"
+            placeholder="transit way"
+            value={form.transitWay}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Total Cash</span>
+          <input
+            type="number"
+            name="totalCash"
+            placeholder="Total Cash"
+            value={form.totalCash}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Remain</span>
+          <input
+            type="number"
+            name="remain"
+            placeholder="Remain"
+            value={form.remain}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col">
+          <span className="mb-1 font-medium">Received</span>
+          <input
+            type="number"
+            name="received"
+            placeholder="Received"
+            value={form.received}
+            onChange={handleChange}
+            className="border p-2 rounded"
+            required
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded col-span-2"
+        >
+          {editingId ? "Update Package" : "Create Package"}
+        </button>
+      </form>
+
+      <h2 className="text-2xl font-bold mb-4">Packages List</h2>
+      <table className="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border p-2">ID</th>
+            <th className="border p-2">Sender</th>
+            <th className="border p-2">Receiver</th>
+            <th className="border p-2">Total Weight</th>
+            <th className="border p-2">Piece</th>
+            <th className="border p-2">Total Cash</th>
+            <th className="border p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {packages.map((pkg) => (
+            <tr key={pkg.id}>
+              <td className="border p-2">{pkg.id}</td>
+              <td className="border p-2">{pkg.Sender.name}</td>
+              <td className="border p-2">{pkg.Receiver.name}</td>
+              <td className="border p-2">{pkg.totalWeight}</td>
+              <td className="border p-2">{pkg.piece}</td>
+              <td className="border p-2">{pkg.totalCash}</td>
+              <td className="border p-2 flex gap-2">
+                <button
+                  onClick={() => handleEdit(pkg)}
+                  className="bg-yellow-500 text-white p-1 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(pkg.id)}
+                  className="bg-red-500 text-white p-1 rounded"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-export default Packages;
+export default PackageCrud;

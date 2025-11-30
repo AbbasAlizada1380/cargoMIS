@@ -1,5 +1,4 @@
 // routes/packageRoutes.js
-
 import express from "express";
 import {
   createPackage,
@@ -9,21 +8,25 @@ import {
   deletePackage,
 } from "../Controllers/PackageController.js";
 
-const PackageRouter = express.Router();
+const packageRouter = express.Router();
 
-// Create sender + receiver + package
-PackageRouter.post("/", createPackage);
+// =======================
+// Package Routes
+// =======================
 
-// Get all packages with sender & receiver details
-PackageRouter.get("/", getAllPackages);
+// Create package + sender + receiver
+packageRouter.post("/", createPackage);
 
-// Get single package by ID
-PackageRouter.get("/:id", getPackageById);
+// Get all packages
+packageRouter.get("/", getAllPackages);
 
-// Update package only (NOT sender/receiver)
-PackageRouter.put("/:id", updatePackage);
+// Get package by ID
+packageRouter.get("/:id", getPackageById);
+
+// Update package (and optionally sender/receiver)
+packageRouter.put("/:id", updatePackage);
 
 // Delete package
-PackageRouter.delete("/:id", deletePackage);
+packageRouter.delete("/:id", deletePackage);
 
-export default PackageRouter;
+export default packageRouter;
