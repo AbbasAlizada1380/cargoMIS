@@ -1,9 +1,14 @@
-// components/PackageCrud.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { packageService, zoneService } from "../services/packageService";
+import PackageList from "./PackageList";
 
 const PackageCrud = () => {
   const [packages, setPackages] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [priceList, setPriceList] = useState(null);
+
   const [form, setForm] = useState({
     // Sender fields
     senderName: "",
@@ -24,31 +29,90 @@ const PackageCrud = () => {
     perKgCash: 0,
     OPerKgCash: 0,
     OTotalCash: 0,
-    transitWay:"",
+    transitWay: "",
     totalCash: 0,
     remain: 0,
     received: 0,
   });
 
-  const [editingId, setEditingId] = useState(null);
-  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  // Fetch initial data
+  useEffect(() => {
+    fetchPackages();
+    fetchZones();
+  }, []);
 
-  // Fetch all packages
+  // Fetch price list when receiver country and weight are available
+  useEffect(() => {
+    const fetchPriceList = async () => {
+      if (form.receiverCountry && form.totalWeight > 0) {
+        try {
+          const priceData = await zoneService.getPriceListByCountryAndWeight(
+            form.totalWeight,
+            form.receiverCountry
+          );
+          setPriceList(priceData);
+
+          // Auto-fill the form with the cheapest price
+          if (priceData && priceData.length > 0) {
+            const cheapestOption = priceData.reduce((min, current) =>
+              current.price < min.price ? current : min
+            );
+
+            setForm((prevForm) => ({
+              ...prevForm,
+              perKgCash: cheapestOption.price,
+              transitWay: cheapestOption.name || cheapestOption.transitWay,
+              OTotalCash: form.totalWeight * cheapestOption.price,
+            }));
+          }
+        } catch (err) {
+          console.error("Fetching price list error: ", err);
+        }
+      }
+    };
+
+    fetchPriceList();
+  }, [form.receiverCountry, form.totalWeight]);
+
   const fetchPackages = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/packages`);
-      setPackages(res.data);
+      setLoading(true);
+      const data = await packageService.getAllPackages();
+      setPackages(data);
     } catch (err) {
       console.error("Fetch packages error:", err);
+      alert("Error fetching packages");
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPackages();
-  }, []);
+  const fetchZones = async () => {
+    try {
+      const data = await zoneService.getAllZones();
+      setZones(data.countries);
+      console.log(data.countries);
+      
+    } catch (err) {
+      console.error("Fetch zones error:", err);
+      alert("Error fetching zones data");
+    }
+  };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const updatedForm = { ...form, [name]: value };
+
+    // Recalculate OTotalCash when totalWeight or perKgCash changes
+    if (name === "totalWeight" || name === "perKgCash") {
+      const weight =
+        name === "totalWeight" ? parseFloat(value) || 0 : form.totalWeight;
+      const price =
+        name === "perKgCash" ? parseFloat(value) || 0 : form.perKgCash;
+      updatedForm.OTotalCash = weight * price;
+    }
+
+    setForm(updatedForm);
   };
 
   const handleSubmit = async (e) => {
@@ -71,68 +135,70 @@ const PackageCrud = () => {
     };
 
     const packageData = {
-      totalWeight: parseFloat(form.totalWeight),
-      piece: parseInt(form.piece),
-      value: parseFloat(form.value),
-      perKgCash: parseFloat(form.perKgCash),
-      OPerKgCash: parseFloat(form.OPerKgCash),
-      OTotalCash: parseFloat(form.OTotalCash),
+      totalWeight: parseFloat(form.totalWeight) || 0,
+      piece: parseInt(form.piece) || 0,
+      value: parseFloat(form.value) || 0,
+      perKgCash: parseFloat(form.perKgCash) || 0,
+      OPerKgCash: parseFloat(form.OPerKgCash) || 0,
+      OTotalCash: parseFloat(form.OTotalCash) || 0,
       transitWay: form.transitWay,
-      totalCash: parseFloat(form.totalCash),
-      remain: parseFloat(form.remain),
-      received: parseFloat(form.received),
+      totalCash: parseFloat(form.totalCash) || 0,
+      remain: parseFloat(form.remain) || 0,
+      received: parseFloat(form.received) || 0,
     };
 
     try {
-      console.log(sender,receiver,packageData);
-      
       if (editingId) {
-        await axios.put(`${BASE_URL}/packages/${editingId}`, {
+        await packageService.updatePackage(editingId, {
           sender,
           receiver,
           packageData,
         });
         setEditingId(null);
       } else {
-        await axios.post(`${BASE_URL}/packages`, {
+        await packageService.createPackage({
           sender,
           receiver,
           packageData,
         });
       }
 
-      setForm({
-        senderName: "",
-        senderAddress: "",
-        senderEmail: "",
-        senderPhoneNumber: "",
-        senderCountry: "",
-        receiverName: "",
-        receiverAddress: "",
-        receiverEmail: "",
-        receiverPhoneNumber: "",
-        receiverCountry: "",
-        totalWeight: 0,
-        piece: 0,
-        value: 0,
-        perKgCash: 0,
-        OPerKgCash: 0,
-        OTotalCash:0,
-        transitWay:"",
-        totalCash: 0,
-        remain: 0,
-        received: 0,
-      });
-
+      resetForm();
       fetchPackages();
     } catch (err) {
       console.error("Submit error:", err);
+      alert("Error saving package");
     }
+  };
+
+  const resetForm = () => {
+    setForm({
+      senderName: "",
+      senderAddress: "",
+      senderEmail: "",
+      senderPhoneNumber: "",
+      senderCountry: "",
+      receiverName: "",
+      receiverAddress: "",
+      receiverEmail: "",
+      receiverPhoneNumber: "",
+      receiverCountry: "",
+      totalWeight: 0,
+      piece: 0,
+      value: 0,
+      perKgCash: 0,
+      OPerKgCash: 0,
+      OTotalCash: 0,
+      transitWay: "",
+      totalCash: 0,
+      remain: 0,
+      received: 0,
+    });
+    setPriceList(null);
   };
 
   const handleEdit = (pkg) => {
     setEditingId(pkg.id);
-
     setForm({
       senderName: pkg.Sender.name,
       senderAddress: pkg.Sender.address,
@@ -148,9 +214,9 @@ const PackageCrud = () => {
       piece: pkg.piece,
       value: pkg.value || 0,
       perKgCash: pkg.perKgCash,
-      OPerKgCash: pkg. OPerKgCash,
-      OTotalCash:pkg.OTotalCash,
-      transitWay:pkg.transitWay,
+      OPerKgCash: pkg.OPerKgCash,
+      OTotalCash: pkg.OTotalCash,
+      transitWay: pkg.transitWay,
       totalCash: pkg.totalCash,
       remain: pkg.remain,
       received: pkg.received,
@@ -158,11 +224,14 @@ const PackageCrud = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this package?")) return;
+
     try {
-      await axios.delete(`${BASE_URL}/packages/${id}`);
+      await packageService.deletePackage(id);
       fetchPackages();
     } catch (err) {
       console.error("Delete error:", err);
+      alert("Error deleting package");
     }
   };
 
@@ -172,320 +241,330 @@ const PackageCrud = () => {
         {editingId ? "Update Package" : "Create Package"}
       </h2>
 
-      <form className="grid grid-cols-2 gap-4 mb-6" onSubmit={handleSubmit}>
-        {/* Sender */}
-        <h3 className="col-span-2 font-semibold text-lg">Sender Info</h3>
+      {/* Price List Information */}
+      {priceList && priceList.length > 0 && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+          <h3 className="font-semibold text-blue-800">
+            Available Transit Options:
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+            {priceList.map((option, index) => (
+              <div key={index} className="p-2 bg-white rounded border">
+                <div className="font-medium">
+                  {option.name || option.transitWay}
+                </div>
+                <div className="text-sm text-gray-600">${option.price}/kg</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Sender Name</span>
-          <input
-            type="text"
-            name="senderName"
-            placeholder="Sender Name"
-            value={form.senderName}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+      <form
+        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"
+        onSubmit={handleSubmit}
+      >
+        {/* Sender Section */}
+        <div className="col-span-2">
+          <h3 className="font-semibold text-lg mb-2">Sender Info</h3>
+        </div>
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Sender Address</span>
-          <input
-            type="text"
-            name="senderAddress"
-            placeholder="Sender Address"
-            value={form.senderAddress}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Sender Name"
+          name="senderName"
+          value={form.senderName}
+          onChange={handleChange}
+          required
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Sender Email</span>
-          <input
-            type="email"
-            name="senderEmail"
-            placeholder="Sender Email"
-            value={form.senderEmail}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-        </label>
+        <FormInput
+          label="Sender Address"
+          name="senderAddress"
+          value={form.senderAddress}
+          onChange={handleChange}
+          required
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Sender Phone</span>
-          <input
-            type="text"
-            name="senderPhoneNumber"
-            placeholder="Sender Phone"
-            value={form.senderPhoneNumber}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Sender Email"
+          name="senderEmail"
+          type="email"
+          value={form.senderEmail}
+          onChange={handleChange}
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Sender Country</span>
-          <input
-            type="text"
-            name="senderCountry"
-            placeholder="Sender Country"
-            value={form.senderCountry}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Sender Phone"
+          name="senderPhoneNumber"
+          value={form.senderPhoneNumber}
+          onChange={handleChange}
+          required
+        />
 
-        {/* Receiver */}
-        <h3 className="col-span-2 font-semibold text-lg">Receiver Info</h3>
+        <FormSelect
+          label="Sender Country"
+          name="senderCountry"
+          value={form.senderCountry}
+          onChange={handleChange}
+          options={zones}
+          required
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Receiver Name</span>
-          <input
-            type="text"
-            name="receiverName"
-            placeholder="Receiver Name"
-            value={form.receiverName}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        {/* Receiver Section */}
+        <div className="col-span-2 mt-4">
+          <h3 className="font-semibold text-lg mb-2">Receiver Info</h3>
+        </div>
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Receiver Address</span>
-          <input
-            type="text"
-            name="receiverAddress"
-            placeholder="Receiver Address"
-            value={form.receiverAddress}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Receiver Name"
+          name="receiverName"
+          value={form.receiverName}
+          onChange={handleChange}
+          required
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Receiver Email</span>
-          <input
-            type="email"
-            name="receiverEmail"
-            placeholder="Receiver Email"
-            value={form.receiverEmail}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-        </label>
+        <FormInput
+          label="Receiver Address"
+          name="receiverAddress"
+          value={form.receiverAddress}
+          onChange={handleChange}
+          required
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Receiver Phone</span>
-          <input
-            type="text"
-            name="receiverPhoneNumber"
-            placeholder="Receiver Phone"
-            value={form.receiverPhoneNumber}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Receiver Email"
+          name="receiverEmail"
+          type="email"
+          value={form.receiverEmail}
+          onChange={handleChange}
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Receiver Country</span>
-          <input
-            type="text"
-            name="receiverCountry"
-            placeholder="Receiver Country"
-            value={form.receiverCountry}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Receiver Phone"
+          name="receiverPhoneNumber"
+          value={form.receiverPhoneNumber}
+          onChange={handleChange}
+          required
+        />
 
-        {/* Package */}
-        <h3 className="col-span-2 font-semibold text-lg">Package Info</h3>
+        <FormSelect
+          label="Receiver Country"
+          name="receiverCountry"
+          value={form.receiverCountry}
+          onChange={handleChange}
+          options={zones}
+          required
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Total Weight (KG)</span>
-          <input
-            type="number"
-            name="totalWeight"
-            placeholder="Total Weight"
-            value={form.totalWeight}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        {/* Package Section */}
+        <div className="col-span-2 mt-4">
+          <h3 className="font-semibold text-lg mb-2">Package Info</h3>
+        </div>
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Piece</span>
-          <input
-            type="number"
-            name="piece"
-            placeholder="Piece"
-            value={form.piece}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Total Weight (KG)"
+          name="totalWeight"
+          type="number"
+          value={form.totalWeight}
+          onChange={handleChange}
+          required
+          step="0.01"
+          min="0"
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Value</span>
-          <input
-            type="number"
-            name="value"
-            placeholder="Value"
-            value={form.value}
-            onChange={handleChange}
-            className="border p-2 rounded"
-          />
-        </label>
+        <FormInput
+          label="Piece"
+          name="piece"
+          type="number"
+          value={form.piece}
+          onChange={handleChange}
+          required
+          min="0"
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Per Kg Cash</span>
-          <input
-            type="number"
-            name="perKgCash"
-            placeholder="Per Kg Cash"
-            value={form.perKgCash}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Office Per Kg Cash</span>
-          <input
-            type="number"
-            name="OPerKgCash"
-            placeholder="Per Kg Cash"
-            value={form.OPerKgCash}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Office total Cash</span>
-          <input
-            type="number"
-            name="OTotalCash"
-            placeholder="Per Kg Cash"
-            value={form.OTotalCash}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Transit way</span>
-          <input
-            type="text"
-            name="transitWay"
-            placeholder="transit way"
-            value={form.transitWay}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Value"
+          name="value"
+          type="number"
+          value={form.value}
+          onChange={handleChange}
+          step="0.01"
+          min="0"
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Total Cash</span>
-          <input
-            type="number"
-            name="totalCash"
-            placeholder="Total Cash"
-            value={form.totalCash}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Per Kg Cash"
+          name="perKgCash"
+          type="number"
+          value={form.perKgCash}
+          onChange={handleChange}
+          required
+          step="0.01"
+          min="0"
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Remain</span>
-          <input
-            type="number"
-            name="remain"
-            placeholder="Remain"
-            value={form.remain}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Office Per Kg Cash"
+          name="OPerKgCash"
+          type="number"
+          value={form.OPerKgCash}
+          onChange={handleChange}
+          required
+          step="0.01"
+          min="0"
+        />
 
-        <label className="flex flex-col">
-          <span className="mb-1 font-medium">Received</span>
-          <input
-            type="number"
-            name="received"
-            placeholder="Received"
-            value={form.received}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-        </label>
+        <FormInput
+          label="Office Total Cash"
+          name="OTotalCash"
+          type="number"
+          value={form.OTotalCash}
+          onChange={handleChange}
+          required
+          disabled
+          step="0.01"
+        />
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded col-span-2"
-        >
-          {editingId ? "Update Package" : "Create Package"}
-        </button>
+        <FormInput
+          label="Transit Way"
+          name="transitWay"
+          value={form.transitWay}
+          onChange={handleChange}
+          required
+        />
+
+        <FormInput
+          label="Total Cash"
+          name="totalCash"
+          type="number"
+          value={form.totalCash}
+          onChange={handleChange}
+          required
+          step="0.01"
+          min="0"
+        />
+
+        <FormInput
+          label="Remain"
+          name="remain"
+          type="number"
+          value={form.remain}
+          onChange={handleChange}
+          required
+          step="0.01"
+        />
+
+        <FormInput
+          label="Received"
+          name="received"
+          type="number"
+          value={form.received}
+          onChange={handleChange}
+          required
+          step="0.01"
+          min="0"
+        />
+
+        <div className="col-span-2 flex gap-4">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition flex-1"
+            disabled={loading}
+          >
+            {loading
+              ? "Processing..."
+              : editingId
+              ? "Update Package"
+              : "Create Package"}
+          </button>
+
+          {editingId && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingId(null);
+                resetForm();
+              }}
+              className="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
-      <h2 className="text-2xl font-bold mb-4">Packages List</h2>
-      <table className="w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border p-2">ID</th>
-            <th className="border p-2">Sender</th>
-            <th className="border p-2">Receiver</th>
-            <th className="border p-2">Total Weight</th>
-            <th className="border p-2">Piece</th>
-            <th className="border p-2">Total Cash</th>
-            <th className="border p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {packages.map((pkg) => (
-            <tr key={pkg.id}>
-              <td className="border p-2">{pkg.id}</td>
-              <td className="border p-2">{pkg.Sender.name}</td>
-              <td className="border p-2">{pkg.Receiver.name}</td>
-              <td className="border p-2">{pkg.totalWeight}</td>
-              <td className="border p-2">{pkg.piece}</td>
-              <td className="border p-2">{pkg.totalCash}</td>
-              <td className="border p-2 flex gap-2">
-                <button
-                  onClick={() => handleEdit(pkg)}
-                  className="bg-yellow-500 text-white p-1 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(pkg.id)}
-                  className="bg-red-500 text-white p-1 rounded"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {loading ? (
+        <div className="text-center p-4">Loading packages...</div>
+      ) : (
+        <PackageList
+          packages={packages}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };
+
+// Reusable form input component
+const FormInput = ({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+  required = false,
+  disabled = false,
+  step,
+  min,
+}) => (
+  <label className="flex flex-col">
+    <span className="mb-1 font-medium">{label}</span>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className={`border p-2 rounded ${
+        disabled ? "bg-gray-100 cursor-not-allowed" : ""
+      }`}
+      required={required}
+      disabled={disabled}
+      step={step}
+      min={min}
+    />
+  </label>
+);
+
+// Reusable form select component
+const FormSelect = ({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  required = false,
+}) => (
+  <label className="flex flex-col">
+    <span className="mb-1 font-medium">{label}</span>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="border p-2 rounded"
+      required={required}
+    >
+      <option value="">Select {label}</option>
+
+      {options &&
+        Array.isArray(options) &&
+        options.map((country) => (
+          <option key={country} value={country}>
+            {country}
+          </option>
+        ))}
+    </select>
+  </label>
+);
 
 export default PackageCrud;
