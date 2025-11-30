@@ -9,6 +9,8 @@ export default function PriceListManager() {
   const [zones, setZones] = useState([]);
   const [transits, setTransits] = useState([]);
 
+  const [activeTransit, setActiveTransit] = useState(null);
+
   const [formData, setFormData] = useState({
     zoneId: "",
     transitId: "",
@@ -20,7 +22,6 @@ export default function PriceListManager() {
   const [editId, setEditId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Fetch all data when page loads
   useEffect(() => {
     fetchPriceLists();
     fetchZones();
@@ -40,6 +41,7 @@ export default function PriceListManager() {
   const fetchTransits = async () => {
     const res = await axios.get(`${BASE_URL}/transitWay/`);
     setTransits(res.data);
+    if (res.data.length > 0) setActiveTransit(res.data[0].id);
   };
 
   const handleChange = (e) => {
@@ -58,10 +60,11 @@ export default function PriceListManager() {
   const openModal = () => {
     setFormData({
       zoneId: "",
-      transitId: "",
+      transitId: activeTransit, // auto select active tab transit
       range: { start: "", end: "" },
       price: "",
     });
+
     setIsEdit(false);
     setModalOpen(true);
   };
@@ -121,49 +124,59 @@ export default function PriceListManager() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 tracking-wide">
+          <h1 className="text-2xl font-bold text-gray-800">
             مدیریت لست قیمت‌ها
           </h1>
 
           <button
             onClick={openModal}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 
-        hover:from-green-600 hover:to-emerald-700 text-white font-bold 
-        px-6 py-2 rounded-full shadow-lg transition-all duration-300"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2 rounded-full shadow-lg"
           >
             + اضافه کردن قیمت
           </button>
         </div>
 
-        {/* Price Table Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-4 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead className="bg-gradient-to-r from-indigo-100 to-blue-100">
-                <tr className="text-gray-700 font-semibold text-sm">
-                  <th className="p-3 border">زون</th>
-                  <th className="p-3 border">طریق ترانزیت</th>
-                  <th className="p-3 border">بازه وزن</th>
-                  <th className="p-3 border">قیمت</th>
-                  <th className="p-3 border">عملیات</th>
-                </tr>
-              </thead>
+        {/* TRANSIT TABS */}
+        <div className="flex gap-3 mb-6 overflow-x-auto">
+          {transits.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTransit(t.id)}
+              className={`px-4 py-2 rounded-full font-semibold transition 
+              ${
+                activeTransit === t.id
+                  ? "bg-blue-600 text-white shadow"
+                  : "bg-white text-gray-700 border"
+              }`}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
 
-              <tbody>
-                {priceLists.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="text-center hover:bg-blue-50 transition duration-200"
-                  >
-                    {console.log(item)}
+        {/* PRICE TABLE CARD */}
+        <div className="bg-white rounded-2xl shadow-xl p-4">
+          <table className="w-full border">
+            <thead className="bg-blue-100">
+              <tr>
+                <th className="p-3 border">زون</th>
+                <th className="p-3 border">بازه وزن</th>
+                <th className="p-3 border">قیمت</th>
+                <th className="p-3 border">عملیات</th>
+              </tr>
+            </thead>
 
+            <tbody>
+              {priceLists
+                .filter((p) => p.transitId === activeTransit)
+                .map((item) => (
+                  <tr key={item.id} className="text-center hover:bg-blue-50">
                     <td className="border p-3">{item.Zone?.name}</td>
-                    <td className="border p-3">{item.Transit?.name}</td>
 
                     <td className="border p-3">
-                      {item.range.start} - {item.range.end} کیلوگرام
+                      {item.range.start} - {item.range.end} kg
                     </td>
 
                     <td className="border p-3 font-bold text-green-700">
@@ -173,48 +186,44 @@ export default function PriceListManager() {
                     <td className="border p-3 space-x-2">
                       <button
                         onClick={() => editModal(item)}
-                        className="px-4 py-1 bg-blue-500 hover:bg-blue-600 
-                    text-white rounded-full shadow-sm transition"
+                        className="px-4 py-1 bg-blue-500 text-white rounded-full"
                       >
                         ویرایش
                       </button>
 
                       <button
                         onClick={() => deletePriceList(item.id)}
-                        className="px-4 py-1 bg-red-500 hover:bg-red-600 
-                    text-white rounded-full shadow-sm transition"
+                        className="px-4 py-1 bg-red-500 text-white rounded-full"
                       >
                         حذف
                       </button>
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
+            </tbody>
+          </table>
         </div>
 
-        {/* Modal */}
+        {/* MODAL */}
         {modalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-            <div className="bg-white w-96 p-6 rounded-2xl shadow-xl animate-scaleIn">
+            <div className="bg-white w-96 p-6 rounded-2xl shadow-xl">
               <h2 className="text-xl font-bold text-gray-800 mb-5 text-center">
                 {isEdit ? "ویرایش قیمت" : "اضافه کردن قیمت جدید"}
               </h2>
 
-              {/* Zone */}
+              {/* ZONE */}
               <div className="mb-4">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                <label className="text-sm font-semibold text-gray-700">
                   زون
                 </label>
                 <select
                   name="zoneId"
                   value={formData.zoneId}
                   onChange={handleChange}
-                  className="w-full p-2.5 border border-gray-300 rounded-md 
-              bg-gray-100 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  className="w-full p-2.5 border rounded-md bg-gray-50"
                 >
-                  <option value="">زون انتخاب کنید</option>
+                  <option value="">انتخاب زون</option>
                   {zones.map((z) => (
                     <option key={z.id} value={z.id}>
                       {z.name}
@@ -223,30 +232,9 @@ export default function PriceListManager() {
                 </select>
               </div>
 
-              {/* Transit */}
+              {/* START */}
               <div className="mb-4">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
-                  طریق ترانزیت
-                </label>
-                <select
-                  name="transitId"
-                  value={formData.transitId}
-                  onChange={handleChange}
-                  className="w-full p-2.5 border border-gray-300 rounded-md 
-              bg-gray-100 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                >
-                  <option value="">انتخاب کنید</option>
-                  {transits.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Range Start */}
-              <div className="mb-4">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                <label className="text-sm font-semibold text-gray-700">
                   شروع بازه (kg)
                 </label>
                 <input
@@ -254,14 +242,13 @@ export default function PriceListManager() {
                   name="start"
                   value={formData.range.start}
                   onChange={handleChange}
-                  className="w-full p-2.5 border border-gray-300 rounded-md 
-              bg-gray-100 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  className="w-full p-2.5 border rounded-md bg-gray-50"
                 />
               </div>
 
-              {/* Range End */}
+              {/* END */}
               <div className="mb-4">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                <label className="text-sm font-semibold text-gray-700">
                   پایان بازه (kg)
                 </label>
                 <input
@@ -269,14 +256,13 @@ export default function PriceListManager() {
                   name="end"
                   value={formData.range.end}
                   onChange={handleChange}
-                  className="w-full p-2.5 border border-gray-300 rounded-md 
-              bg-gray-100 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  className="w-full p-2.5 border rounded-md bg-gray-50"
                 />
               </div>
 
-              {/* Price */}
+              {/* PRICE */}
               <div className="mb-6">
-                <label className="text-sm font-semibold text-gray-700 mb-1 block">
+                <label className="text-sm font-semibold text-gray-700">
                   قیمت ($)
                 </label>
                 <input
@@ -284,26 +270,22 @@ export default function PriceListManager() {
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
-                  className="w-full p-2.5 border border-gray-300 rounded-md 
-              bg-gray-100 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  className="w-full p-2.5 border rounded-md bg-gray-50"
                 />
               </div>
 
-              {/* Buttons */}
+              {/* BUTTONS */}
               <div className="flex justify-between">
                 <button
                   onClick={() => setModalOpen(false)}
-                  className="px-5 py-2 bg-gray-200 hover:bg-gray-300 
-              text-gray-700 rounded-xl transition font-semibold"
+                  className="px-5 py-2 bg-gray-300 rounded-xl"
                 >
                   بستن
                 </button>
 
                 <button
                   onClick={handleSubmit}
-                  className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 
-              hover:from-blue-700 hover:to-indigo-700 text-white 
-              rounded-xl shadow-md transition font-semibold"
+                  className="px-5 py-2 bg-blue-600 text-white rounded-xl"
                 >
                   {isEdit ? "بروزرسانی" : "ثبت"}
                 </button>

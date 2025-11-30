@@ -9,8 +9,11 @@ export default function ZoneManager() {
 
   const [formData, setFormData] = useState({
     name: "",
-    countries: "",
+    countries: [],
   });
+
+  const [countryInput, setCountryInput] = useState("");
+  const [editCountryIndex, setEditCountryIndex] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -30,7 +33,8 @@ export default function ZoneManager() {
   };
 
   const openModal = () => {
-    setFormData({ name: "", countries: "" });
+    setFormData({ name: "", countries: [] });
+    setCountryInput("");
     setIsEdit(false);
     setModalOpen(true);
   };
@@ -41,8 +45,11 @@ export default function ZoneManager() {
 
     setFormData({
       name: item.name,
-      countries: item.countries.join(", "), // Convert array → comma text
+      countries: item.countries,
     });
+
+    setCountryInput("");
+    setEditCountryIndex(null);
 
     setModalOpen(true);
   };
@@ -51,10 +58,7 @@ export default function ZoneManager() {
     try {
       const payload = {
         name: formData.name,
-        countries: formData.countries
-          .split(",")
-          .map((c) => c.trim())
-          .filter((x) => x !== ""),
+        countries: formData.countries, // Already an array
       };
 
       if (isEdit) {
@@ -100,6 +104,7 @@ export default function ZoneManager() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Zone Management</h1>
+
         <button
           className="px-4 py-2 bg-green-600 rounded-lg text-white hover:bg-green-700"
           onClick={openModal}
@@ -181,34 +186,98 @@ export default function ZoneManager() {
                 placeholder=" "
               />
               <label
-                className="absolute left-3 top-3 text-gray-600 transition-all 
-            peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
-            peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 
-            bg-white px-1"
+                className="absolute left-3 top-3 text-gray-600 transition-all
+                peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600
+                bg-white px-1"
               >
                 Zone Name
               </label>
             </div>
 
-            {/* Countries */}
-            <div className="mb-4 relative">
-              <textarea
-                rows={3}
-                className="peer w-full border border-gray-400 rounded-lg px-3 py-3 focus:outline-none focus:border-blue-500"
-                value={formData.countries}
-                onChange={(e) =>
-                  setFormData({ ...formData, countries: e.target.value })
-                }
-                placeholder=" "
-              ></textarea>
-              <label
-                className="absolute left-3 top-3 text-gray-600 transition-all 
-            peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
-            peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 
-            bg-white px-1"
-              >
-                Countries (comma separated)
-              </label>
+            {/* Countries CRUD */}
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Countries</label>
+
+              {/* Input + Add/Update */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={countryInput}
+                  onChange={(e) => setCountryInput(e.target.value)}
+                  className="w-full border border-gray-400 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+                  placeholder="Enter country name"
+                />
+
+                {editCountryIndex === null ? (
+                  <button
+                    onClick={() => {
+                      if (!countryInput.trim()) return;
+                      setFormData({
+                        ...formData,
+                        countries: [...formData.countries, countryInput.trim()],
+                      });
+                      setCountryInput("");
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Add
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const updated = [...formData.countries];
+                      updated[editCountryIndex] = countryInput.trim();
+                      setFormData({ ...formData, countries: updated });
+                      setCountryInput("");
+                      setEditCountryIndex(null);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Update
+                  </button>
+                )}
+              </div>
+
+              {/* Country List */}
+              <div className="mt-3 space-y-2">
+                {formData.countries.length === 0 && (
+                  <p className="text-gray-500 text-sm">No countries added.</p>
+                )}
+
+                {formData.countries.map((c, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center bg-gray-100 p-2 rounded-lg"
+                  >
+                    <span>{c}</span>
+
+                    <div className="space-x-2">
+                      <button
+                        onClick={() => {
+                          setCountryInput(c);
+                          setEditCountryIndex(index);
+                        }}
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const filtered = formData.countries.filter(
+                            (_, i) => i !== index
+                          );
+                          setFormData({ ...formData, countries: filtered });
+                        }}
+                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Buttons */}

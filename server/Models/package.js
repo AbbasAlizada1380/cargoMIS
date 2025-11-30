@@ -1,108 +1,82 @@
 // models/package.js
 import { DataTypes } from "sequelize";
-import sequelize from "../dbconnection.js"; // adjust path to your sequelize instance
+import sequelize from "../dbconnection.js";
+import Customer from "./Customer.js";
+// models/Package.js
 
-const Package = sequelize.define(
-  "Package",
-  {
-    // primary key 'id' will be created automatically by Sequelize unless you override
-    date: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
+export default (sequelize) => {
+  const Package = sequelize.define(
+    "Package",
+    {
+      receiverId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Customers", // customer table name
+          key: "id",
+        },
+      },
 
-    receiverName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    receiverPhone: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    receiverAddress: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    receiverEmail: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: { isEmail: true },
-    },
+      senderId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Customers",
+          key: "id",
+        },
+      },
 
-    country: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+      totalWeight: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+      },
 
-    senderName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    senderPhone: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    senderAddress: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    senderEmail: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: { isEmail: true },
-    },
+      piece: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
 
-    goodsDetails: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
+      value: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
 
-    goodWeight: {
-      type: DataTypes.DECIMAL(10, 2), // kg
-      allowNull: true,
-    },
+      oPerKgCash: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
 
-    piece: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
-    },
+      oTotalCash: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
 
-    goodsValue: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-    },
-    location: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
+      perKgCash: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
 
-    perKgCash: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-    },
+      totalCash: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
 
-    recip: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-      defaultValue: 0.0,
-    },
-    remain: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-      defaultValue: 0.0,
-    },
+      remainder: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
 
-    totalCash: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
+      received: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
-  },
-  {
-    tableName: "packages",
-    timestamps: true,
-  }
-);
+    {
+      tableName: "packages",
+      timestamps: true,
+    }
+  );
 
-export default Package;
+  return Package;
+};
+
