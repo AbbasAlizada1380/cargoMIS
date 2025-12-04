@@ -1,6 +1,81 @@
-// controllers/packageController.js
-import Package from "../Models/package.js";
+// Try importing Customer first, then Package
 import Customer from "../Models/Customer.js";
+import Package from "../Models/package.js";
+import { Op } from "sequelize";
+
+export const getPackagesByRange = async (req, res) => {
+  try {
+    const { startDate, endDate, transitWay } = req.query;
+
+    if (!startDate || !endDate || !transitWay) {
+      return res.status(400).json({
+        error: "Missing required query parameters: startDate, endDate, transitWay",
+      });
+    }
+
+    // You can also try a simpler query first to debug
+    const packages = await Package.findAll({
+      where: {
+        transitWay,
+        createdAt: {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        },
+      },
+      include: [
+        {
+          association: "Sender", // Use association name instead of model
+          attributes: ["id", "name", "phoneNumber", "country"]
+        },
+        {
+          association: "Receiver", // Use association name instead of model
+          attributes: ["id", "name", "phoneNumber", "country"]
+        },
+      ],
+      order: [["createdAt", "ASC"]],
+    });
+
+    return res.status(200).json({
+      message: "Successfully retrieved filtered packages",
+      totalRecords: packages.length,
+      data: packages,
+    });
+
+  } catch (error) {
+    console.error("Get Packages By Range Error:", error);
+    return res.status(500).json({ 
+      error: "Failed to retrieve packages",
+      details: error.message 
+    });
+  }
+};
+
+/* ============================================================
+   GET ALL TRANSIT WAYS
+============================================================ */
+/* ============================================================
+   GET ALL TRANSIT WAYS  (SEQUELIZE VERSION)
+============================================================ */
+export const getAllTransitWays = async (req, res) => {
+  try {
+    // Fetch only transitWay column
+    const packages = await Package.findAll({
+      attributes: ["transitWay"],
+    });
+
+    // Extract values & filter unique ones
+    const allTransitWays = packages.map((p) => p.transitWay);
+    const uniqueTransitWays = [...new Set(allTransitWays)];
+
+    return res.status(200).json({
+      message: "Successfully retrieved all transit ways",
+      data: uniqueTransitWays,
+    });
+  } catch (error) {
+    console.error("Get All Transit Ways Error:", error);
+    return res.status(500).json({ error: "Failed to retrieve transit ways" });
+  }
+};
+
 
 /* ============================================================
    CREATE PACKAGE + SENDER + RECEIVER
@@ -43,12 +118,12 @@ export const createPackage = async (req, res) => {
 ============================================================ */
 export const getAllPackages = async (req, res) => {
   try {
-  const packages = await Package.findAll({
-    include: [
-      { model: Customer, as: "Sender" },
-      { model: Customer, as: "Receiver" },
-    ],
-  });
+    const packages = await Package.findAll({
+      include: [
+        { model: Customer, as: "Sender" },
+        { model: Customer, as: "Receiver" },
+      ],
+    });
 
     return res.status(200).json(packages);
   } catch (error) {

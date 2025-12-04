@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -6,47 +6,62 @@ import moment from "moment-jalaali";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import VazirmatnTTF from "../../../../../public/ttf/Vazirmatn.js";
 
-const PackageDownload = () => {
+const OrderDownload = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [transitWays, setTransitWays] = useState([]);
+  const [selectedTransitWay, setSelectedTransitWay] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 🔹 Load transit ways on mount
+  useEffect(() => {
+    const fetchTransitWays = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/packages/transitWays`);
+        setTransitWays(res.data.data || []);
+      } catch (error) {
+        console.error("Error fetching transit ways:", error);
+      }
+    };
+
+    fetchTransitWays();
+  }, []);
+
   const handleDownload = async () => {
-    if (!startDate || !endDate) {
-      alert("لطفاً تاریخ شروع و پایان را انتخاب کنید");
+    if (!startDate || !endDate || !selectedTransitWay) {
+      alert("لطفاً تاریخ‌ها و ترانزیت‌وی را انتخاب کنید");
       return;
     }
 
     try {
       setLoading(true);
 
-      // 🔥 MATCHING YOUR ROUTE: /packages/Range
+      // 🔹 Send transitWay in API request
       const response = await axios.get(
-        `${BASE_URL}/packages/Range?startDate=${startDate}&endDate=${endDate}`
+        `${BASE_URL}/packages/Range?startDate=${startDate}&endDate=${endDate}&transitWay=${selectedTransitWay}`
       );
+      console.log(response.data);
 
-      const packages = response.data;
-
-      if (!packages || packages.length === 0) {
-        alert("هیچ محموله‌ای در این بازه زمانی یافت نشد");
+      const orders = response.data.data; // Adjust to your API "data" field
+      if (!orders || orders.length === 0) {
+        alert("هیچ سفارشی مطابق این فیلترها یافت نشد");
         return;
       }
 
-      // PDF Setup
+      // ===================== PDF START =====================
       const doc = new jsPDF({
         orientation: "p",
         unit: "pt",
         format: "a4",
       });
 
-      // Add Persian font
       doc.addFileToVFS("Vazirmatn.ttf", VazirmatnTTF);
       doc.addFont("Vazirmatn.ttf", "Vazirmatn", "normal");
       doc.setFont("Vazirmatn");
 
       doc.setFontSize(14);
       doc.text(
-        `گزارش محموله‌ها از ${moment(startDate).format(
+        `گزارش سفارشات ترانزیت «${selectedTransitWay}» از ${moment(startDate).format(
           "jYYYY/jMM/jDD"
         )} تا ${moment(endDate).format("jYYYY/jMM/jDD")}`,
         550,
@@ -54,39 +69,37 @@ const PackageDownload = () => {
         { align: "right" }
       );
 
-      // Table headers
       const headers = [
         [
+          "وزن",
           "تاریخ",
-          "موقعیت",
-          "مقدار باقی",
-          "رسید",
+          "باقیمانده",
+          "دریافتی",
           "مجموع",
-          "شماره تحویل گیرنده",
-          "تحویل گیرنده",
-          "کد محموله",
+          "نام فرستنده",
+           "نام گیرنده",
+          "شماره بیل",
         ],
       ];
 
-      // Table body      
-      const data = packages.data.map((p) => [
-        moment(p.createdAt).format("jYYYY/jMM/jDD"),
-        p.location || "-",
-        p.remain?.toLocaleString("fa-AF") || 0,
-        p.recip?.toLocaleString("fa-AF") || 0,
-        p.totalCash?.toLocaleString("fa-AF") || 0,
-        p.receiverPhone || "-",
-        p.receiverName || "-",
-        p.id,
+      const data = orders.map((order) => [
+        order.totalWeight || 0,
+        moment(order.createdAt).format("jYYYY/jMM/jDD"),
+        order.remain?.toLocaleString("fa-AF") || 0,
+        order.received?.toLocaleString("fa-AF") || 0,
+        order.totalCash?.toLocaleString("fa-AF") || 0,
+        order.Sender?.name || "-",
+        order.Receiver?.name || "-",
+        order.id,
       ]);
 
-      // Create table
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 70,
+        startY: 60,
         styles: {
           font: "Vazirmatn",
+          fontStyle: "normal",
           halign: "center",
           fontSize: 10,
         },
@@ -95,6 +108,11 @@ const PackageDownload = () => {
           fontStyle: "normal",
           halign: "center",
           fillColor: [200, 200, 200],
+          textColor: 20,
+        },
+        didParseCell: function (data) {
+          data.cell.styles.font = "Vazirmatn";
+          data.cell.styles.fontStyle = "normal"; // Important
         },
         theme: "grid",
       });
@@ -103,9 +121,13 @@ const PackageDownload = () => {
       doc.text("امضاء و مهر:", 550, finalY, { align: "right" });
       doc.line(400, finalY + 2, 550, finalY + 2);
 
-      doc.save(`Packages_${startDate}_to_${endDate}.pdf`);
+      doc.save(
+        `Orders_${selectedTransitWay}_${startDate}_to_${endDate}.pdf`
+      );
+      // ===================== PDF END =====================
+
     } catch (error) {
-      console.error("Error downloading packages:", error);
+      console.error("Error downloading:", error);
       alert("خطا در دریافت اطلاعات!");
     } finally {
       setLoading(false);
@@ -115,24 +137,42 @@ const PackageDownload = () => {
   return (
     <div className="p-6">
       <div className="flex gap-4 items-center">
+
+        {/* Start Date */}
         <label htmlFor="startDate">تاریخ شروع</label>
         <input
-          name="startDate"
           type="date"
+          className="border p-2 rounded"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          className="border p-2 rounded"
         />
 
+        {/* End Date */}
         <label htmlFor="endDate">تاریخ ختم</label>
         <input
-          name="endDate"
           type="date"
+          className="border p-2 rounded"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          className="border p-2 rounded"
         />
 
+        {/* Transit Way Selector */}
+        <label htmlFor="transitWay">ترانزیت‌وی</label>
+        <select
+          id="transitWay"
+          className="border p-2 rounded"
+          value={selectedTransitWay}
+          onChange={(e) => setSelectedTransitWay(e.target.value)}
+        >
+          <option value="">انتخاب...</option>
+          {transitWays.map((way, index) => (
+            <option key={index} value={way}>
+              {way}
+            </option>
+          ))}
+        </select>
+
+        {/* Download Button */}
         <button
           onClick={handleDownload}
           disabled={loading}
@@ -145,4 +185,4 @@ const PackageDownload = () => {
   );
 };
 
-export default PackageDownload;
+export default OrderDownload;
