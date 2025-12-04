@@ -3,6 +3,8 @@ import moment from "moment-jalaali";
 import { FaPhone, FaPrint, FaTimes } from "react-icons/fa";
 
 const PrintShippingBill = ({ isOpen, onClose, data }) => {
+  console.log(data);
+  
   if (!isOpen || !data) return null;
 
   const formatCurrency = (num) => {
@@ -31,14 +33,30 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
           }}
         >
           {/* Header */}
-          <div className="bg-gradient-to-l from-blue-800 to-blue-600 text-white p-4 text-center border-b-4 border-blue-900">
-            <h1 className="text-xl font-bold mb-1">افغان کارگو</h1>
-            <p className="text-sm opacity-90">Afghan Cargo Services</p>
-            <div className="flex justify-between items-center mt-2 text-xs">
-              <span>شماره بل: {billNumber}</span>
-              <span>تاریخ: {today}</span>
-            </div>
-          </div>
+<div className="bg-gradient-to-l from-blue-800 to-blue-600 text-white p-4 border-b-4 border-blue-900 flex flex-col md:flex-row items-center justify-between">
+  {/* Logo and Company Name */}
+  <div className="flex items-center gap-3 mb-3 md:mb-0">
+    <img
+      src="/logo.png"
+      alt="Afghan Cargo Logo"
+      className="h-16 w-16 object-contain rounded-full border-2 border-white"
+    />
+    <div className="flex flex-col text-center md:text-left">
+      <h1 className="text-2xl font-bold leading-tight">افغان کارگو</h1>
+      <p className="text-sm opacity-90">Afghan Cargo Services</p>
+    </div>
+  </div>
+
+  {/* Bill Info */}
+  <div className="flex flex-col items-center md:items-end text-xs">
+    <span className="mb-1">
+      <strong>شماره بل:</strong> {billNumber}
+    </span>
+    <span>
+      <strong>تاریخ:</strong> {today}
+    </span>
+  </div>
+</div>
 
           {/* Sender Info */}
           <div className="p-3 border-b border-gray-200">
@@ -47,18 +65,18 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             </h2>
             <div className="grid grid-cols-2 gap-1 text-xs">
               <p>
-                <span className="font-semibold">نام:</span> {data.senderName}
+                <span className="font-semibold">نام:</span> {data.Sender.name}
               </p>
               <p>
                 <span className="font-semibold">شماره تماس:</span>{" "}
-                {data.senderPhone}
+                {data.Sender.phoneNumber}
               </p>
               <p>
                 <span className="font-semibold">آدرس:</span>{" "}
-                {data.senderAddress}
+                {data.Sender.address}
               </p>
               <p>
-                <span className="font-semibold">ایمیل:</span> {data.senderEmail}
+                <span className="font-semibold">ایمیل:</span> {data.Sender.email}
               </p>
             </div>
           </div>
@@ -68,21 +86,20 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             <h2 className="text-sm font-bold text-gray-700 mb-2 border-b pb-1 border-gray-300">
               معلومات دریافت‌کننده
             </h2>
-            <div className="grid grid-cols-2 gap-1 text-xs">
+             <div className="grid grid-cols-2 gap-1 text-xs">
               <p>
-                <span className="font-semibold">نام:</span> {data.receiverName}
+                <span className="font-semibold">نام:</span> {data.Receiver.name}
               </p>
               <p>
                 <span className="font-semibold">شماره تماس:</span>{" "}
-                {data.receiverPhone}
+                {data.Receiver.phoneNumber}
               </p>
               <p>
                 <span className="font-semibold">آدرس:</span>{" "}
-                {data.receiverAddress}
+                {data.Receiver.address}
               </p>
               <p>
-                <span className="font-semibold">ایمیل:</span>{" "}
-                {data.receiverEmail}
+                <span className="font-semibold">ایمیل:</span> {data.Receiver.email}
               </p>
             </div>
           </div>
@@ -95,19 +112,14 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             <table className="w-full text-xs border border-gray-300">
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 p-1 font-semibold w-32">
-                    توضیحات:
-                  </td>
-                  <td className="border border-gray-300 p-1">
-                    {data.goodsDetails}
-                  </td>
+                  
                 </tr>
                 <tr>
                   <td className="border border-gray-300 p-1 font-semibold">
                     وزن:
                   </td>
                   <td className="border border-gray-300 p-1">
-                    {data.goodWeight} کیلوگرام
+                    {data.totalWeight} کیلوگرام
                   </td>
                 </tr>
                 <tr>
@@ -129,60 +141,72 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
                     ارزش اجناس:
                   </td>
                   <td className="border border-gray-300 p-1">
-                    {formatCurrency(data.goodsValue)}
+                    {formatCurrency(data.value)}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Summary */}
-          <div className="border-t border-gray-300 bg-gray-50 p-3">
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span>مجموع کل:</span>
-                <span className="font-bold text-blue-700">
-                  {formatCurrency(data.totalCash)}
-                </span>
+  {/* Bill Summary */}
+          <div className="flex border-t h-[110px] border-gray-300 bg-gray-50">
+            {/* Left Half — Totals Section */}
+            <div className="w-1/2 border-l border-gray-300 p-4">
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-sm">
+                  <span>مجموع کل:</span>
+                  <span className="text-cyan-800">{formatCurrency(data.totalCash)}</span>
+                </div>
+                <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-sm">
+                  <span>
+                    <strong>دریافتی :</strong>
+                  </span>
+                  <span className="text-green-600">
+                    {formatCurrency(data.received || 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
+                  <span
+                    className={data.remain > 0 ? "text-red-600" : "text-green-600"}
+                  >
+                    باقیمانده:
+                  </span>
+                  <span
+                    className={data.remain > 0 ? "text-red-600" : "text-green-600"}
+                  >
+                    {formatCurrency(data.remain)}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
-                <span className={"text-green-600"}>دریافتی:</span>
-                <span
-                  className={ "text-لقثثد-600" 
-                  }
-                >
-                  {formatCurrency(data.recip)}
-                </span>
-              </div>{" "}
-              <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
-                <span
-                  className={
-                    data.remain > 0 ? "text-red-600" : "text-green-600"
-                  }
-                >
-                  باقیمانده:
-                </span>
-                <span
-                  className={
-                    data.remain > 0 ? "text-red-600" : "text-green-600"
-                  }
-                >
-                  {formatCurrency(data.remain)}
-                </span>
+            </div>
+
+            {/* Right Half — Signature and Stamp Section */}
+            <div className="w-1/2 flex flex-col items-center justify-center p-4 text-center">
+              <div className="w-full   border-gray-400 h-28 flex flex-col items-center justify-center">
+                <p className="text-gray-600 text-sm font-semibold">
+                  محل امضاء و مُهر
+                </p>
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-800 text-white p-3 text-center text-xs">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <FaPhone className="text-blue-300" />
-              <span>تماس: ۰۷۸۹ـــ۶۷۸۸۹۶</span>
-            </div>
-            <p className="text-blue-200">
-              از اعتماد شما به افغان کارگو سپاس‌گزاریم!
-            </p>
-          </div>
+<div
+  id="footer-area"
+  className="bg-gray-800 text-white p-3 text-center text-xs"
+>
+  {/* Phone Numbers */}
+  <div className="flex items-center justify-center gap-2 mb-1">
+    <FaPhone className="text-cyan-300" />
+    <span>تماس: 0789384700 - 0799306437 - 0748852569</span>
+  </div>
+
+  {/* Address */}
+  <p className="text-cyan-200 mt-1">
+    آدرس:مارکیت بهار سراب، تانک تیل،دشت برچی، کابل، افغانستان
+  </p>
+</div>
+
         </div>
       </div>
 

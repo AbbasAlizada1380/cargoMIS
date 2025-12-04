@@ -1,10 +1,11 @@
-import React from "react";
-import { 
-  FaEdit, 
-  FaTrash, 
-  FaEye, 
-  FaBox, 
-  FaUser, 
+
+import React, { useState } from "react";
+import {
+  FaEdit,
+  FaTrash,
+  FaEye,
+  FaBox,
+  FaUser,
   FaWeightHanging,
   FaCube,
   FaMoneyBillWave,
@@ -14,11 +15,18 @@ import {
   FaCalendar,
   FaFlag,
   FaPhone,
-  FaEnvelope,
-  FaMapMarkerAlt
+  FaPrint,
+  FaTimes,
+  FaCopy,
+  FaDownload
 } from "react-icons/fa";
+import moment from "moment-jalaali";
+import PrintShippingBill from "./PrintShippingBill";
 
-const PackageList = ({ packages, onEdit, onDelete }) => {
+const PackageList = ({ packages, onEdit, onDelete, mode }) => {
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fa-IR');
@@ -26,6 +34,99 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
 
   const formatCurrency = (amount) => {
     return `$${parseFloat(amount || 0).toFixed(2)}`;
+  };
+
+  const handlePrintClick = (pkg) => {
+    setSelectedPackage(pkg);
+    setIsPrintModalOpen(true);
+    console.log(isPrintModalOpen);
+
+  };
+
+  const handleClosePrintModal = () => {
+    setIsPrintModalOpen(false);
+    setSelectedPackage(null);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleCopyToClipboard = () => {
+    if (!selectedPackage) return;
+
+    const billText = generateBillText(selectedPackage);
+    navigator.clipboard.writeText(billText)
+      .then(() => alert("متن صورت‌حساب در کلیپ‌بورد کپی شد"))
+      .catch(err => console.error("خطا در کپی کردن:", err));
+  };
+
+  const generateBillText = (pkg) => {
+    return `
+صورت‌حساب حمل و نقل
+====================
+کد بسته: ${pkg.id}
+تاریخ: ${formatDate(pkg.createdAt)}
+
+مشخصات فرستنده:
+- نام: ${pkg.Sender?.name || "نامشخص"}
+- آدرس: ${pkg.Sender?.address || "نامشخص"}
+- تلفن: ${pkg.Sender?.phoneNumber || "نامشخص"}
+- کشور: ${pkg.Sender?.country || "نامشخص"}
+
+مشخصات گیرنده:
+- نام: ${pkg.Receiver?.name || "نامشخص"}
+- آدرس: ${pkg.Receiver?.address || "نامشخص"}
+- تلفن: ${pkg.Receiver?.phoneNumber || "نامشخص"}
+- کشور: ${pkg.Receiver?.country || "نامشخص"}
+
+مشخصات بسته:
+- وزن کل: ${pkg.totalWeight} کیلوگرم
+- تعداد قطعات: ${pkg.piece}
+- ارزش: ${formatCurrency(pkg.value)}
+- روش حمل: ${pkg.transitWay}
+
+اطلاعات مالی:
+- نرخ هر کیلو: ${formatCurrency(pkg.perKgCash)}
+- مجموع کل: ${formatCurrency(pkg.totalCash)}
+- دریافتی: ${formatCurrency(pkg.received)}
+- مانده: ${formatCurrency(pkg.remain)}
+
+نرخ دفتری:
+- نرخ هر کیلو: ${formatCurrency(pkg.OPerKgCash)}
+- مجموع دفتری: ${formatCurrency(pkg.OTotalCash)}
+
+تاریخ صدور: ${moment().format("jYYYY/jMM/jDD")}
+امضاء مسئول: ______________
+`;
+  };
+
+  const generateReceipt = () => {
+    if (!selectedPackage) return "";
+
+    return `
+رسید دریافت وجه
+================
+کد رسید: RC-${selectedPackage.id}-${Date.now().toString().slice(-6)}
+تاریخ: ${moment().format("jYYYY/jMM/jDD HH:mm")}
+
+مشخصات پرداخت:
+مبلغ: ${formatCurrency(selectedPackage.received)}
+بابت: حمل و نقل بسته شماره ${selectedPackage.id}
+روش پرداخت: نقدی
+
+فرستنده: ${selectedPackage.Sender?.name || "نامشخص"}
+گیرنده: ${selectedPackage.Receiver?.name || "نامشخص"}
+
+مشخصات باقی‌مانده:
+مبلغ کل: ${formatCurrency(selectedPackage.totalCash)}
+پرداخت شده: ${formatCurrency(selectedPackage.received)}
+باقیمانده: ${formatCurrency(selectedPackage.remain)}
+
+تاریخ سررسید: ${moment().add(30, 'days').format("jYYYY/jMM/jDD")}
+
+امضاء دریافت‌کننده: ______________
+`;
   };
 
   return (
@@ -175,16 +276,17 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {packages.map((pkg) => (
-                  <tr 
-                    key={pkg.id} 
+                  <tr
+                    key={pkg.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
+
                     <td className="py-3 px-4">
                       <div className="text-sm font-medium text-gray-900">
                         #{pkg.id}
                       </div>
                     </td>
-                    
+
                     {/* Sender Column */}
                     <td className="py-3 px-4">
                       <div className="flex flex-col">
@@ -205,7 +307,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         </div>
                       </div>
                     </td>
-                    
+
                     {/* Receiver Column */}
                     <td className="py-3 px-4">
                       <div className="flex flex-col">
@@ -226,7 +328,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         </div>
                       </div>
                     </td>
-                    
+
                     {/* Weight Column */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -241,7 +343,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         </div>
                       </div>
                     </td>
-                    
+
                     {/* Pieces Column */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -249,7 +351,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         <span className="font-medium">{pkg.piece || 0}</span>
                       </div>
                     </td>
-                    
+
                     {/* Total Cash Column */}
                     <td className="py-3 px-4">
                       <div className="flex flex-col">
@@ -261,7 +363,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         </div>
                       </div>
                     </td>
-                    
+
                     {/* Received Column */}
                     <td className="py-3 px-4">
                       <div className="font-medium text-blue-700">
@@ -273,14 +375,13 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         </div>
                       )}
                     </td>
-                    
+
                     {/* Remain Column */}
                     <td className="py-3 px-4">
-                      <div className={`font-medium ${
-                        parseFloat(pkg.remain || 0) > 0 
-                          ? 'text-orange-700' 
-                          : 'text-green-700'
-                      }`}>
+                      <div className={`font-medium ${parseFloat(pkg.remain || 0) > 0
+                        ? 'text-orange-700'
+                        : 'text-green-700'
+                        }`}>
                         {formatCurrency(pkg.remain)}
                       </div>
                       {parseFloat(pkg.remain || 0) > 0 && (
@@ -289,7 +390,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         </div>
                       )}
                     </td>
-                    
+
                     {/* Transit Way Column */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -300,7 +401,7 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         {pkg.OTotalCash ? `دفتری: ${formatCurrency(pkg.OTotalCash)}` : ""}
                       </div>
                     </td>
-                    
+
                     {/* Date Column */}
                     <td className="py-3 px-4">
                       <div className="text-sm text-gray-600">
@@ -310,18 +411,21 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                         {new Date(pkg.createdAt).toLocaleTimeString('fa-IR')}
                       </div>
                     </td>
-                    
-                    {/* Actions Column */}
+
+                    {/* Actions Column - Updated چاپ button */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => onEdit(pkg)}
-                          className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"
-                          title="ویرایش"
-                        >
-                          <FaEdit className="text-sm" />
-                          <span className="text-xs hidden sm:inline">ویرایش</span>
-                        </button>
+                        {mode !== "list" && (
+                          <button
+                            onClick={() => onEdit(pkg)}
+                            className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"
+                            title="ویرایش"
+                          >
+                            <FaEdit className="text-sm" />
+                            <span className="text-xs hidden sm:inline">ویرایش</span>
+                          </button>
+                        )}
+
                         <button
                           onClick={() => onDelete(pkg.id)}
                           className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-1"
@@ -330,12 +434,15 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
                           <FaTrash className="text-sm" />
                           <span className="text-xs hidden sm:inline">حذف</span>
                         </button>
+
+                        {/* چاپ Button - Changed to Print icon */}
                         <button
-                          className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
-                          title="مشاهده جزئیات"
+                          onClick={() => handlePrintClick(pkg)}
+                          className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
+                          title="چاپ صورت‌حساب"
                         >
-                          <FaEye className="text-sm" />
-                          <span className="text-xs hidden sm:inline">جزئیات</span>
+                          <FaPrint className="text-sm" />
+                          <span className="text-xs hidden sm:inline">چاپ</span>
                         </button>
                       </div>
                     </td>
@@ -344,28 +451,13 @@ const PackageList = ({ packages, onEdit, onDelete }) => {
               </tbody>
             </table>
           </div>
+        )} {isPrintModalOpen && (
+          < PrintShippingBill isOpen={isPrintModalOpen} onClose={handleClosePrintModal} mode={"list"} data={selectedPackage} />
         )}
       </div>
 
-      {/* Pagination/Info Footer */}
-      {packages.length > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <FaBox className="text-gray-400" />
-            <span>نمایش {packages.length} بسته از {packages.length}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span>تکمیل شده</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span>در انتظار پرداخت</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Print Modal */}
+
     </div>
   );
 };

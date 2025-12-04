@@ -9,6 +9,7 @@ import PackageList from "./pages/PackageList";
 import ZoneManager from "./pages/management/ZoneManager";
 import TransitWayManager from "./pages/management/TranistWayManager";
 import PriceListManager from "./pages/management/PriceList";
+import Pack from "./pages/pack";
 const MainContent = ({ activeComponent }) => {
   const renderContent = () => {
     switch (activeComponent) {
@@ -37,7 +38,7 @@ const MainContent = ({ activeComponent }) => {
       case "Packages":
         return <Packages />;
       case "PackageList":
-        return <PackageList />;
+        return <Pack />;
       case "AddUser":
         return <AddUser />;
 
