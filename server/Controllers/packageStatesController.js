@@ -1,9 +1,6 @@
 import Package from "../Models/package.js";
 import { Op, fn, col, literal } from "sequelize";
 
-/**
- * Basic Package Statistics (manual calculation)
- */
 export const getPackageStatistics = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -23,23 +20,28 @@ export const getPackageStatistics = async (req, res) => {
       where: whereCondition,
       attributes: [
         "id",
-        "totalCash",
-        "recip",
-        "remain",
-        "goodWeight",
+        "totalWeight",
         "piece",
         "perKgCash",
-        "createdAt",
+        "OPerKgCash",
+        "OTotalCash",
+        "totalCash",
+        "remain",
+        "received",
+        "transitWay",
+        "createdAt"
       ],
+      order: [["createdAt", "DESC"]]
     });
 
     const statistics = {
       totalPackagesCount: packages.length,
-      totalIncome: 0, // total of all packages (totalCash)
-      totalReceivedMoney: 0, // sum of recip
-      totalPendingMoney: 0, // sum of remain
-      totalWeight: 0, // sum of goodWeight
-      totalPieces: 0, // sum of piece
+      totalIncome: 0, // مجموع totalCash
+      totalReceivedMoney: 0, // مجموع received
+      totalPendingMoney: 0, // مجموع remain
+      totalWeight: 0, // مجموع totalWeight
+      totalPieces: 0, // مجموع piece
+      totalOfficeIncome: 0, // مجموع OTotalCash
       averageWeight: 0,
       averageTotalCash: 0,
       timeRange: {
@@ -51,16 +53,18 @@ export const getPackageStatistics = async (req, res) => {
 
     packages.forEach((pkg) => {
       const totalCash = parseFloat(pkg.totalCash) || 0;
-      const recip = parseFloat(pkg.recip) || 0;
+      const received = parseFloat(pkg.received) || 0;
       const remain = parseFloat(pkg.remain) || 0;
-      const goodWeight = parseFloat(pkg.goodWeight) || 0;
+      const totalWeight = parseFloat(pkg.totalWeight) || 0;
       const piece = parseInt(pkg.piece) || 0;
+      const OTotalCash = parseFloat(pkg.OTotalCash) || 0;
 
       statistics.totalIncome += totalCash;
-      statistics.totalReceivedMoney += recip;
+      statistics.totalReceivedMoney += received;
       statistics.totalPendingMoney += remain;
-      statistics.totalWeight += goodWeight;
+      statistics.totalWeight += totalWeight;
       statistics.totalPieces += piece;
+      statistics.totalOfficeIncome += OTotalCash;
     });
 
     // Calculate averages
@@ -69,12 +73,23 @@ export const getPackageStatistics = async (req, res) => {
       statistics.averageTotalCash = statistics.totalIncome / packages.length;
     }
 
-    res.status(200).json({ success: true, data: statistics });
+    // Calculate percentages
+    if (statistics.totalIncome > 0) {
+      statistics.receivedPercentage = (statistics.totalReceivedMoney / statistics.totalIncome) * 100;
+      statistics.pendingPercentage = (statistics.totalPendingMoney / statistics.totalIncome) * 100;
+      statistics.profitPercentage = ((statistics.totalIncome - statistics.totalOfficeIncome) / statistics.totalIncome) * 100;
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data: statistics,
+      message: "آمار بسته‌ها با موفقیت دریافت شد"
+    });
   } catch (error) {
     console.error("Error in getPackageStatistics:", error);
     res.status(500).json({
       success: false,
-      message: "Error fetching package statistics",
+      message: "خطا در دریافت آمار بسته‌ها",
       error: error.message,
     });
   }
