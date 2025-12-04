@@ -3,6 +3,7 @@
 import PriceList from "../Models/PriceList.js"
 import Zone from "../Models/Zone.js";
 import TransitWay from "../Models/TransitWay.js";
+import { Sequelize } from "sequelize";
 
 /**
  * Create Price List
@@ -127,3 +128,60 @@ export const deletePriceList = async (req, res) => {
     res.status(500).json({ message: "خطا در حذف قیمت‌لیست" });
   }
 };
+/**
+ * Find Price by Country & Weight
+ */
+export const findPriceByCountryAndWeight = async (req, res) => {
+  try {
+    const { country, weight } = req.query;
+
+    if (!country || !weight) {
+      return res.status(400).json({ message: "Country و Weight الزامی است." });
+    }
+
+    const weightValue = Number(weight);
+
+    // Find Zone by country
+    const zone = await Zone.findOne({
+      where: Sequelize.literal(`JSON_CONTAINS(countries, '["${country.toLowerCase()}"]')`)
+    });
+
+    if (!zone) {
+      return res.status(404).json({ message: "زون مربوطه یافت نشد." });
+    }
+
+    // Get all price lists for the zone
+    const lists = await PriceList.findAll({
+      where: { zoneId: zone.id },
+      include: [{ model: TransitWay, attributes: ["id", "name"] }],
+      order: [["id", "ASC"]],
+    });
+
+    // Filter all items whose range matches the weight
+    const matching = lists.filter(item => {
+      if (typeof item.range !== "object" || item.range === null) return false;
+
+      const min = Number(item.range.start);
+      const max = Number(item.range.end);
+
+      return weightValue > min && weightValue <= max;
+    });
+
+    if (matching.length === 0) {
+      return res.status(404).json({
+        message: "برای این وزن هیچ قیمت‌لیستی یافت نشد.",
+      });
+    }
+
+    res.json({
+      message: "تمام قیمت‌های مطابق یافت شد.",
+      data: matching,
+    });
+
+  } catch (error) {
+    console.error("Find Price error:", error);
+    res.status(500).json({ message: "خطا در دریافت قیمت." });
+  }
+};
+
+
