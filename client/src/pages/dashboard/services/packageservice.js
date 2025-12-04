@@ -40,8 +40,10 @@ export const zoneService = {
   // Get price list by country and weight
   getPriceListByCountryAndWeight: async (weight, country) => {
     const res = await axios.get(
-      `${BASE_URL}/priceList?country=${country}&weight=${weight}`
+      `${BASE_URL}/priceList/lists?country=${country}&weight=${weight}`
     );
+    console.log(res.data);
+    
     return res.data;
   },
 
