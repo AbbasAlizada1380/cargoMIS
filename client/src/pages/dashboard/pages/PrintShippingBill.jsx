@@ -1,10 +1,11 @@
 import React from "react";
 import moment from "moment-jalaali";
 import { FaPhone, FaPrint, FaTimes } from "react-icons/fa";
+import Regulation from "./Regulations";
 
 const PrintShippingBill = ({ isOpen, onClose, data }) => {
   console.log(data);
-  
+
   if (!isOpen || !data) return null;
 
   const formatCurrency = (num) => {
@@ -25,38 +26,38 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
       <div>
         <div
           id="printable-area"
-          className="bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col print:shadow-none print:rounded-none"
+          className="scale-[0.65] print:scale-[1] bg-white shadow-2xl rounded-lg overflow-hidden flex flex-col print:shadow-none print:rounded-none"
           style={{
-            width: "148mm",
-            height: "210mm",
+            width: "210mm",
+            height: "297mm",
             direction: "rtl",
           }}
         >
           {/* Header */}
-<div className="bg-gradient-to-l from-blue-800 to-blue-600 text-white p-4 border-b-4 border-blue-900 flex flex-col md:flex-row items-center justify-between">
-  {/* Logo and Company Name */}
-  <div className="flex items-center gap-3 mb-3 md:mb-0">
-    <img
-      src="/logo.png"
-      alt="Afghan Cargo Logo"
-      className="h-16 w-16 object-contain rounded-full border-2 border-white"
-    />
-    <div className="flex flex-col text-center md:text-left">
-      <h1 className="text-2xl font-bold leading-tight">افغان کارگو</h1>
-      <p className="text-sm opacity-90">Afghan Cargo Services</p>
-    </div>
-  </div>
+          <div className="bg-gradient-to-l from-blue-800 to-blue-600 text-white p-4 border-b-4 border-blue-900 flex   items-center justify-between">
+            {/* Logo and Company Name */}
+            <div className="flex items-center gap-3 mb-3 md:mb-0">
+              <img
+                src="/logo.png"
+                alt="Afghan Cargo Logo"
+                className="h-16 w-16 object-contain rounded-full border-2 border-white"
+              />
+              <div className="flex flex-col text-center md:text-left">
+                <h1 className="text-2xl font-bold leading-tight">افغان کارگو</h1>
+                <p className="text-sm opacity-90">Afghan Cargo Services</p>
+              </div>
+            </div>
 
-  {/* Bill Info */}
-  <div className="flex flex-col items-center md:items-end text-xs">
-    <span className="mb-1">
-      <strong>شماره بل:</strong> {billNumber}
-    </span>
-    <span>
-      <strong>تاریخ:</strong> {today}
-    </span>
-  </div>
-</div>
+            {/* Bill Info */}
+            <div className="flex flex-col items-center md:items-end text-xs">
+              <span className="mb-1">
+                <strong>شماره بل:</strong> {billNumber}
+              </span>
+              <span>
+                <strong>تاریخ:</strong> {today}
+              </span>
+            </div>
+          </div>
 
           {/* Sender Info */}
           <div className="p-3 border-b border-gray-200">
@@ -86,7 +87,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             <h2 className="text-sm font-bold text-gray-700 mb-2 border-b pb-1 border-gray-300">
               معلومات دریافت‌کننده
             </h2>
-             <div className="grid grid-cols-2 gap-1 text-xs">
+            <div className="grid grid-cols-2 gap-1 text-xs">
               <p>
                 <span className="font-semibold">نام:</span> {data.Receiver.name}
               </p>
@@ -112,7 +113,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             <table className="w-full text-xs border border-gray-300">
               <tbody>
                 <tr>
-                  
+
                 </tr>
                 <tr>
                   <td className="border border-gray-300 p-1 font-semibold">
@@ -148,7 +149,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             </table>
           </div>
 
-  {/* Bill Summary */}
+          {/* Bill Summary */}
           <div className="flex border-t h-[110px] border-gray-300 bg-gray-50">
             {/* Left Half — Totals Section */}
             <div className="w-1/2 border-l border-gray-300 p-4">
@@ -191,21 +192,21 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
           </div>
 
           {/* Footer */}
-<div
-  id="footer-area"
-  className="bg-gray-800 text-white p-3 text-center text-xs"
->
-  {/* Phone Numbers */}
-  <div className="flex items-center justify-center gap-2 mb-1">
-    <FaPhone className="text-cyan-300" />
-    <span>تماس: 0789384700 - 0799306437 - 0748852569</span>
-  </div>
+          <div
+            id="footer-area"
+            className="bg-gray-800 text-white p-3 text-center text-xs"
+          >
+            {/* Phone Numbers */}
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <FaPhone className="text-cyan-300" />
+              <span>تماس: 0789384700 - 0799306437 - 0748852569</span>
+            </div>
 
-  {/* Address */}
-  <p className="text-cyan-200 mt-1">
-    آدرس:مارکیت بهار سراب، تانک تیل،دشت برچی، کابل، افغانستان
-  </p>
-</div>
+            {/* Address */}
+            <p className="text-cyan-200 mt-1">
+              آدرس:مارکیت بهار سراب، تانک تیل،دشت برچی، کابل، افغانستان
+            </p>
+          </div>
 
         </div>
       </div>
@@ -224,13 +225,14 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
         >
           <FaPrint size={14} /> چاپ بل
         </button>
+        <button><Regulation data={data}/></button>
       </div>
 
       {/* Print Styles */}
       <style jsx global>{`
         @media print {
           @page {
-            size: A5 portrait;
+            size: A4 portrait;
             margin: 0;
           }
           body * {
@@ -244,8 +246,8 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             position: absolute;
             left: 0;
             top: 0;
-            width: 148mm !important;
-            height: 210mm !important;
+            width: 210mm !important;
+            height: 297mm !important;
             box-shadow: none !important;
           }
         }
