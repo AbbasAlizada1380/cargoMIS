@@ -24,6 +24,8 @@ const Package = sequelize.define(
     totalCash: DataTypes.FLOAT,
     remain: DataTypes.FLOAT,
     received: DataTypes.FLOAT,
+    date:DataTypes.DATE,
+    track_number:DataTypes.STRING,
 
     // --- FIXED packList ---
     packList: {
