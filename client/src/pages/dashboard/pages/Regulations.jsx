@@ -1,10 +1,11 @@
 import React from "react";
 import { FaDownload, FaFilePdf } from "react-icons/fa";
-import logo from "/logo.png"
+
 const Regulation = ({ companyName = "افغان کارگو", data }) => {
   const downloadRegulationPDF = () => {
     const printWindow = window.open("", "_blank", "width=800,height=900");
-    console.log(data)
+    console.log(data);
+    
     if (!printWindow) {
       alert("لطفاً پاپ‌آپ را برای پرینت مجاز کنید");
       return;
@@ -12,7 +13,10 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
     const today = new Date();
     const persianDate = today.toLocaleDateString("fa-IR");
-    const docNumber = `AC-REG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+    const docNumber = data?.id || `AC-REG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+
+    // Get the logo URL - assuming it's hosted at /logo.png
+    const logoUrl = window.location.origin + '/logo.png';
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -85,7 +89,6 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             height: 40px;
             border-radius: 50%;
             border: 2px solid white;
-            background: white;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -93,10 +96,10 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             flex-shrink: 0;
           }
 
-          .logo-text {
-            color: #1e40af;
-            font-weight: bold;
-            font-size: 14px;
+          .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
           }
 
           .company-info {
@@ -137,26 +140,6 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
           .doc-info-value {
             font-weight: 600;
-          }
-
-          /* Document Title - Compact */
-          .document-title-section {
-            text-align: center;
-            margin: 8px 0 12px 0;
-            padding: 5px 0;
-          }
-
-          .document-title-main {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1e3a8a;
-            margin-bottom: 3px;
-          }
-
-          .document-title-sub {
-            font-size: 11px;
-            color: #4b5563;
-            font-weight: 500;
           }
 
           /* Introduction Box - Compact */
@@ -289,10 +272,14 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           }
 
           .signature-area {
-            height: 100px;
-            border-bottom: 1px solid #666;
+            height: 80px;
+            border: 1px solid #666;
             margin-bottom: 5px;
             position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
           }
 
           .signature-label {
@@ -308,6 +295,14 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
           .customer-signature {
             border: 1px dashed #666;
+          }
+
+          .signature-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #1e3a8a;
+            text-align: center;
+            width: 100%;
           }
 
           /* Footer - Compact */
@@ -356,6 +351,11 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
               print-color-adjust: exact !important;
             }
 
+            .logo-img {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
             /* Prevent page breaks and empty pages */
             body * {
               page-break-inside: avoid !important;
@@ -380,21 +380,19 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
         <div class="a4-container">
           <!-- Header - Compact -->
           <div class="print-header">
-           <div class="header-left">
-  <div class="logo-circle">
-    <img src=${logo} alt="Company Logo" />
-  </div>
-
-  <div class="company-info">
-    <div class="company-name-fa">${companyName}</div>
-    <div class="company-name-en">Afghan Cargo Services</div>
-  </div>
-</div>
-
+            <div class="header-left">
+              <div class="logo-circle">
+                <img src="${logoUrl}" alt="Company Logo" class="logo-img" />
+              </div>
+              <div class="company-info">
+                <div class="company-name-fa">${companyName}</div>
+                <div class="company-name-en">Afghan Cargo Services</div>
+              </div>
+            </div>
             <div class="header-right">
               <div class="doc-info-item">
                 <span class="doc-info-label">شماره سند:</span>
-                <span class="doc-info-value">${data.id}</span>
+                <span class="doc-info-value">${docNumber}</span>
               </div>
               <div class="doc-info-item">
                 <span class="doc-info-label">تاریخ:</span>
@@ -403,14 +401,9 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             </div>
           </div>
 
-          <!-- Document Title -->
-          <div class="document-title-section">
-            
-          </div>
-
           <!-- Introduction -->
           <div class="intro-box">
-            <p class="intro-text"> قرارداد انتقال محموله بین شرکت ${companyName} و مشتری محترم ${data.Sender.name} به شرح ذیل تنظیم شده است</p>
+            <p class="intro-text">قرارداد انتقال محموله بین شرکت ${companyName} و مشتری محترم ${data?.Sender?.name || "مشتری"} به شرح ذیل تنظیم شده است</p>
           </div>
 
           <!-- Company Responsibilities -->
@@ -451,21 +444,27 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
               <li class="regulation-item">محل حل اختلاف، دادگاه‌های صالحه شهر کابل تعیین می‌گردد.</li>
             </ol>
           </div>
-   <!-- Signature Section -->
+
+          <!-- Signature Section -->
           <div class="signature-section">
             <div class="signature-box">
               <div class="signature-title">امضاء و مهر شرکت</div>
-              <div class="signature-area company-signature">  <div class="signature-label">${companyName}</div></div>
-            
+              <div class="signature-area company-signature">
+                <div class="signature-name">${companyName}</div>
+              </div>
+              <div class="signature-label">نام شرکت</div>
             </div>
             <div class="signature-box">
               <div class="signature-title">امضاء مشتری</div>
-              <div class="signature-area customer-signature"><div class="signature-label">${data.Sender.name}</div></div>
-              
+              <div class="signature-area customer-signature">
+                <div class="signature-name">${data?.Sender?.name || "مشتری"}</div>
+              </div>
+              <div class="signature-label">نام و نام خانوادگی</div>
             </div>
           </div>
-        <div class="contact-section">
-            <div class="contact-title">  تماس با ما</div>
+
+          <div class="contact-section">
+            <div class="contact-title">تماس با ما</div>
             <div class="contact-grid">
               <div class="contact-item">
                 <span class="contact-icon">📞</span>
@@ -481,17 +480,27 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
               </div>
             </div>
           </div>
-
-       
         </div>
 
         <script>
+          // Preload the logo image before printing
+          const logoImg = new Image();
+          logoImg.src = "${logoUrl}";
+          
+          logoImg.onload = function() {
+            console.log('Logo loaded successfully');
+          };
+          
+          logoImg.onerror = function() {
+            console.log('Logo failed to load, using fallback');
+          };
+
           // Auto print with delay to ensure rendering
           window.onload = function() {
             window.focus();
             setTimeout(function() {
               window.print();
-            }, 300);
+            }, 500); // Increased delay for image loading
           };
 
           // Fallback if onload doesn't fire
@@ -499,7 +508,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             if (document.readyState === 'complete') {
               window.print();
             }
-          }, 1000);
+          }, 1500);
         </script>
       </body>
       </html>
@@ -514,9 +523,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
         onClick={downloadRegulationPDF}
         className="flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-800 
                    text-white rounded-lg hover:from-blue-700 hover:to-blue-900 
-                   transition-all duration-300 shadow-md hover:shadow-lg 
-                   transform hover:-translate-y-0.5 active:translate-y-0
-                   border border-blue-500"
+                   shadow-md hover:shadow-lg border border-blue-500"
       >
         <FaFilePdf className="text-lg" />
         <FaDownload className="text-md" />
