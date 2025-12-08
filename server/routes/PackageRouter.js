@@ -8,6 +8,7 @@ import {
   deletePackage,
   getAllTransitWays,
   getPackagesByRange,
+  updatePackageLocation,
 } from "../Controllers/PackageController.js";
 
 const packageRouter = express.Router();
@@ -17,6 +18,7 @@ const packageRouter = express.Router();
 // =======================
 
 // Create package + sender + receiver
+packageRouter.post("/updateLocation/:id", updatePackageLocation);
 packageRouter.post("/", createPackage);
 
 // Get all packages
