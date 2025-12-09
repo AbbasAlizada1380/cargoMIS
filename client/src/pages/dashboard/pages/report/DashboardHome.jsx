@@ -19,7 +19,8 @@ import {
   FaChevronUp,
   FaDollarSign,
   FaBoxes,
-  FaPercent
+  FaPercent,
+  FaHistory
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -182,28 +183,6 @@ const DashboardHome = () => {
       role: "reception",
       trend: "+15%",
     },
-    {
-      title: "سفارشات تحویل شده",
-      value: formatNumber(deliveredOrdersCount),
-      icon: FaCheckCircle,
-      color: "from-green-500 to-green-700",
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600",
-      description: "بسته‌های تحویل داده شده",
-      role: "reception",
-      trend: "+5%",
-    },
-    {
-      title: "نرخ تحویل",
-      value: deliveryRate.toFixed(1) + "%",
-      icon: FaPercent,
-      color: "from-cyan-500 to-cyan-700",
-      bgColor: "bg-cyan-50",
-      iconColor: "text-cyan-600",
-      description: "درصد موفقیت تحویل",
-      role: "reception",
-      trend: "+2%",
-    },
   ];
 
   const visibleCards = statsCards.filter(
@@ -214,45 +193,18 @@ const DashboardHome = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 lg:p-8">
       {/* Header Section */}
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-              داشبورد مدیریت
-            </h1>
-            <p className="text-gray-600 flex items-center gap-2">
-              <FaChartLine className="text-blue-500" />
-              خلاصه عملکرد و آمار سفارشات
-              {lastUpdated && (
-                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                  آخرین بروزرسانی: {formatTime(lastUpdated)}
-                </span>
-              )}
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap gap-3">
-            {currentUser.role === "admin" && <PackageDownload />}
-            
-            <button
-              onClick={() => fetchReportData()}
-              disabled={isRefreshing}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
-            >
-              <FaSync className={`${isRefreshing ? "animate-spin" : ""} text-gray-600`} />
-              <span className="text-gray-700 font-medium">بروزرسانی</span>
-            </button>
-            
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
-            >
-              <FaFilter className="text-gray-600" />
-              <span className="text-gray-700 font-medium">فیلترها</span>
-              {showFilters ? <FaChevronUp /> : <FaChevronDown />}
-            </button>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+
+
+          <div className="flex  gap-3">
+            {currentUser.role === "admin" && (
+              <div className="transform hover:-translate-y-0.5 transition-transform duration-200">
+                <PackageDownload />
+              </div>
+            )}
+
           </div>
         </div>
-
         {/* Filters Panel */}
         {showFilters && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 animate-slideDown">
@@ -271,7 +223,7 @@ const DashboardHome = () => {
                   <FaCalendarAlt className="absolute left-3 top-3 text-gray-400" />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   تاریخ پایان
@@ -286,7 +238,7 @@ const DashboardHome = () => {
                   <FaCalendarAlt className="absolute left-3 top-3 text-gray-400" />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   نوع گزارش
@@ -302,7 +254,7 @@ const DashboardHome = () => {
                 </select>
               </div>
             </div>
-            
+
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-100">
               <button
                 onClick={() => {
@@ -342,14 +294,14 @@ const DashboardHome = () => {
                     {card.trend}
                   </span>
                 </div>
-                
+
                 <div className="mb-3">
                   <div className="text-2xl font-bold text-gray-900">
                     {card.value}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">{card.description}</p>
                 </div>
-                
+
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <span className="text-sm font-medium text-gray-700">{card.title}</span>
                   <div className="text-xs text-gray-400 group-hover:text-blue-500 transition-colors">
@@ -445,7 +397,7 @@ const DashboardHome = () => {
                   <span className="text-lg font-bold text-gray-900">{deliveryRate.toFixed(1)}%</span>
                 </div>
                 <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000"
                     style={{ width: `${deliveryRate}%` }}
                   ></div>
@@ -487,24 +439,6 @@ const DashboardHome = () => {
           </div>
         </div>
       )}
-
-      {/* Quick Actions Footer */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex flex-wrap gap-3 justify-center">
-          <button className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
-            <FaFileExcel className="text-green-600" />
-            خروجی Excel
-          </button>
-          <button className="px-5 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
-            <FaFilePdf className="text-red-600" />
-            گزارش PDF
-          </button>
-          <button className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2">
-            <FaDownload />
-            دانلود گزارش کامل
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

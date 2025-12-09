@@ -3,7 +3,7 @@ import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import moment from "moment-jalaali";
-import { Download, Calendar, Filter, FileText, TrendingUp, RefreshCw, HelpCircle, Zap } from "lucide-react";
+import { Download, Calendar, Filter, FileText, TrendingUp, RefreshCw, HelpCircle, Zap, CheckCircle } from "lucide-react";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import VazirmatnTTF from "../../../../../public/ttf/Vazirmatn.js";
@@ -594,42 +594,7 @@ console.log(response.data)
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="bg-gradient-to-br from-white to-blue-50/60 rounded-3xl p-8 border border-blue-200/60 shadow-xl">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl">
-              <Zap className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-800">آمار سریع</h3>
-              <p className="text-gray-600 text-sm mt-1">داده‌های لحظه‌ای سیستم</p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between py-3 border-b border-gray-200/60">
-              <span className="text-gray-600">وضعیت سیستم</span>
-              <span className="px-3 py-1 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 text-sm font-medium rounded-full">
-                فعال 🟢
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between py-3 border-b border-gray-200/60">
-              <span className="text-gray-600">فرمت گزارش</span>
-              <span className="text-blue-600 font-bold">PDF</span>
-            </div>
-
-            <div className="flex items-center justify-between py-3 border-b border-gray-200/60">
-              <span className="text-gray-600">زمان تولید</span>
-              <span className="text-gray-800 font-medium">کمتر از ۳۰ ثانیه</span>
-            </div>
-
-            <div className="flex items-center justify-between py-3">
-              <span className="text-gray-600">پشتیبانی</span>
-              <span className="text-indigo-600 font-bold">۲۴/۷</span>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   </div>

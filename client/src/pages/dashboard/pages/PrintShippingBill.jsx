@@ -105,6 +105,8 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               </p>
               <p>
                 <span className="font-semibold">ایمیل:</span> {data.Receiver.email || "-"}
+              </p> <p>
+                <span className="font-semibold">کشور:</span> {data.Receiver.country || "-"}
               </p>
             </div>
           </div>
