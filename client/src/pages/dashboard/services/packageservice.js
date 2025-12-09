@@ -6,8 +6,8 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 // Package-related API calls
 export const packageService = {
   // Fetch all packages
-  getAllPackages: async () => {
-    const res = await axios.get(`${BASE_URL}/packages`);
+  getAllPackages: async (page) => {
+    const res = await axios.get(`${BASE_URL}/packages?page=${page}`);
     return res.data;
   }, searchPackages: async (name) => {
     const res = await axios.get(`${BASE_URL}/packages/search?name=${name}`);

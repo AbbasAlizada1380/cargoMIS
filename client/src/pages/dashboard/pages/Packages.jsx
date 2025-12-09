@@ -26,6 +26,8 @@ const PackageCrud = () => {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [priceList, setPriceList] = useState(null);
+    const [totalPages, setTotalPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [calculatedTotals, setCalculatedTotals] = useState({
     totalWeight: 0,
@@ -205,11 +207,13 @@ const PackageCrud = () => {
     }
   }, [form.totalCash, form.received]);
 
-  const fetchPackages = async () => {
+  const fetchPackages = async (page) => {
     try {
       setLoading(true);
-      const data = await packageService.getAllPackages();
-      setPackages(data);
+      const data = await packageService.getAllPackages(page);
+      setPackages(data.packages);
+      setCurrentPage(data.currentPage)
+      setTotalPages(data.totalPages)
     } catch (err) {
       console.error("خطا در دریافت بسته‌ها:", err);
       alert("خطا در دریافت بسته‌ها");
@@ -293,7 +297,12 @@ const PackageCrud = () => {
     }));
     setSelectedOptionId(option.id);
   }, [form.totalWeight]);
-
+  const onPageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      fetchPackages[pageNumber]
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
 setLoading(true)
@@ -1017,6 +1026,9 @@ setLoading(true)
             onEdit={handleEdit}
             onDelete={handleDelete}
             mode={Mode}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
           />
         </div>
       </div>

@@ -6,16 +6,25 @@ const Pack = () => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [Mode, setMode] = useState("list");
-
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const onPageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      fetchPackages(pageNumber)
+    }
+  };
   useEffect(() => {
-    fetchPackages();
+    fetchPackages(currentPage);
   }, []);
 
-  const fetchPackages = async () => {
+  const fetchPackages = async (currentPage) => {
     try {
       setLoading(true);
-      const data = await packageService.getAllPackages();
-      setPackages(data);
+      const data = await packageService.getAllPackages(currentPage);
+      setPackages(data.packages);
+      setCurrentPage(data.currentPage)
+      setTotalPages(data.totalPages)
     } catch (error) {
       console.error("Error fetching packages:", error);
       alert("Error loading packages");
@@ -68,6 +77,9 @@ return (
       onEdit={handleEdit}
       onDelete={handleDelete}
       mode={Mode}
+     currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
     />
   </div>
 );

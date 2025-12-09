@@ -26,8 +26,9 @@ import PrintShippingBill from "./PrintShippingBill";
 import { packageService, updatePackageLocation } from "../services/packageService";
 import SearchBar from "../searching/SearchBar";
 import UpdatePackageTracking from "./UpdatePackageTracking";
+import Pagination from "../pagination/Pagination";
 
-const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
+const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,totalPages,onPageChange }) => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedPackages, setSelectedPackages] = useState([]);
@@ -521,6 +522,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
                 ))}
               </tbody>
             </table>
+           < Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange}/>
           </div>
         )}
         

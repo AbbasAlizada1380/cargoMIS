@@ -484,19 +484,33 @@ export const getAllTransitWays = async (req, res) => {
 ============================================================ */
 export const getAllPackages = async (req, res) => {
   try {
-    const packages = await Package.findAll({
+    const page = parseInt(req.query.page) || 1;  // default page 1
+    const limit = 30;                            // 30 packages per page
+    const offset = (page - 1) * limit;
+
+    const { count, rows: packages } = await Package.findAndCountAll({
+      limit,
+      offset,
+      order: [["id", "DESC"]], // newest first (optional)
       include: [
         { model: Customer, as: "Sender" },
         { model: Customer, as: "Receiver" },
       ],
     });
 
-    return res.status(200).json(packages);
+    return res.status(200).json({
+      totalPackages: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      packages,
+    });
+
   } catch (error) {
     console.error("Get All Packages Error:", error);
     return res.status(500).json({ error: "Failed to get packages" });
   }
 };
+
 
 /* ============================================================
    GET PACKAGE BY ID
