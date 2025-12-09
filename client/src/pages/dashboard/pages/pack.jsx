@@ -63,6 +63,7 @@ const Pack = () => {
       </div>
       
       <PackageList
+      setPackages={setPackages}
         packages={packages}
         onEdit={handleEdit}
         onDelete={handleDelete}

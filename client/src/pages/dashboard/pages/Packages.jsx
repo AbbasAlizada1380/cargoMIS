@@ -1,28 +1,37 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { packageService, zoneService } from "../services/packageService";
 import PackageList from "./PackageList";
-import { 
-  FaUser, 
-  FaBox, 
-  FaTruck, 
-  FaMoneyBillWave, 
-  FaShoppingCart, 
+import {
+  FaUser,
+  FaBox,
+  FaTruck,
+  FaMoneyBillWave,
+  FaShoppingCart,
   FaWeight,
   FaGlobeAmericas,
   FaCheck,
   FaChevronRight,
   FaEdit,
-  FaTrash
+  FaTrash,
+  FaCalculator,
+  FaCalendar
 } from "react-icons/fa";
 import { GiWeight } from "react-icons/gi";
+import PackingListAndDetails from "./PackingListAndDetails";
 
 const PackageCrud = () => {
   const [packages, setPackages] = useState([]);
   const [zones, setZones] = useState([]);
+  const [Mode, setMode] = useState("crude");
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [priceList, setPriceList] = useState(null);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const [calculatedTotals, setCalculatedTotals] = useState({
+    totalWeight: 0,
+    totalPieces: 0,
+    totalValue: 0
+  });
 
   const [form, setForm] = useState({
     // Sender fields
@@ -38,9 +47,6 @@ const PackageCrud = () => {
     receiverPhoneNumber: "",
     receiverCountry: "",
     // Package fields
-    totalWeight: "",
-    piece: "",
-    value: "",
     perKgCash: "",
     OPerKgCash: "",
     OTotalCash: "",
@@ -48,91 +54,156 @@ const PackageCrud = () => {
     totalCash: "",
     remain: "",
     received: "",
+    // New fields
+    date: "",
+    track_number: "",
+    // These will be auto-calculated from packList
+    totalWeight: "",
+    piece: "",
+    value: "",
+    // Pack list will be stored here
+    packList: [],
   });
-
+  const [resetPackingListTrigger, setResetPackingListTrigger] = useState(Date.now());
+  // Sync transitWay with selected option when priceList changes
+  useEffect(() => {
+    if (selectedOptionId && priceList && priceList.data) {
+      const selectedOption = priceList.data.find(option => option.id === selectedOptionId);
+      if (selectedOption && selectedOption.Transit.name !== form.transitWay) {
+        setForm(prev => ({
+          ...prev,
+          transitWay: selectedOption.Transit.name
+        }));
+      }
+    }
+  }, [selectedOptionId, priceList]);
   // Fetch initial data
   useEffect(() => {
     fetchPackages();
     fetchZones();
   }, []);
-
   // Fetch price list when receiver country or weight changes
   useEffect(() => {
     const fetchPriceList = async () => {
-      if (form.receiverCountry && form.totalWeight) {
+      if (form.receiverCountry && form.totalWeight && parseFloat(form.totalWeight) > 0) {
         const weight = parseFloat(form.totalWeight);
-        if (weight > 0) {
-          try {
-            setPriceList(null);
-            setLoading(true);
-            const priceData = await zoneService.getPriceListByCountryAndWeight(
-              weight,
-              form.receiverCountry
+        try {
+          setLoading(true);
+          const priceData = await zoneService.getPriceListByCountryAndWeight(
+            weight,
+            form.receiverCountry
+          );
+          setPriceList(priceData);
+
+          // Auto-fill with the cheapest option if available
+          if (priceData && priceData.data && priceData.data.length > 0) {
+            const options = priceData.data;
+            const cheapestOption = options.reduce((min, current) =>
+              parseFloat(current.price) < parseFloat(min.price) ? current : min
             );
-            setPriceList(priceData);
 
-            // Auto-fill with the cheapest option
-            if (priceData && priceData.data && priceData.data.length > 0) {
-              const options = priceData.data;
-              const cheapestOption = options.reduce((min, current) =>
-                parseFloat(current.price) < parseFloat(min.price) ? current : min
-              );
+            const price = parseFloat(cheapestOption.price);
+            const totalWeight = parseFloat(form.totalWeight) || 0;
 
-              const price = parseFloat(cheapestOption.price);
-              const totalWeight = parseFloat(form.totalWeight) || 0;
-              
-              setForm((prevForm) => ({
-                ...prevForm,
-                OPerKgCash: cheapestOption.price,
-                transitWay: cheapestOption.Transit.name,
-                OTotalCash: (totalWeight * price).toFixed(2),
-                // Calculate totalCash based on perKgCash * totalWeight
-                totalCash: (totalWeight * parseFloat(prevForm.perKgCash || 0)).toFixed(2),
-              }));
-              
-              setSelectedOptionId(cheapestOption.id);
-            }
-          } catch (err) {
-            console.error("خطا در دریافت لیست قیمت: ", err);
-            setPriceList(null);
+            // Calculate but don't override user input for perKgCash
+            const OTotalCash = (totalWeight * price).toFixed(2);
+
+            setForm(prevForm => ({
+              ...prevForm,
+              OPerKgCash: cheapestOption.price,
+              transitWay: cheapestOption.Transit.name,
+              OTotalCash: OTotalCash
+            }));
+
+            setSelectedOptionId(cheapestOption.id);
+          } else {
+            // Reset transit info if no options available
+            setForm(prevForm => ({
+              ...prevForm,
+              OPerKgCash: "",
+              transitWay: "",
+              OTotalCash: ""
+            }));
             setSelectedOptionId(null);
-          } finally {
-            setLoading(false);
           }
+        } catch (err) {
+          console.error("خطا در دریافت لیست قیمت: ", err);
+          setPriceList(null);
+          setSelectedOptionId(null);
+          // Reset transit info on error
+          setForm(prevForm => ({
+            ...prevForm,
+            OPerKgCash: "",
+            transitWay: "",
+            OTotalCash: ""
+          }));
+        } finally {
+          setLoading(false);
         }
       } else {
         setPriceList(null);
         setSelectedOptionId(null);
+        // Reset transit info if no weight or country
+        setForm(prevForm => ({
+          ...prevForm,
+          OPerKgCash: "",
+          transitWay: "",
+          OTotalCash: ""
+        }));
       }
     };
 
-    const debounceTimer = setTimeout(fetchPriceList, 300);
+    const debounceTimer = setTimeout(fetchPriceList, 500);
     return () => clearTimeout(debounceTimer);
   }, [form.receiverCountry, form.totalWeight]);
 
-  // Auto-calculate remain and totalCash
+  // Auto-calculate totalCash, remain, and OTotalCash whenever dependencies change
   useEffect(() => {
     const weight = parseFloat(form.totalWeight) || 0;
     const perKg = parseFloat(form.perKgCash) || 0;
     const received = parseFloat(form.received) || 0;
     const OPerKg = parseFloat(form.OPerKgCash) || 0;
-    
+
     // Calculate totalCash (perKgCash * totalWeight)
     const totalCash = (weight * perKg).toFixed(2);
-    
+
     // Calculate remain (totalCash - received)
     const remain = (parseFloat(totalCash) - received).toFixed(2);
-    
+
     // Calculate OTotalCash (OPerKgCash * totalWeight)
     const OTotalCash = (weight * OPerKg).toFixed(2);
-    
-    setForm(prev => ({
-      ...prev,
-      totalCash,
-      remain,
-      OTotalCash
-    }));
+
+    // Only update if values have changed
+    setForm(prev => {
+      if (
+        prev.totalCash !== totalCash ||
+        prev.remain !== remain ||
+        prev.OTotalCash !== OTotalCash
+      ) {
+        return {
+          ...prev,
+          totalCash,
+          remain,
+          OTotalCash
+        };
+      }
+      return prev;
+    });
   }, [form.totalWeight, form.perKgCash, form.received, form.OPerKgCash]);
+
+  // Separate effect for validating received amount
+  useEffect(() => {
+    const totalCash = parseFloat(form.totalCash) || 0;
+    const received = parseFloat(form.received) || 0;
+
+    if (received > totalCash) {
+      alert("مبلغ دریافتی نمی‌تواند از مجموع کل بیشتر باشد!");
+      setForm(prev => ({
+        ...prev,
+        received: totalCash.toString()
+      }));
+    }
+  }, [form.totalCash, form.received]);
 
   const fetchPackages = async () => {
     try {
@@ -159,21 +230,65 @@ const PackageCrud = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let processedValue = value;
+
+    // Validate numeric inputs
+    if (name.includes("Cash") || name === "value" || name === "received") {
+      // Allow only numbers and one decimal point
+      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+        setForm(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      }
+      return;
+    }
+
+    // Special handling for transitWay changes from dropdown
+    if (name === "transitWay") {
+      // Find the selected option from priceList
+      if (priceList && priceList.data) {
+        const selectedOption = priceList.data.find(option =>
+          option.Transit.name === value
+        );
+
+        if (selectedOption) {
+          const price = parseFloat(selectedOption.price);
+          const weight = parseFloat(form.totalWeight) || 0;
+          const OTotalCash = (weight * price).toFixed(2);
+
+          // Update form with the selected option
+          setForm(prevForm => ({
+            ...prevForm,
+            [name]: value,
+            OPerKgCash: selectedOption.price,
+            OTotalCash: OTotalCash
+          }));
+
+          // Update selected option ID to highlight the correct card
+          setSelectedOptionId(selectedOption.id);
+          return;
+        }
+      }
+    }
+
+    // For other fields
     setForm(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
   };
 
   const selectPriceOption = useCallback((option) => {
     const price = parseFloat(option.price);
     const weight = parseFloat(form.totalWeight) || 0;
-    
-    setForm((prevForm) => ({
+    const OTotalCash = (weight * price).toFixed(2);
+
+    setForm(prevForm => ({
       ...prevForm,
       OPerKgCash: option.price,
       transitWay: option.Transit.name,
-      OTotalCash: (weight * price).toFixed(2),
+      OTotalCash: OTotalCash
       // Don't update perKgCash - user will enter manually
     }));
     setSelectedOptionId(option.id);
@@ -181,6 +296,17 @@ const PackageCrud = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!form.totalWeight || parseFloat(form.totalWeight) <= 0) {
+      alert("لطفاً وزن بسته را وارد کنید");
+      return;
+    }
+
+    if (!form.perKgCash || parseFloat(form.perKgCash) <= 0) {
+      alert("لطفاً نرخ دستی هر کیلو را وارد کنید");
+      return;
+    }
 
     const sender = {
       name: form.senderName,
@@ -209,6 +335,9 @@ const PackageCrud = () => {
       totalCash: parseFloat(form.totalCash) || 0,
       remain: parseFloat(form.remain) || 0,
       received: parseFloat(form.received) || 0,
+      date: form.date || null,
+      track_number: form.track_number || "",
+      packList: form.packList || [],
     };
 
     try {
@@ -219,12 +348,14 @@ const PackageCrud = () => {
           packageData,
         });
         setEditingId(null);
+        alert("بسته با موفقیت ویرایش شد");
       } else {
         await packageService.createPackage({
           sender,
           receiver,
           packageData,
         });
+        alert("بسته با موفقیت ایجاد شد");
       }
 
       resetForm();
@@ -257,9 +388,18 @@ const PackageCrud = () => {
       totalCash: "",
       remain: "",
       received: "",
+      date: "",
+      track_number: "",
+      packList: [],
     });
     setPriceList(null);
     setSelectedOptionId(null);
+    setCalculatedTotals({
+      totalWeight: 0,
+      totalPieces: 0,
+      totalValue: 0
+    });
+    setResetPackingListTrigger(Date.now());
   };
 
   const handleEdit = (pkg) => {
@@ -285,6 +425,9 @@ const PackageCrud = () => {
       totalCash: pkg.totalCash,
       remain: pkg.remain,
       received: pkg.received,
+      date: pkg.date || "",
+      track_number: pkg.track_number || "",
+      packList: pkg.packList || [],
     });
   };
 
@@ -294,10 +437,30 @@ const PackageCrud = () => {
     try {
       await packageService.deletePackage(id);
       fetchPackages();
+      alert("بسته با موفقیت حذف شد");
     } catch (err) {
       console.error("خطا در حذف:", err);
       alert("خطا در حذف بسته");
     }
+  };
+
+  // Calculate button for manual recalculation
+  const handleCalculateTotals = () => {
+    const weight = parseFloat(form.totalWeight) || 0;
+    const perKg = parseFloat(form.perKgCash) || 0;
+    const received = parseFloat(form.received) || 0;
+    const OPerKg = parseFloat(form.OPerKgCash) || 0;
+
+    const totalCash = (weight * perKg).toFixed(2);
+    const remain = (parseFloat(totalCash) - received).toFixed(2);
+    const OTotalCash = (weight * OPerKg).toFixed(2);
+
+    setForm(prev => ({
+      ...prev,
+      totalCash,
+      remain,
+      OTotalCash
+    }));
   };
 
   return (
@@ -348,20 +511,21 @@ const PackageCrud = () => {
                       const isCheapest = priceList.data.reduce((min, current) =>
                         parseFloat(current.price) < parseFloat(min.price) ? current : min
                       ).id === option.id;
-                      
+
                       const isSelected = selectedOptionId === option.id;
-                      const totalPrice = (parseFloat(form.totalWeight || 0) * parseFloat(option.price)).toFixed(2);
+                      const weight = parseFloat(form.totalWeight) || 0;
+                      const price = parseFloat(option.price);
+                      const totalPrice = (weight * price).toFixed(2);
 
                       return (
                         <button
                           key={option.id}
                           type="button"
                           onClick={() => selectPriceOption(option)}
-                          className={`p-4 rounded-lg border-2 transition-all transform hover:scale-[1.02] ${
-                            isSelected
-                              ? 'border-blue-500 bg-blue-50 shadow-md'
-                              : 'border-gray-200 hover:border-blue-300'
-                          }`}
+                          className={`p-4 rounded-lg border-2 transition-all transform hover:scale-[1.02] ${isSelected
+                            ? 'border-blue-500 bg-blue-50 shadow-md'
+                            : 'border-gray-200 hover:border-blue-300'
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -389,7 +553,7 @@ const PackageCrud = () => {
                                 ${option.price}
                                 <span className="text-sm font-normal text-gray-500">/کیلو</span>
                               </div>
-                              {form.totalWeight && (
+                              {form.totalWeight && weight > 0 && (
                                 <div className="text-sm text-gray-500 mt-1">
                                   مجموع: <span className="font-semibold">${totalPrice}</span>
                                 </div>
@@ -408,7 +572,7 @@ const PackageCrud = () => {
                       );
                     })}
                   </div>
-                  
+
                   {/* Selection Summary */}
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-center justify-between">
@@ -417,10 +581,12 @@ const PackageCrud = () => {
                         <div className="text-lg font-semibold text-gray-900">{form.transitWay}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">${form.OPerKgCash}/کیلو</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          ${form.OPerKgCash || "0.00"}/کیلو
+                        </div>
                         {form.totalWeight && (
                           <div className="text-sm text-gray-600">
-                            مجموع دفتری: <span className="font-bold">${(parseFloat(form.totalWeight || 0) * parseFloat(form.OPerKgCash || 0)).toFixed(2)}</span>
+                            مجموع دفتری: <span className="font-bold">${form.OTotalCash || "0.00"}</span>
                           </div>
                         )}
                       </div>
@@ -556,141 +722,162 @@ const PackageCrud = () => {
                   </div>
                 </div>
 
-                {/* Weight and Dimensions Section */}
-                <div className="md:col-span-2 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FaWeight className="text-blue-600" />
-                    وزن و ابعاد
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormInput
-                      icon={<GiWeight />}
-                      label="وزن کل (کیلوگرم)"
-                      name="totalWeight"
-                      type="number"
-                      value={form.totalWeight}
-                      onChange={handleChange}
-                      required
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                    />
-
-                    <FormInput
-                      icon={<FaBox />}
-                      label="تعداد قطعات"
-                      name="piece"
-                      type="number"
-                      value={form.piece}
-                      onChange={handleChange}
-                      required
-                      min="0"
-                      placeholder="0"
-                    />
-
-                    <FormInput
-                      icon={<FaMoneyBillWave />}
-                      label="ارزش"
-                      name="value"
-                      type="number"
-                      value={form.value}
-                      onChange={handleChange}
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                    />
-                  </div>
+                {/* Packing List and Details Section */}
+                <div className="md:col-span-2">
+                  <PackingListAndDetails
+                    form={form}
+                    handleChange={handleChange}
+                    setForm={setForm}
+                    resetTrigger={resetPackingListTrigger}
+                  />
                 </div>
 
-                {/* Pricing Section */}
+
+                {/* Pricing Section - FIXED */}
                 <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FaMoneyBillWave className="text-green-600" />
-                    اطلاعات قیمت‌گذاری
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <FaMoneyBillWave className="text-green-600" />
+                      اطلاعات قیمت‌گذاری
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={handleCalculateTotals}
+                      className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm"
+                    >
+                      <FaCalculator />
+                      محاسبه مجدد
+                    </button>
+                  </div>
+
+                  {/* Input Row 1 */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <FormInput
                       icon={<FaMoneyBillWave />}
-                      label="نرخ هر کیلو (دستی)"
+                      label="نرخ دستی هر کیلو ($)"
                       name="perKgCash"
-                      type="number"
+                      type="text"
                       value={form.perKgCash}
                       onChange={handleChange}
                       required
-                      step="0.01"
-                      min="0"
                       placeholder="0.00"
+                      pattern="\d*\.?\d*"
+                      title="لطفاً عدد وارد کنید"
                     />
 
-                    <FormSelect
-                      icon={<FaTruck />}
-                      label="روش حمل و نقل"
-                      name="transitWay"
-                      value={form.transitWay}
-                      onChange={handleChange}
-                      options={
-                        priceList && priceList.data 
-                          ? priceList.data.map(opt => ({
-                              value: opt.Transit.name,
-                              label: `${opt.Transit.name} ($${opt.price}/کیلو)`
-                            }))
-                          : []
-                      }
-                      required
-                    />
+                    <div>
+                      <label className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                          <FaTruck />
+                          روش حمل و نقل
+                          {false && <span className="text-red-500">*</span>}
+                        </span>
+                        <div className="relative">
+                          <select
+                            name="transitWay"
+                            value={form.transitWay}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all bg-white"
+                          >
+                            <option value="">انتخاب روش حمل و نقل</option>
+                            {priceList && priceList.data && priceList.data.map((option) => (
+                              <option key={option.id} value={option.Transit.name}>
+                                {option.Transit.name} (${option.price}/کیلو)
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </label>
+
+                      {/* Display selected option info */}
+                      {form.transitWay && priceList && priceList.data && (
+                        <div className="mt-2 text-sm text-blue-600">
+                          <div className="flex items-center gap-1">
+                            <FaCheck className="text-xs" />
+                            انتخاب شده: {form.transitWay} - ${form.OPerKgCash || "0.00"}/کیلو
+                          </div>
+                          {form.totalWeight && form.OPerKgCash && (
+                            <div className="text-xs text-gray-600 mt-1">
+                              مجموع دفتری: ${form.OTotalCash || "0.00"}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
                     <FormInput
                       icon={<FaShoppingCart />}
-                      label="نرخ دفتری هر کیلو"
+                      label="نرخ دفتری هر کیلو ($)"
                       name="OPerKgCash"
-                      type="number"
+                      type="text"
                       value={form.OPerKgCash}
                       onChange={handleChange}
-                      required
-                      step="0.01"
-                      min="0"
+                      required={false}
                       placeholder="0.00"
+                      pattern="\d*\.?\d*"
+                      title="لطفاً عدد وارد کنید"
                     />
                   </div>
-                  
-                  {/* Total Calculations */}
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                  {/* Input Row 2 */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="p-3 bg-white rounded-lg border">
-                      <div className="text-sm text-gray-500">مجموع دفتری</div>
+                      <div className="text-sm text-gray-500 mb-1">مجموع دفتری ($)</div>
                       <div className="text-2xl font-bold text-blue-600">
                         ${form.OTotalCash || "0.00"}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">(وزن × نرخ دفتری)</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        (وزن × نرخ دفتری) = {form.totalWeight || "0"} × {form.OPerKgCash || "0"}
+                      </div>
                     </div>
 
                     <div className="p-3 bg-white rounded-lg border">
-                      <div className="text-sm text-gray-500">مجموع کل</div>
+                      <div className="text-sm text-gray-500 mb-1">مجموع کل ($)</div>
                       <div className="text-2xl font-bold text-green-600">
                         ${form.totalCash || "0.00"}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">(وزن × نرخ دستی)</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        (وزن × نرخ دستی) = {form.totalWeight || "0"} × {form.perKgCash || "0"}
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <FormInput
                         icon={<FaMoneyBillWave />}
-                        label="دریافتی"
+                        label="دریافتی ($)"
                         name="received"
-                        type="number"
+                        type="text"
                         value={form.received}
                         onChange={handleChange}
-                        required
-                        step="0.01"
-                        min="0"
+                        required={false}
                         placeholder="0.00"
+                        pattern="\d*\.?\d*"
+                        title="لطفاً عدد وارد کنید"
                       />
+                    </div>
+                  </div>
 
-                      <div className="p-3 bg-white rounded-lg border">
-                        <div className="text-sm text-gray-500">مانده</div>
-                        <div className="text-2xl font-bold text-orange-600">
+                  {/* Remain Section */}
+                  <div className="p-4 bg-white rounded-lg border-2 border-orange-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm text-gray-500 mb-1">مانده حساب ($)</div>
+                        <div className="text-3xl font-bold text-orange-600">
                           ${form.remain || "0.00"}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">(مجموع کل - دریافتی)</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-600">
+                          (مجموع کل - دریافتی) = {form.totalCash || "0.00"} - {form.received || "0.00"}
+                        </div>
+                        <div className={`text-xs mt-2 px-3 py-1 rounded-full ${parseFloat(form.remain) > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                          {parseFloat(form.remain) > 0 ? 'پرداخت نشده' : 'تسویه شده'}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -732,7 +919,7 @@ const PackageCrud = () => {
                       }}
                       className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                     >
-                      لغو
+                      لغو ویرایش
                     </button>
                   )}
 
@@ -814,7 +1001,7 @@ const PackageCrud = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   {packages.length > 5 && (
                     <button
                       onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
@@ -859,39 +1046,17 @@ const PackageCrud = () => {
         {/* Full Package List */}
         <div className="mt-8">
           <PackageList
+            setPackages={setPackages}
             packages={packages}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            mode={Mode}
           />
         </div>
       </div>
     </div>
   );
 };
-
-// Enhanced FormInput Component
-const FormInput = ({ icon, label, ...props }) => (
-  <label className="flex flex-col">
-    <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-      {icon}
-      {label}
-      {props.required && <span className="text-red-500">*</span>}
-    </span>
-    <div className="relative">
-      <input
-        {...props}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-      />
-      {props.type === "number" && (
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-          {label.includes("وزن") ? "کیلو" : label.includes("نرخ") ? "$" : ""}
-        </div>
-      )}
-    </div>
-  </label>
-);
-
-// Enhanced FormSelect Component
 const FormSelect = ({ icon, label, options, ...props }) => (
   <label className="flex flex-col">
     <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
@@ -925,5 +1090,24 @@ const FormSelect = ({ icon, label, options, ...props }) => (
     </div>
   </label>
 );
-
+const FormInput = ({ icon, label, ...props }) => (
+  <label className="flex flex-col">
+    <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+      {icon}
+      {label}
+      {props.required && <span className="text-red-500">*</span>}
+    </span>
+    <div className="relative">
+      <input
+        {...props}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+      />
+      {props.type === "number" && (
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          {label.includes("وزن") ? "کیلو" : label.includes("نرخ") ? "$" : ""}
+        </div>
+      )}
+    </div>
+  </label>
+);
 export default PackageCrud;

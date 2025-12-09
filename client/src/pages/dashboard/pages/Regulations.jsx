@@ -4,16 +4,20 @@ import { FaDownload, FaFilePdf } from "react-icons/fa";
 const Regulation = ({ companyName = "افغان کارگو", data }) => {
   const downloadRegulationPDF = () => {
     const printWindow = window.open("", "_blank", "width=800,height=900");
-    console.log(data);
-    
     if (!printWindow) {
       alert("لطفاً پاپ‌آپ را برای پرینت مجاز کنید");
       return;
     }
 
-    const today = new Date();
-    const persianDate = today.toLocaleDateString("fa-IR");
-    const docNumber = data?.id || `AC-REG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+    const isoDate = data.date;
+
+    const persianDate = new Intl.DateTimeFormat("fa-IR-u-nu-arabext", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date(isoDate));
+
+    const docNumber = data?.id.toLocaleString("fa-IR");
 
     // Get the logo URL - assuming it's hosted at /logo.png
     const logoUrl = window.location.origin + '/logo.png';
@@ -37,32 +41,32 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           /* A4 Page Size - Prevent empty second page */
           @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 0mm;
           }
 
           body {
             direction: rtl;
             background: white;
             color: #000;
-            line-height: 1.5;
+            line-height: 1.9;
             width: 210mm;
             min-height: 297mm;
             max-height: 297mm;
             margin: 0;
             padding: 0;
-            font-size: 12px;
+            font-size: 20px;
             overflow: hidden;
           }
 
           /* Main container matching A4 dimensions */
           .a4-container {
-            width: 194mm;
-            min-height: 281mm;
-            max-height: 281mm;
+            width: 210mm;
+            min-height: 297mm;
+            max-height: 297mm;
             background: white;
-            margin: 8mm auto;
+            margin: 0mm auto;
             position: relative;
-            padding: 5mm;
+          
             overflow: hidden;
           }
 
@@ -70,12 +74,11 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           .print-header {
             background: linear-gradient(to left, #1e40af, #2563eb);
             color: white;
-            padding: 8px 10px;
-            border-bottom: 3px solid #1e3a8a;
+            padding: 5mm;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin: 10px;
           }
 
           .header-left {
@@ -85,8 +88,8 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           }
 
           .logo-circle {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             border: 2px solid white;
             display: flex;
@@ -170,7 +173,8 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             color: #1e3a8a;
             margin-bottom: 8px;
             padding-bottom: 4px;
-            border-bottom: 1px solid #93c5fd;
+            padding-right:5mm;
+            padding-top :5mm;
           }
 
           /* Regulations List - Compact */
@@ -217,8 +221,8 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             background: #eef2ff;
             border: 1px solid #c7d2fe;
             border-radius: 4px;
-            padding: 10px;
-            margin: 15px 0 10px 0;
+            padding: 5mm;
+            margin:10px;
           }
 
           .contact-title {
@@ -255,6 +259,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             padding-top: 10px;
             border-top: 1px solid #d1d5db;
             display: flex;
+            padding: 5mm;
             justify-content: space-between;
             align-items: flex-start;
           }
@@ -272,7 +277,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           }
 
           .signature-area {
-            height: 80px;
+            height: 90px;
             border: 1px solid #666;
             margin-bottom: 5px;
             position: relative;
@@ -334,11 +339,9 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             }
 
             .a4-container {
-              width: 194mm !important;
-              height: 281mm !important;
-              margin: 8mm auto !important;
-              padding: 5mm !important;
-              box-shadow: none !important;
+              width: 210mm !important;
+              height: 297mm !important;
+                       box-shadow: none !important;
               border: none !important;
               overflow: hidden !important;
               page-break-after: avoid !important;
@@ -440,7 +443,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             <ol class="regulations-list compact" start="15">
               <li class="regulation-item">این قرارداد در دو نسخه تنظیم شده و هر دو نسخه دارای اعتبار قانونی یکسان هستند.</li>
               <li class="regulation-item">هرگونه تغییر در این قرارداد باید به صورت کتبی و با امضای طرفین معتبر باشد.</li>
-              <li class="regulation-item">قانون حاکم بر این قرارداد قوانین جمهوری اسلامی افغانستان می‌باشد.</li>
+              <li class="regulation-item">قانون حاکم بر این قرارداد قوانین امارت اسلامی افغانستان می‌باشد.</li>
               <li class="regulation-item">محل حل اختلاف، دادگاه‌های صالحه شهر کابل تعیین می‌گردد.</li>
             </ol>
           </div>
@@ -452,14 +455,12 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
               <div class="signature-area company-signature">
                 <div class="signature-name">${companyName}</div>
               </div>
-              <div class="signature-label">نام شرکت</div>
             </div>
             <div class="signature-box">
               <div class="signature-title">امضاء مشتری</div>
               <div class="signature-area customer-signature">
                 <div class="signature-name">${data?.Sender?.name || "مشتری"}</div>
               </div>
-              <div class="signature-label">نام و نام خانوادگی</div>
             </div>
           </div>
 
@@ -468,7 +469,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             <div class="contact-grid">
               <div class="contact-item">
                 <span class="contact-icon">📞</span>
-                <span>تلفن: 0745721127 - 0780177060 - 0774610613</span>
+                <span>تلفن: ۰۷۴۵۷۲۱۱۲۷  - ۰۷۸۰۱۷۷۰۶۰ -  ۰۷۷۴۶۱۰۶۱۳</span>
               </div>
               <div class="contact-item">
                 <span class="contact-icon">🏢</span>

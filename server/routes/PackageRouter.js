@@ -9,6 +9,7 @@ import {
   getAllTransitWays,
   getPackagesByRange,
   updatePackageLocation,
+  searchPackagesByName,
 } from "../Controllers/PackageController.js";
 
 const packageRouter = express.Router();
@@ -24,6 +25,7 @@ packageRouter.post("/", createPackage);
 // Get all packages
 packageRouter.get("/transitWays", getAllTransitWays);
 packageRouter.get("/Range*", getPackagesByRange);
+packageRouter.get("/search", searchPackagesByName);
 packageRouter.get("/", getAllPackages);
 
 // Get package by ID

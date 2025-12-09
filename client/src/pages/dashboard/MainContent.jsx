@@ -3,7 +3,6 @@ import Dashboard from "./pages/dashboard";
 // import S_Transaction from "./pages/RentManager";
 import Report from "./pages/reports";
 import AddUser from "./pages/AddUser";
-import MenuManagement from "./pages/MenuManagement";
 import Packages from "./pages/Packages";
 import PackageList from "./pages/PackageList";
 import ZoneManager from "./pages/management/ZoneManager";

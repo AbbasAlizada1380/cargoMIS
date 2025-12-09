@@ -3,6 +3,128 @@ import Customer from "../Models/Customer.js";
 import Package from "../Models/package.js";
 import { Op } from "sequelize";
 
+export const searchPackagesByName = async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name || name.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        error: "Search query 'name' is required",
+        message: "Please provide a name to search for",
+      });
+    }
+
+    const searchTerm = name.trim();
+    console.log(`Searching for: ${searchTerm}`);
+
+    // Search packages with sender OR receiver name matching (case-insensitive)
+    const packages = await Package.findAll({
+      include: [
+        {
+          association: "Sender",
+          attributes: ["id", "name", "phoneNumber", "country"],
+          required: false, // Always include sender if exists
+        },
+        {
+          association: "Receiver", 
+          attributes: ["id", "name", "phoneNumber", "country"],
+          required: false, // Always include receiver if exists
+        },
+      ],
+      order: [["createdAt", "DESC"]], // Show newest first
+    });
+
+    // Filter packages where EITHER sender OR receiver name matches (case-insensitive)
+    const filteredPackages = packages.filter(pkg => {
+      // Check if package has sender and sender name matches
+      const senderMatch = pkg.Sender && 
+        pkg.Sender.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Check if package has receiver and receiver name matches
+      const receiverMatch = pkg.Receiver && 
+        pkg.Receiver.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Include package if either sender OR receiver matches
+      return senderMatch || receiverMatch;
+    });
+
+    // If no matches found, suggest similar names
+    if (filteredPackages.length === 0) {
+      // Collect all unique sender and receiver names for suggestions
+      const allNames = new Set();
+      packages.forEach(pkg => {
+        if (pkg.Sender) allNames.add(pkg.Sender.name);
+        if (pkg.Receiver) allNames.add(pkg.Receiver.name);
+      });
+
+      // Find similar names (partial matches)
+      const suggestions = Array.from(allNames).filter(fullName => 
+        fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        searchTerm.toLowerCase().includes(fullName.toLowerCase().substring(0, 3))
+      ).slice(0, 5); // Limit to 5 suggestions
+
+      return res.status(200).json({
+        success: true,
+        message: `No packages found matching '${searchTerm}'`,
+        totalRecords: 0,
+        data: [],
+        suggestions: suggestions.length > 0 ? suggestions : null,
+        searchTerm: searchTerm,
+      });
+    }
+
+    // Enhance results with match type information
+    const enhancedPackages = filteredPackages.map(pkg => {
+      const senderMatch = pkg.Sender && 
+        pkg.Sender.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const receiverMatch = pkg.Receiver && 
+        pkg.Receiver.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return {
+        ...pkg.toJSON(),
+        matchInfo: {
+          matchesSender: senderMatch,
+          matchesReceiver: receiverMatch,
+          matchType: senderMatch && receiverMatch ? "both" : 
+                    senderMatch ? "sender" : "receiver",
+          highlightedName: searchTerm
+        }
+      };
+    });
+
+    // Count matches by type
+    const senderMatches = enhancedPackages.filter(p => p.matchInfo.matchesSender).length;
+    const receiverMatches = enhancedPackages.filter(p => p.matchInfo.matchesReceiver).length;
+    const bothMatches = enhancedPackages.filter(p => p.matchInfo.matchType === "both").length;
+
+    return res.status(200).json({
+      success: true,
+      message: `Found ${filteredPackages.length} package(s) matching '${searchTerm}'`,
+      totalRecords: filteredPackages.length,
+      searchTerm: searchTerm,
+      matchStats: {
+        senderMatches,
+        receiverMatches,
+        bothMatches,
+        uniquePackages: filteredPackages.length
+      },
+      data: enhancedPackages,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    console.error("Search Packages Error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to search packages",
+      message: "An internal server error occurred",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
 export const getPackagesByRange = async (req, res) => {
   try {
     const { startDate, endDate, transitWay } = req.query;
@@ -42,19 +164,63 @@ export const getPackagesByRange = async (req, res) => {
 
   } catch (error) {
     console.error("Get Packages By Range Error:", error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: "Failed to retrieve packages",
-      details: error.message 
+      details: error.message
     });
   }
 };
 
-/* ============================================================
-   GET ALL TRANSIT WAYS
-============================================================ */
-/* ============================================================
-   GET ALL TRANSIT WAYS  (SEQUELIZE VERSION)
-============================================================ */
+export const updatePackageLocation = async (req, res) => {
+  try {
+    const { id } = req.params; // Can be single or multiple IDs "1,2,4"
+    const { location } = req.body;
+
+    if (!location) {
+      return res.status(400).json({
+        error: "location field is required",
+      });
+    }
+
+    // Split IDs by comma and convert to numbers
+    const ids = id.split(",").map(i => parseInt(i)).filter(i => !isNaN(i));
+
+    if (ids.length === 0) {
+      return res.status(400).json({
+        error: "No valid package IDs provided",
+      });
+    }
+
+    // Update all packages matching these IDs
+    const [updatedCount, updatedPackages] = await Package.update(
+      { location },
+      {
+        where: { id: ids },
+        returning: true, // return updated rows (Postgres) 
+      }
+    );
+
+    if (updatedCount === 0) {
+      return res.status(404).json({
+        error: "No packages found for the provided IDs",
+      });
+    }
+
+    return res.status(200).json({
+      message: `Successfully updated location for ${updatedCount} package(s)`,
+      data: updatedPackages, // may be empty for some DBs
+    });
+
+  } catch (error) {
+    console.error("Update Package Location Error:", error);
+    return res.status(500).json({
+      error: "Failed to update package location",
+      details: error.message,
+    });
+  }
+};
+
+
 export const getAllTransitWays = async (req, res) => {
   try {
     // Fetch only transitWay column
@@ -100,6 +266,7 @@ export const createPackage = async (req, res) => {
     const newPackage = await Package.create({
       sender: newSender.id,
       receiver: newReceiver.id,
+      location: "Kabul Stock",
       ...packageData,
     });
 
