@@ -236,7 +236,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
   return (
     <div className="mt-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-xl shadow-lg p-4 text-white">
+      <div className="bg-[#0F3A76] rounded-t-xl shadow-lg p-4 text-white">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <FaBox className="text-3xl" />
@@ -288,7 +288,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
             {selectedPackages.length > 0 && (
               <button
                 onClick={handleOpenLocationModal}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center gap-2 transition-colors"
+                className="px-4 py-3 bg-white cursor-pointer text-[#0F3A76] hover: rounded-lg flex items-center gap-2 transition-colors"
               >
                 <FaMapMarkerAlt />
                 <span>به‌روزرسانی موقعیت ({selectedPackages.length})</span>

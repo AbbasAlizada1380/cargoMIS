@@ -78,7 +78,8 @@ const Sidebar = ({ setActiveComponent }) => {
     if (userRole === "admin") {
       accessibleComponents = AllComponents;
     } else if (userRole === "reception") {
-      const receptionAllowedValues = [
+      const receptionAllowedValues = 
+      [
         "home",
         "Orders",
         "OrdersList",
@@ -133,7 +134,7 @@ const Sidebar = ({ setActiveComponent }) => {
                 />
               </div>
               <span className="text-lg font-semibold text-white whitespace-nowrap">
-                رستورانت
+             افغان کارگو
               </span>
             </div>
 
@@ -189,7 +190,7 @@ const Sidebar = ({ setActiveComponent }) => {
 
         {/* Navigation Items */}
         <ul className="mr-1 px-3">
-          {accessibleComponents.map((component, index) => (
+          {AllComponents.map((component, index) => (
             <li key={index} className="relative group cursor-pointer mb-1">
               {component.value === "signout" ? (
                 <button

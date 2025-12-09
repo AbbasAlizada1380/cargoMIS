@@ -7,31 +7,31 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
     const initialPackList = [
         { description: "لباس زنانه", qty: "", weight: "", value: "" },
         { description: "مردانه لباس", qty: "", weight: "", value: "" },
-        { description: "ماهی تابه", qty: "", weight: "", value: "" },
         { description: "چادر", qty: "", weight: "", value: "" },
-        { description: "ملاقه", qty: "", weight: "", value: "" },
         { description: "پلون مردانه", qty: "", weight: "", value: "" },
         { description: "گزاره", qty: "", weight: "", value: "" },
-        { description: "حاکت زنانه", qty: "", weight: "", value: "" },
+        { description: "جاکت زنانه", qty: "", weight: "", value: "" },
         { description: "بلوز", qty: "", weight: "", value: "" },
         { description: "واسکت", qty: "", weight: "", value: "" },
         { description: "بوت", qty: "", weight: "", value: "" },
         { description: "گند افغانی", qty: "", weight: "", value: "" },
-        { description: "کردن بند", qty: "", weight: "", value: "" },
+        { description: "گردن بند", qty: "", weight: "", value: "" },
         { description: "بیک", qty: "", weight: "", value: "" },
         { description: "کرتی", qty: "", weight: "", value: "" },
         { description: "پوش بالش", qty: "", weight: "", value: "" },
-        { description: "پوش نوشک", qty: "", weight: "", value: "" },
+        { description: "پوش توشک", qty: "", weight: "", value: "" },
         { description: "زیرپوش بالش", qty: "", weight: "", value: "" },
-        { description: "زیرپوش نوشک", qty: "", weight: "", value: "" },
+        { description: "زیرپوش توشک", qty: "", weight: "", value: "" },
         { description: "قالین", qty: "", weight: "", value: "" },
         { description: "نمد", qty: "", weight: "", value: "" },
         { description: "پرده", qty: "", weight: "", value: "" },
         { description: "میوه خشک", qty: "", weight: "", value: "" },
-        { description: "فروت", qty: "", weight: "", value: "" },
+        { description: "قروت", qty: "", weight: "", value: "" },
         { description: "گیاه یونانی", qty: "", weight: "", value: "" },
         { description: "ترموز", qty: "", weight: "", value: "" },
+        { description: "ماهی تابه", qty: "", weight: "", value: "" },
         { description: "چاینک", qty: "", weight: "", value: "" },
+        { description: "ملاقه", qty: "", weight: "", value: "" },
         { description: "پیاله", qty: "", weight: "", value: "" },
     ];
 
@@ -206,11 +206,8 @@ useEffect(() => {
                                 value={parseNumber(form.totalWeight)}
                                 onChange={handleChange}
                                 placeholder="0.00"
-                                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                             />
-                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                کیلو
-                            </span>
                         </div>
                     </div>
 
@@ -242,11 +239,8 @@ useEffect(() => {
                                 value={parseNumber(form.value)}
                                 onChange={handleChange}
                                 placeholder="0.00"
-                                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
                             />
-                            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                $
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -295,7 +289,7 @@ useEffect(() => {
 
             {/* Packing List Section */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6">
+                <div className="bg-[#0F3A76] p-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-white/10 rounded-lg">
@@ -316,12 +310,12 @@ useEffect(() => {
                                 value={newItemDescription}
                                 onChange={(e) => setNewItemDescription(e.target.value)}
                                 placeholder="نام کالای جدید"
-                                className=" text-white px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                className=" text-white px-3 py-2 border border-white rounded-lg focus:ring-1 "
                                 onKeyPress={(e) => e.key === 'Enter' && handleAddNewItem()}
                             />
                             <button
                                 onClick={handleAddNewItem}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-white text-[#0F3A76] rounded-lg cursor-pointer transition-colors flex items-center gap-2"
                             >
                                 <FaPlus />
                                 افزودن
@@ -348,9 +342,6 @@ useEffect(() => {
                                 </th>
                                 <th className="py-4 px-4 text-right text-sm font-semibold text-gray-700 border-b">
                                     ارزش ($)
-                                </th>
-                                <th className="py-4 px-4 text-right text-sm font-semibold text-gray-700 border-b">
-                                    حذف
                                 </th>
                             </tr>
                         </thead>
@@ -399,15 +390,6 @@ useEffect(() => {
                                                 $
                                             </span>
                                         </div>
-                                    </td>
-                                    <td className="py-4 px-4 text-center">
-                                        <button
-                                            onClick={() => handleRemoveItem(index)}
-                                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="حذف این کالا"
-                                        >
-                                            <FaTrash />
-                                        </button>
                                     </td>
                                 </tr>
                             ))}

@@ -16,7 +16,7 @@ const Signin = () => {
   const isActive = currentUser?.isActive;
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-cyan-800 p-4 relative overflow-hidden">
+    <div className="flex justify-center items-center min-h-screen bg-[#0F3A76] p-4 relative overflow-hidden">
       {/* Top-Right Light Effect */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-cyan-400 via-transparent to-transparent rounded-full blur-3xl opacity-20 animate-pulse"></div>
 
@@ -42,12 +42,11 @@ const Signin = () => {
                 <img
                   src="logo.png"
                   alt="logo"
-                  className="h-14 w-14 rounded-full border-2 border-cyan-800 shadow-lg"
+                  className="bg-[#0F3A76] h-14 w-14 rounded-full border-2 border-cyan-800 shadow-lg"
                 />
-                <div className="absolute -inset-1 bg-cyan-400 rounded-full blur opacity-30 animate-ping"></div>
               </div>
-              <h1 className="text-3xl font-bold text-cyan-800 drop-shadow-sm">
-             رستورانت
+              <h1 className="text-3xl font-bold text-[#0F3A76] drop-shadow-sm">
+               افغان کارگو
               </h1>
             </div>
             <p className="text-gray-600 mt-2">لطفاً اطلاعات خود را وارد کنید</p>
@@ -121,7 +120,7 @@ const Signin = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-cyan-800 to-cyan-700 text-white py-4 rounded-xl font-semibold text-lg transform hover:scale-105 hover:from-cyan-700 hover:to-cyan-600 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer relative overflow-hidden group"
+            className="w-full bg-[#0F3A76] text-white py-4 rounded-xl font-semibold text-lg transform hover:scale-105 hover:from-cyan-700 hover:to-cyan-600 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer relative overflow-hidden group"
           >
             {/* Button shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
@@ -181,15 +180,7 @@ const Signin = () => {
             </div>
           )}
           <a href="/forgot_password"> رمز عبور خود را فراموش کرده اید؟</a>
-          {/* Footer */}
-          <div className="text-center pt-4 border-t border-gray-100">
-            <p className="text-gray-600 text-sm">
-             غذای لذیذ و صحی را از رستورانت ما نوش جان کنید
-            </p>
-            <p className="text-gray-500 text-xs mt-1">
-             EAT DELICIOUSE AND HEALTHY FOOD IN OUR RESTAURANT
-            </p>
-          </div>
+        
         </form>
       </div>
     </div>

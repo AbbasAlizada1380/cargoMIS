@@ -44,33 +44,33 @@ const Pack = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading packages...</p>
-        </div>
-      </div>
-    );
-  }
-
+ if (loading) {
   return (
-    <div className="p-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Package Management</h1>
-        <p className="text-gray-600">Total packages: {packages.length}</p>
+    <div className="flex justify-center items-center h-64">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">در حال بارگذاری بسته‌ها...</p>
       </div>
-      
-      <PackageList
-      setPackages={setPackages}
-        packages={packages}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        mode={Mode}
-      />
     </div>
   );
+}
+
+return (
+  <div className="p-4">
+    <div className="mb-6 text-right">
+      <h1 className="text-2xl font-bold text-gray-800">مدیریت بسته‌ها</h1>
+      <p className="text-gray-600">مجموع بسته‌ها: {packages.length}</p>
+    </div>
+    
+    <PackageList
+      setPackages={setPackages}
+      packages={packages}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+      mode={Mode}
+    />
+  </div>
+);
 };
 
 export default Pack;

@@ -452,7 +452,7 @@ setLoading(true)
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
+        <div className="mb-8 bg-[#0F3A76] rounded-xl shadow-lg p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -612,7 +612,6 @@ setLoading(true)
                       placeholder="آدرس کامل"
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
                       <FormInput
                         icon={<FaUser />}
                         label="ایمیل"
@@ -632,7 +631,6 @@ setLoading(true)
                         required
                         placeholder="+1234567890"
                       />
-                    </div>
 
                     <FormInput
                       icon={<FaGlobeAmericas />}
@@ -673,7 +671,6 @@ setLoading(true)
                       placeholder="آدرس کامل"
                     />
 
-                    <div className="grid grid-cols-2 gap-4">
                       <FormInput
                         icon={<FaUser />}
                         label="ایمیل"
@@ -693,7 +690,6 @@ setLoading(true)
                         required
                         placeholder="+1234567890"
                       />
-                    </div>
 
                     <FormSelect
                       icon={<FaGlobeAmericas />}
@@ -860,7 +856,7 @@ setLoading(true)
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#0F3A76] text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -1052,11 +1048,6 @@ const FormSelect = ({ icon, label, options, ...props }) => (
             );
           })}
       </select>
-      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </div>
     </div>
   </label>
 );

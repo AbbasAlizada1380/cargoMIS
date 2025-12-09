@@ -238,16 +238,6 @@ const UpdatePackageTracking = ({ packageId, setIsTOpen, onSuccess, initialTracki
             </p>
           </div>
 
-          {/* نمایش شماره بسته */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2 text-right">بسته</h4>
-            <div className="flex justify-end gap-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                #{packageId}
-              </span>
-            </div>
-          </div>
-
           {/* پیام خطا */}
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -293,17 +283,6 @@ const UpdatePackageTracking = ({ packageId, setIsTOpen, onSuccess, initialTracki
       ) : (
         renderSuccessDetails()
       )}
-
-      {/* Close button in bottom left corner INSIDE window */}
-      <div className="mt-6 pt-6 border-t border-gray-200">
-        <button
-          onClick={handleClose}
-          className="text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-2 text-sm"
-        >
-          <FaTimes className="text-base" />
-          <span>بستن پنجره</span>
-        </button>
-      </div>
     </div>
   </div>
 </div>

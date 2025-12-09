@@ -317,7 +317,7 @@ const AddUser = () => {
               <div className="flex items-center justify-center">
                 <button
                   type="submit"
-                  className="bg-cyan-800 px-5 text-white py-3 rounded-xl font-semibold text-lg hover:bg-cyan-700 transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                  className="bg-[#0F3A76] px-5 text-white py-3 rounded-xl font-semibold text-lg hover:bg-[#0F3A76] transform hover:scale-105 transition-all duration-200 shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <svg
                     className="w-5 h-5"
@@ -356,7 +356,7 @@ const AddUser = () => {
               {/* Refresh Button */}
               <button
                 onClick={fetchUsers}
-                className="flex items-center gap-2 px-4 py-2 bg-cyan-800 text-white rounded-lg hover:bg-cyan-700 transition-colors duration-200"
+                className="flex items-center gap-2 px-4 py-2 bg-[#0F3A76] text-white rounded-lg hover:bg-[#0F3A70] transition-colors duration-200"
               >
                 <svg
                   className="w-4 h-4"
@@ -525,7 +525,7 @@ const AddUser = () => {
             ) : (
               <div className="overflow-hidden border border-gray-200 rounded-lg">
                 <table className="w-full">
-                  <thead className="bg-cyan-800 text-gray-50">
+                  <thead className="bg-[#0F3A76] text-gray-50">
                     <tr>
                       <th className="px-6 py-4 text-right text-sm font-semibold border-b border-gray-200">
                         نمبر
@@ -558,7 +558,7 @@ const AddUser = () => {
                             {user.email}
                           </td>
                           <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-800 text-gray-50">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#0F3A76] text-gray-50">
                               {user.role}
                             </span>
                           </td>
