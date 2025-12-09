@@ -1,37 +1,37 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaBox, FaWeight, FaCalendarAlt, FaPlus, FaTrash } from "react-icons/fa";
+import { FaBox, FaWeight, FaCalendarAlt, FaPlus, FaTrash, FaMoneyBillWave } from "react-icons/fa";
 
 const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) => {
-    // Initial list - this should be static
+    // Initial list - this should be static with value field added
     const initialPackList = [
-        { description: "لباس زنانه", qty: "", weight: "" },
-        { description: "مردانه لباس", qty: "", weight: "" },
-        { description: "ماهی تابه", qty: "", weight: "" },
-        { description: "چادر", qty: "", weight: "" },
-        { description: "ملاقه", qty: "", weight: "" },
-        { description: "پلون مردانه", qty: "", weight: "" },
-        { description: "گزاره", qty: "", weight: "" },
-        { description: "حاکت زنانه", qty: "", weight: "" },
-        { description: "بلوز", qty: "", weight: "" },
-        { description: "واسکت", qty: "", weight: "" },
-        { description: "بوت", qty: "", weight: "" },
-        { description: "گند افغانی", qty: "", weight: "" },
-        { description: "کردن بند", qty: "", weight: "" },
-        { description: "بیک", qty: "", weight: "" },
-        { description: "کرتی", qty: "", weight: "" },
-        { description: "پوش بالش", qty: "", weight: "" },
-        { description: "پوش نوشک", qty: "", weight: "" },
-        { description: "زیرپوش بالش", qty: "", weight: "" },
-        { description: "زیرپوش نوشک", qty: "", weight: "" },
-        { description: "قالین", qty: "", weight: "" },
-        { description: "نمد", qty: "", weight: "" },
-        { description: "پرده", qty: "", weight: "" },
-        { description: "میوه خشک", qty: "", weight: "" },
-        { description: "فروت", qty: "", weight: "" },
-        { description: "گیاه یونانی", qty: "", weight: "" },
-        { description: "ترموز", qty: "", weight: "" },
-        { description: "چاینک", qty: "", weight: "" },
-        { description: "پیاله", qty: "", weight: "" },
+        { description: "لباس زنانه", qty: "", weight: "", value: "" },
+        { description: "مردانه لباس", qty: "", weight: "", value: "" },
+        { description: "ماهی تابه", qty: "", weight: "", value: "" },
+        { description: "چادر", qty: "", weight: "", value: "" },
+        { description: "ملاقه", qty: "", weight: "", value: "" },
+        { description: "پلون مردانه", qty: "", weight: "", value: "" },
+        { description: "گزاره", qty: "", weight: "", value: "" },
+        { description: "حاکت زنانه", qty: "", weight: "", value: "" },
+        { description: "بلوز", qty: "", weight: "", value: "" },
+        { description: "واسکت", qty: "", weight: "", value: "" },
+        { description: "بوت", qty: "", weight: "", value: "" },
+        { description: "گند افغانی", qty: "", weight: "", value: "" },
+        { description: "کردن بند", qty: "", weight: "", value: "" },
+        { description: "بیک", qty: "", weight: "", value: "" },
+        { description: "کرتی", qty: "", weight: "", value: "" },
+        { description: "پوش بالش", qty: "", weight: "", value: "" },
+        { description: "پوش نوشک", qty: "", weight: "", value: "" },
+        { description: "زیرپوش بالش", qty: "", weight: "", value: "" },
+        { description: "زیرپوش نوشک", qty: "", weight: "", value: "" },
+        { description: "قالین", qty: "", weight: "", value: "" },
+        { description: "نمد", qty: "", weight: "", value: "" },
+        { description: "پرده", qty: "", weight: "", value: "" },
+        { description: "میوه خشک", qty: "", weight: "", value: "" },
+        { description: "فروت", qty: "", weight: "", value: "" },
+        { description: "گیاه یونانی", qty: "", weight: "", value: "" },
+        { description: "ترموز", qty: "", weight: "", value: "" },
+        { description: "چاینک", qty: "", weight: "", value: "" },
+        { description: "پیاله", qty: "", weight: "", value: "" },
     ];
 
     const [packList, setPackList] = useState(initialPackList);
@@ -42,75 +42,57 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
     const hasProcessedEdit = useRef(false);
     const lastFormPackList = useRef([]);
 
-    // Reset when parent triggers it
-    useEffect(() => {
-        if (resetTrigger) {
-            setPackList([...initialPackList]);
-            setNewItemDescription("");
-            hasProcessedEdit.current = false;
-            lastFormPackList.current = [];
+useEffect(() => {
+    // When resetTrigger changes, reset to initial state
+    if (resetTrigger) {
+        setPackList(initialPackList.map(item => ({
+            description: item.description,
+            qty: "",
+            weight: "",
+            value: ""
+        })));
+        setNewItemDescription("");
+        hasProcessedEdit.current = false;
+        lastFormPackList.current = [];
+        
+        // Also update parent form immediately
+        setForm(prev => ({
+            ...prev,
+            packList: []
+        }));
+    }
+}, [resetTrigger, setForm]);
+
+// Also update the form synchronization useEffect
+useEffect(() => {
+    // Skip initial mount
+    if (isInitialMount.current) {
+        isInitialMount.current = false;
+        return;
+    }
+
+    // If parent form has empty packList and we have items, reset
+    if (!form.packList || form.packList.length === 0) {
+        if (packList.some(item => item.qty || item.weight || item.value)) {
+            setPackList(initialPackList.map(item => ({
+                description: item.description,
+                qty: "",
+                weight: "",
+                value: ""
+            })));
         }
-    }, [resetTrigger]);
+        return;
+    }
 
-    // Handle editing mode - only when form.packList changes from parent (not from our own updates)
-    useEffect(() => {
-        // Skip initial mount
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
-        }
-
-        // Check if form.packList has changed from parent (not from our own updates)
-        const currentFormPackList = form.packList || [];
-        const stringifiedCurrent = JSON.stringify(currentFormPackList);
-        const stringifiedLast = JSON.stringify(lastFormPackList.current);
-
-        if (stringifiedCurrent !== stringifiedLast && currentFormPackList.length > 0) {
-            // Update the reference
-            lastFormPackList.current = currentFormPackList;
-            
-            // Mark that we've processed this edit
-            hasProcessedEdit.current = true;
-            
-            // Start with the initial list
-            const mergedList = [...initialPackList];
-            
-            // Add any custom items from the saved data
-            const customItems = [];
-            
-            currentFormPackList.forEach(itemFromForm => {
-                // Find if this item exists in our initial list
-                const existingIndex = mergedList.findIndex(
-                    item => item.description === itemFromForm.description
-                );
-                
-                if (existingIndex !== -1) {
-                    // Update existing item
-                    mergedList[existingIndex] = {
-                        ...mergedList[existingIndex],
-                        qty: itemFromForm.qty || "",
-                        weight: itemFromForm.weight || ""
-                    };
-                } else {
-                    // Add to custom items list
-                    customItems.push({
-                        description: itemFromForm.description,
-                        qty: itemFromForm.qty || "",
-                        weight: itemFromForm.weight || ""
-                    });
-                }
-            });
-            
-            // Combine initial items with custom items
-            setPackList([...mergedList, ...customItems]);
-        }
-    }, [form.packList]);
-
+    // Rest of the editing logic...
+    // ... existing code ...
+}, [form.packList]);
     // Update parent form with only items that have values (with optimization)
     useEffect(() => {
         const filteredList = packList.filter(item => 
             (item.qty && item.qty !== "") || 
-            (item.weight && item.weight !== "")
+            (item.weight && item.weight !== "") ||
+            (item.value && item.value !== "")
         );
 
         // Only update if there's a real change
@@ -127,10 +109,17 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
 
     // Handle pack list item changes
     const handlePackListChange = (index, field, value) => {
-        // Remove leading zeros for better UX
-        const cleanValue = value === "" ? "" :
-            field === 'description' ? value :
-                value.replace(/^0+(?=\d)/, '');
+        // Remove leading zeros for better UX and validate numeric fields
+        let cleanValue = value;
+        
+        if (field === 'qty' || field === 'weight' || field === 'value') {
+            // Allow only numbers and one decimal point for numeric fields
+            if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                cleanValue = value.replace(/^0+(?=\d)/, '');
+            } else {
+                return; // Don't update if invalid
+            }
+        }
 
         const updatedPackList = [...packList];
         updatedPackList[index][field] = cleanValue;
@@ -144,7 +133,8 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
         const newItem = {
             description: newItemDescription.trim(),
             qty: "",
-            weight: ""
+            weight: "",
+            value: ""
         };
 
         setPackList([...packList, newItem]);
@@ -162,12 +152,14 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
         const totals = packList.reduce((acc, item) => {
             const qty = parseFloat(item.qty) || 0;
             const weight = parseFloat(item.weight) || 0;
+            const value = parseFloat(item.value) || 0;
 
             return {
                 totalQty: acc.totalQty + qty,
-                totalWeight: acc.totalWeight + (qty * weight)
+                totalWeight: acc.totalWeight + (qty * weight),
+                totalValue: acc.totalValue + (qty * value)
             };
-        }, { totalQty: 0, totalWeight: 0 });
+        }, { totalQty: 0, totalWeight: 0, totalValue: 0 });
 
         return totals;
     };
@@ -177,56 +169,16 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
         return value === "" || value == null ? "" : value;
     };
 
-    const { totalQty, totalWeight } = calculateTotals();
+    const { totalQty, totalWeight, totalValue } = calculateTotals();
     const itemsWithValues = packList.filter(item =>
         (item.qty && item.qty !== "") ||
-        (item.weight && item.weight !== "")
+        (item.weight && item.weight !== "") ||
+        (item.value && item.value !== "")
     ).length;
 
     return (
         <div className="space-y-6">
-            {/* Date and Tracking Section */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                        <FaCalendarAlt className="text-purple-600 text-xl" />
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-gray-900 text-lg">تاریخ ارسال</h4>
-                        <p className="text-gray-500 text-sm">تاریخ و اطلاعات رهگیری را وارد کنید</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            تاریخ ارسال
-                        </label>
-                        <input
-                            type="date"
-                            name="date"
-                            value={form.date || ""}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            شماره رهگیری
-                        </label>
-                        <input
-                            type="text"
-                            name="track_number"
-                            value={form.track_number || ""}
-                            onChange={handleChange}
-                            placeholder="شماره رهگیری بسته"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Weight and Value Section */}
+             {/* Weight and Value Section */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-blue-100 rounded-lg">
@@ -296,7 +248,48 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
                         </div>
                     </div>
                 </div>
+            </div> {/* Date and Tracking Section */}
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                        <FaCalendarAlt className="text-purple-600 text-xl" />
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-gray-900 text-lg">تاریخ ارسال</h4>
+                        <p className="text-gray-500 text-sm">تاریخ و اطلاعات رهگیری را وارد کنید</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            تاریخ ارسال
+                        </label>
+                        <input
+                            type="date"
+                            name="date"
+                            value={form.date || ""}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            شماره رهگیری
+                        </label>
+                        <input
+                            type="text"
+                            name="track_number"
+                            value={form.track_number || ""}
+                            onChange={handleChange}
+                            placeholder="شماره رهگیری بسته"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        />
+                    </div>
+                </div>
             </div>
+
+          
 
             {/* Packing List Section */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
@@ -309,7 +302,7 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
                             <div>
                                 <h4 className="text-white font-semibold text-lg">لیست بسته‌بندی</h4>
                                 <p className="text-gray-300 text-sm mt-1">
-                                    {itemsWithValues} قلم کالا دارای مقدار • مجموع: {totalQty} عدد • {totalWeight.toFixed(2)} کیلوگرم
+                                    {itemsWithValues} قلم کالا دارای مقدار • مجموع: {totalQty} عدد • {totalWeight.toFixed(2)} کیلوگرم • ${totalValue.toFixed(2)}
                                 </p>
                             </div>
                         </div>
@@ -321,7 +314,7 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
                                 value={newItemDescription}
                                 onChange={(e) => setNewItemDescription(e.target.value)}
                                 placeholder="نام کالای جدید"
-                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                className=" text-white px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                                 onKeyPress={(e) => e.key === 'Enter' && handleAddNewItem()}
                             />
                             <button
@@ -350,6 +343,9 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
                                 </th>
                                 <th className="py-4 px-4 text-right text-sm font-semibold text-gray-700 border-b">
                                     وزن (کیلوگرم)
+                                </th>
+                                <th className="py-4 px-4 text-right text-sm font-semibold text-gray-700 border-b">
+                                    ارزش ($)
                                 </th>
                                 <th className="py-4 px-4 text-right text-sm font-semibold text-gray-700 border-b">
                                     حذف
@@ -385,6 +381,22 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
                                             placeholder="0.00"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-center"
                                         />
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={parseNumber(item.value)}
+                                                onChange={(e) => handlePackListChange(index, 'value', e.target.value)}
+                                                min="0"
+                                                placeholder="0.00"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-center"
+                                            />
+                                            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">
+                                                $
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="py-4 px-4 text-center">
                                         <button

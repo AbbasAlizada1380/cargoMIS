@@ -8,7 +8,6 @@ const TransitWay = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
       comment: "Name of the transit point",
     },
   },

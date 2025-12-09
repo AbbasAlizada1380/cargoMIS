@@ -10,7 +10,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 
   const formatCurrency = (num) => {
     const number = Number(num || 0);
-    return number.toLocaleString("fa-IR") + " افغانی";
+    return number.toLocaleString("fa-IR") + " دالر";
   };
 
   const formatNumber = (num) => {
@@ -162,129 +162,147 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               </div>
 
               {/* Split tables if more than 7 items */}
-              {data.packList && data.packList.length > 7 ? (
-                <div className="grid grid-cols-2 gap-4 border border-gray-300 p-4">
-                  {/* First Table - Items 1-7 */}
-                  <div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="bg-gray-100">
-                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">#</th>
-                            <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">نام جنس</th>
-                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">تعداد</th>
-                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">وزن</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.packList.slice(0, 7).map((item, index) => (
-                            <tr
-                              key={index}
-                              className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
-                            >
-                              <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
-                                {formatNumber(index + 1)}
-                              </td>
-                              <td className="py-2 px-3 text-right border border-gray-300 font-medium">
-                                {item.description}
-                              </td>
-                              <td className="py-2 px-3 text-center border border-gray-300">
-                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                                  {formatNumber(item.qty || 0)}
-                                </span>
-                              </td>
-                              <td className="py-2 px-3 text-center border border-gray-300">
-                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                                  {formatNumber(item.weight || 0)}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+             {data.packList && data.packList.length > 7 ? (
+  <div className="grid grid-cols-2 gap-4 border border-gray-300 p-4">
+    {/* First Table - Items 1-7 */}
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">#</th>
+              <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">نام جنس</th>
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">تعداد</th>
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">وزن</th>
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">ارزش ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.packList.slice(0, 7).map((item, index) => (
+              <tr
+                key={index}
+                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
+              >
+                <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
+                  {formatNumber(index + 1)}
+                </td>
+                <td className="py-2 px-3 text-right border border-gray-300 font-medium">
+                  {item.description}
+                </td>
+                <td className="py-2 px-3 text-center border border-gray-300">
+                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                    {formatNumber(item.qty || 0)}
+                  </span>
+                </td>
+                <td className="py-2 px-3 text-center border border-gray-300">
+                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                    {formatNumber(item.weight || 0)}
+                  </span>
+                </td>
+                <td className="py-2 px-3 text-center border border-gray-300">
+                  <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                    ${formatNumber(item.value || 0)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-                  {/* Second Table - Items 8+ */}
-                  <div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="bg-gray-100">
-                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">#</th>
-                            <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">نام جنس</th>
-                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">تعداد</th>
-                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">وزن</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.packList.slice(7).map((item, index) => (
-                            <tr
-                              key={index + 7}
-                              className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
-                            >
-                              <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
-                                {formatNumber(index + 8)}
-                              </td>
-                              <td className="py-2 px-3 text-right border border-gray-300 font-medium">
-                                {item.description}
-                              </td>
-                              <td className="py-2 px-3 text-center border border-gray-300">
-                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                                  {formatNumber(item.qty || 0)}
-                                </span>
-                              </td>
-                              <td className="py-2 px-3 text-center border border-gray-300">
-                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                                  {formatNumber(item.weight || 0)}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="overflow-x-auto border border-gray-300">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">#</th>
-                        <th className="py-2 px-3 text-right font-bold text-gray-700 border-l border-gray-300">نام جنس</th>
-                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">تعداد</th>
-                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">وزن (کیلو)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.packList.map((item, index) => (
-                        <tr
-                          key={index}
-                          className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
-                        >
-                          <td className="py-2 px-3 text-center font-bold text-gray-800 border-t border-gray-300 border-l">
-                            {formatNumber(index + 1)}
-                          </td>
-                          <td className="py-2 px-3 text-right border-t border-gray-300 border-l font-medium">
-                            {item.description}
-                          </td>
-                          <td className="py-2 px-3 text-center border border-gray-300">
-                            <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                              {formatNumber(item.qty || 0)}
-                            </span>
-                          </td>
-                          <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
-                            <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                              {formatNumber(item.weight || 0)}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+    {/* Second Table - Items 8+ */}
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">#</th>
+              <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">نام جنس</th>
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">تعداد</th>
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">وزن</th>
+              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">ارزش ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.packList.slice(7).map((item, index) => (
+              <tr
+                key={index + 7}
+                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
+              >
+                <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
+                  {formatNumber(index + 8)}
+                </td>
+                <td className="py-2 px-3 text-right border border-gray-300 font-medium">
+                  {item.description}
+                </td>
+                <td className="py-2 px-3 text-center border border-gray-300">
+                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                    {formatNumber(item.qty || 0)}
+                  </span>
+                </td>
+                <td className="py-2 px-3 text-center border border-gray-300">
+                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                    {formatNumber(item.weight || 0)}
+                  </span>
+                </td>
+                <td className="py-2 px-3 text-center border border-gray-300">
+                  <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                    ${formatNumber(item.value || 0)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="overflow-x-auto border border-gray-300">
+    <table className="w-full text-xs">
+      <thead>
+        <tr className="bg-gray-100">
+          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">#</th>
+          <th className="py-2 px-3 text-right font-bold text-gray-700 border-l border-gray-300">نام جنس</th>
+          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">تعداد</th>
+          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">وزن (کیلو)</th>
+          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">ارزش ($)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.packList.map((item, index) => (
+          <tr
+            key={index}
+            className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
+          >
+            <td className="py-2 px-3 text-center font-bold text-gray-800 border-t border-gray-300 border-l">
+              {formatNumber(index + 1)}
+            </td>
+            <td className="py-2 px-3 text-right border-t border-gray-300 border-l font-medium">
+              {item.description}
+            </td>
+            <td className="py-2 px-3 text-center border border-gray-300">
+              <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                {formatNumber(item.qty || 0)}
+              </span>
+            </td>
+            <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
+              <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                {formatNumber(item.weight || 0)}
+              </span>
+            </td>
+            <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
+              <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+              {formatCurrency(item.value || 0)}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
             </div>
           </div>
 

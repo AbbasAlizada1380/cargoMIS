@@ -296,7 +296,7 @@ const PackageCrud = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+setLoading(true)
     // Validate required fields
     if (!form.totalWeight || parseFloat(form.totalWeight) <= 0) {
       alert("لطفاً وزن بسته را وارد کنید");
@@ -360,9 +360,11 @@ const PackageCrud = () => {
 
       resetForm();
       fetchPackages();
+      setLoading(false)
     } catch (err) {
       console.error("خطا در ذخیره:", err);
       alert("خطا در ذخیره بسته");
+      setLoading(false)
     }
   };
 
@@ -444,24 +446,7 @@ const PackageCrud = () => {
     }
   };
 
-  // Calculate button for manual recalculation
-  const handleCalculateTotals = () => {
-    const weight = parseFloat(form.totalWeight) || 0;
-    const perKg = parseFloat(form.perKgCash) || 0;
-    const received = parseFloat(form.received) || 0;
-    const OPerKg = parseFloat(form.OPerKgCash) || 0;
 
-    const totalCash = (weight * perKg).toFixed(2);
-    const remain = (parseFloat(totalCash) - received).toFixed(2);
-    const OTotalCash = (weight * OPerKg).toFixed(2);
-
-    setForm(prev => ({
-      ...prev,
-      totalCash,
-      remain,
-      OTotalCash
-    }));
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -735,22 +720,7 @@ const PackageCrud = () => {
 
                 {/* Pricing Section - FIXED */}
                 <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <FaMoneyBillWave className="text-green-600" />
-                      اطلاعات قیمت‌گذاری
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={handleCalculateTotals}
-                      className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm"
-                    >
-                      <FaCalculator />
-                      محاسبه مجدد
-                    </button>
-                  </div>
-
-                  {/* Input Row 1 */}
+                                  {/* Input Row 1 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <FormInput
                       icon={<FaMoneyBillWave />}
