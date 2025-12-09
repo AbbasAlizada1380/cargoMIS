@@ -10,6 +10,7 @@ import {
   getPackagesByRange,
   updatePackageLocation,
   searchPackagesByName,
+  updatePackageTracking,
 } from "../Controllers/PackageController.js";
 
 const packageRouter = express.Router();
@@ -19,6 +20,7 @@ const packageRouter = express.Router();
 // =======================
 
 // Create package + sender + receiver
+packageRouter.post("/track/:id", updatePackageTracking);
 packageRouter.post("/updateLocation/:id", updatePackageLocation);
 packageRouter.post("/", createPackage);
 

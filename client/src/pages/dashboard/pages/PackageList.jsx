@@ -25,6 +25,7 @@ import {
 import PrintShippingBill from "./PrintShippingBill";
 import { packageService, updatePackageLocation } from "../services/packageService";
 import SearchBar from "../searching/SearchBar";
+import UpdatePackageTracking from "./UpdatePackageTracking";
 
 const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
@@ -39,6 +40,8 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
   const [originalPackages, setOriginalPackages] = useState([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
+    const [selectedPack, setSelectedPack] = useState(null);
+    const [isTOpen, setIsTOpen] = useState(false);
   // Store original packages on first load
   useEffect(() => {
     if (packages.length > 0 && originalPackages.length === 0) {
@@ -505,6 +508,13 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
                         >
                           <FaPrint className="text-sm" />
                         </button>
+                        <button
+                          onClick={() => {setSelectedPack(pkg.id); setIsTOpen(!isTOpen)}}
+                          className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                          title="جستجو"
+                        >
+                          <FaSearch className="text-sm" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -615,6 +625,8 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode }) => {
           </div>
         </div>
       )}
+
+         {isTOpen && <div><  UpdatePackageTracking setIsTOpen={setIsTOpen}          packageId={selectedPack}/></div>}
     </div>
   );
 };

@@ -172,6 +172,102 @@ export const getPackagesByRange = async (req, res) => {
   }
 };
 
+const sendCustomerNotification = async (email, subject, message, packageData = null) => {
+  try {
+    if (!email) {
+      console.log('No email address provided for customer notification');
+      return;
+    }
+
+    const htmlContent = packageData ? `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">
+          ${subject}
+        </h2>
+        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0;">
+          <p style="font-size: 16px; color: #555;">${message}</p>
+          
+          <div style="margin-top: 20px;">
+            <h3 style="color: #444;">Package Details:</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; width: 30%;">Package ID:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.id || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Tracking Number:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.track_number || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Current Status:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">
+                  <strong style="color: #2196F3;">${packageData.location || 'N/A'}</strong>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Sender:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">
+                  ${packageData.Sender?.name || 'N/A'}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Receiver:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">
+                  ${packageData.Receiver?.name || 'N/A'}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Weight:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.totalWeight || 0} kg</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Method:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.transitWay || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Estimated Delivery:</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">
+                  ${packageData.date ? new Date(packageData.date).toLocaleDateString() : 'N/A'}
+                </td>
+              </tr>
+            </table>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 15px; background-color: #e8f4fd; border-radius: 5px;">
+            <h4 style="color: #1565C0; margin-top: 0;">Tracking Information:</h4>
+            <p style="margin: 5px 0;">You can track your package using:</p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              <li>Package ID: <strong>${packageData.id}</strong></li>
+              <li>Tracking Number: <strong>${packageData.track_number || 'N/A'}</strong></li>
+            </ul>
+          </div>
+        </div>
+        <p style="color: #777; font-size: 12px; margin-top: 30px;">
+          This is an automated notification from Package Management System.<br>
+          Please do not reply to this email.
+        </p>
+      </div>
+    ` : `
+      <div style="font-family: Arial, sans-serif;">
+        <h2 style="color: #333;">${subject}</h2>
+        <p>${message}</p>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: `"Package Tracking System" <${EMAIL_CONFIG.auth.user}>`,
+      to: email,
+      subject: subject,
+      html: htmlContent
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Customer notification sent to: ${email}`);
+  } catch (error) {
+    console.error(`Error sending email to ${email}:`, error);
+  }
+};
+
 export const updatePackageLocation = async (req, res) => {
   try {
     const { id } = req.params; // Can be single or multiple IDs "1,2,4"
@@ -192,24 +288,163 @@ export const updatePackageLocation = async (req, res) => {
       });
     }
 
-    // Update all packages matching these IDs
-    const [updatedCount, updatedPackages] = await Package.update(
-      { location },
-      {
-        where: { id: ids },
-        returning: true, // return updated rows (Postgres) 
-      }
-    );
+    // Get packages before update to know old locations
+    const packagesBeforeUpdate = await Package.findAll({
+      where: { id: ids },
+      include: [
+        {
+          model: Customer,
+          as: "Sender",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        },
+        {
+          model: Customer,
+          as: "Receiver",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        }
+      ]
+    });
 
-    if (updatedCount === 0) {
+    if (packagesBeforeUpdate.length === 0) {
       return res.status(404).json({
         error: "No packages found for the provided IDs",
       });
     }
 
+    // Update all packages matching these IDs
+    const [updatedCount] = await Package.update(
+      { location },
+      {
+        where: { id: ids }
+      }
+    );
+
+    // Get updated packages with complete data
+    const updatedPackages = await Package.findAll({
+      where: { id: ids },
+      include: [
+        {
+          model: Customer,
+          as: "Sender",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        },
+        {
+          model: Customer,
+          as: "Receiver",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        }
+      ]
+    });
+
+    // Send email notifications for each package
+    for (const pkg of updatedPackages) {
+      // Find the old location from before update
+      const oldPackage = packagesBeforeUpdate.find(p => p.id === pkg.id);
+      const oldLocation = oldPackage ? oldPackage.location : 'Unknown';
+      
+      // Create package data for email
+      const packageData = {
+        id: pkg.id,
+        Sender: pkg.Sender,
+        Receiver: pkg.Receiver,
+        ...pkg.toJSON()
+      };
+
+      // Send email to admin (original notification)
+      await sendPackageNotification(
+        "📍 Package Location Updated",
+        `Package location has been updated:<br>
+         <strong>${oldLocation}</strong> → <strong>${location}</strong>`,
+        packageData
+      );
+
+      // Send email to SENDER if email exists
+      if (pkg.Sender?.email) {
+        await sendCustomerNotification(
+          pkg.Sender.email,
+          `📦 Package Status Update - Package #${pkg.id}`,
+          `Your package has been moved to a new location:<br>
+           <strong>New Status:</strong> ${location}<br><br>
+           The package is on its way to the destination.`,
+          packageData
+        );
+      }
+
+      // Send email to RECEIVER if email exists
+      if (pkg.Receiver?.email) {
+        await sendCustomerNotification(
+          pkg.Receiver.email,
+          `📦 Your Package Status Update - Package #${pkg.id}`,
+          `The package sent to you has been moved to a new location:<br>
+           <strong>Current Status:</strong> ${location}<br><br>
+           The package is on its way to you.`,
+          packageData
+        );
+      }
+    }
+
+    // If updating multiple packages, send a summary email to admin
+    if (updatedPackages.length > 1) {
+      const packageIds = updatedPackages.map(p => p.id).join(', ');
+      const packageNames = updatedPackages.map(p => 
+        `${p.id} (${p.Receiver?.name || 'Unknown'})`
+      ).join('<br>');
+
+      await sendPackageNotification(
+        `📍 ${updatedPackages.length} Package Locations Updated`,
+        `<strong>${updatedPackages.length} packages</strong> have been updated to new location:<br>
+         <strong>New Location:</strong> ${location}<br><br>
+         <strong>Updated Packages:</strong><br>
+         ${packageNames}<br><br>
+         <strong>Package IDs:</strong> ${packageIds}`,
+        null
+      );
+
+      // Count email notifications sent
+      const senderEmailsSent = updatedPackages.filter(p => p.Sender?.email).length;
+      const receiverEmailsSent = updatedPackages.filter(p => p.Receiver?.email).length;
+      
+      return res.status(200).json({
+        message: `Successfully updated location for ${updatedCount} package(s)`,
+        data: updatedPackages,
+        notifications: {
+          adminEmailsSent: 1 + (updatedPackages.length > 1 ? 1 : 0), // One per package + summary
+          senderEmailsSent,
+          receiverEmailsSent,
+          totalCustomerEmails: senderEmailsSent + receiverEmailsSent
+        },
+        details: {
+          oldLocations: packagesBeforeUpdate.map(p => ({ 
+            id: p.id, 
+            oldLocation: p.location 
+          })),
+          newLocation: location,
+          timestamp: new Date().toISOString()
+        }
+      });
+    }
+
+    // For single package update
+    const senderEmailSent = updatedPackages[0]?.Sender?.email ? 1 : 0;
+    const receiverEmailSent = updatedPackages[0]?.Receiver?.email ? 1 : 0;
+
     return res.status(200).json({
       message: `Successfully updated location for ${updatedCount} package(s)`,
-      data: updatedPackages, // may be empty for some DBs
+      data: updatedPackages,
+      notifications: {
+        adminEmailsSent: 1,
+        senderEmailsSent: senderEmailSent,
+        receiverEmailsSent: receiverEmailSent,
+        totalCustomerEmails: senderEmailSent + receiverEmailSent
+      },
+      details: {
+        oldLocations: packagesBeforeUpdate.map(p => ({ 
+          id: p.id, 
+          oldLocation: p.location 
+        })),
+        newLocation: location,
+        timestamp: new Date().toISOString()
+      }
     });
 
   } catch (error) {
@@ -583,3 +818,205 @@ export const deletePackage = async (req, res) => {
 };
 
 
+export const updatePackageTracking = async (req, res) => {
+  try {
+    const { id } = req.params; // Can be single ID or multiple IDs "1,2,4"
+    const { track_number } = req.body;
+
+    if (!track_number || track_number.trim() === "") {
+      return res.status(400).json({
+        error: "track_number field is required and cannot be empty",
+      });
+    }
+
+    const cleanTrackNumber = track_number.trim();
+
+    // Split IDs by comma and convert to numbers
+    const ids = id.split(",").map(i => parseInt(i)).filter(i => !isNaN(i));
+
+    if (ids.length === 0) {
+      return res.status(400).json({
+        error: "No valid package IDs provided",
+      });
+    }
+
+    // Get packages before update to know old tracking numbers
+    const packagesBeforeUpdate = await Package.findAll({
+      where: { id: ids },
+      include: [
+        {
+          model: Customer,
+          as: "Sender",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        },
+        {
+          model: Customer,
+          as: "Receiver",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        }
+      ]
+    });
+
+    if (packagesBeforeUpdate.length === 0) {
+      return res.status(404).json({
+        error: "No packages found for the provided IDs",
+      });
+    }
+
+    // Update all packages matching these IDs
+    const [updatedCount] = await Package.update(
+      { track_number: cleanTrackNumber },
+      {
+        where: { id: ids }
+      }
+    );
+
+    // Get updated packages with complete data
+    const updatedPackages = await Package.findAll({
+      where: { id: ids },
+      include: [
+        {
+          model: Customer,
+          as: "Sender",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        },
+        {
+          model: Customer,
+          as: "Receiver",
+          attributes: ["id", "name", "phoneNumber", "country", "email"]
+        }
+      ]
+    });
+
+    // Send email notifications for each package
+    const emailPromises = [];
+
+    for (const pkg of updatedPackages) {
+      // Find the old tracking number from before update
+      const oldPackage = packagesBeforeUpdate.find(p => p.id === pkg.id);
+      const oldTrackNumber = oldPackage ? oldPackage.track_number || 'Not Set' : 'Not Set';
+      
+      // Create package data for email
+      const packageData = {
+        id: pkg.id,
+        Sender: pkg.Sender,
+        Receiver: pkg.Receiver,
+        ...pkg.toJSON()
+      };
+
+      // Send email to admin (original notification)
+      emailPromises.push(
+        sendPackageNotification(
+          "📮 Package Tracking Number Updated",
+          `Package tracking number has been updated:<br>
+           <strong>${oldTrackNumber}</strong> → <strong>${cleanTrackNumber}</strong>`,
+          packageData
+        )
+      );
+
+      // Send email to SENDER if email exists
+      if (pkg.Sender?.email) {
+        emailPromises.push(
+          sendCustomerNotification(
+            pkg.Sender.email,
+            `📦 Tracking Number Assigned - Package #${pkg.id}`,
+            `Your package now has a tracking number:<br>
+             <strong>New Tracking Number:</strong> ${cleanTrackNumber}<br><br>
+             You can use this number to track your package's progress.`,
+            packageData
+          )
+        );
+      }
+
+      // Send email to RECEIVER if email exists
+      if (pkg.Receiver?.email) {
+        emailPromises.push(
+          sendCustomerNotification(
+            pkg.Receiver.email,
+            `📦 Tracking Number Assigned - Your Package #${pkg.id}`,
+            `The package sent to you now has a tracking number:<br>
+             <strong>Tracking Number:</strong> ${cleanTrackNumber}<br><br>
+             You can use this number to track the package's delivery progress.`,
+            packageData
+          )
+        );
+      }
+    }
+
+    // Wait for all emails to be sent
+    await Promise.allSettled(emailPromises);
+
+    // Count successful email notifications
+    const emailResults = await Promise.allSettled(emailPromises);
+    const successfulEmails = emailResults.filter(result => result.status === 'fulfilled').length;
+    const failedEmails = emailResults.filter(result => result.status === 'rejected').length;
+
+    // If updating multiple packages, send a summary email to admin
+    if (updatedPackages.length > 1) {
+      const packageIds = updatedPackages.map(p => p.id).join(', ');
+      const packageNames = updatedPackages.map(p => 
+        `${p.id} (${p.Receiver?.name || 'Unknown'})`
+      ).join('<br>');
+
+      await sendPackageNotification(
+        `📮 ${updatedPackages.length} Package Tracking Numbers Updated`,
+        `<strong>${updatedPackages.length} packages</strong> have been assigned a new tracking number:<br>
+         <strong>New Tracking Number:</strong> ${cleanTrackNumber}<br><br>
+         <strong>Updated Packages:</strong><br>
+         ${packageNames}<br><br>
+         <strong>Package IDs:</strong> ${packageIds}`,
+        null
+      );
+    }
+
+    // Calculate email statistics
+    const senderEmailsSent = updatedPackages.filter(p => p.Sender?.email).length;
+    const receiverEmailsSent = updatedPackages.filter(p => p.Receiver?.email).length;
+    const summaryEmailSent = updatedPackages.length > 1 ? 1 : 0;
+    const totalAdminEmails = updatedPackages.length + summaryEmailSent;
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully updated tracking number for ${updatedCount} package(s)`,
+      data: updatedPackages.map(pkg => ({
+        id: pkg.id,
+        track_number: pkg.track_number,
+        sender: pkg.Sender?.name,
+        receiver: pkg.Receiver?.name,
+        status: pkg.location
+      })),
+      tracking_info: {
+        new_tracking_number: cleanTrackNumber,
+        packages_updated: updatedPackages.length
+      },
+      notifications: {
+        adminEmailsSent: totalAdminEmails,
+        senderEmailsSent,
+        receiverEmailsSent,
+        totalCustomerEmails: senderEmailsSent + receiverEmailsSent,
+        email_delivery: {
+          attempted: emailPromises.length,
+          successful: successfulEmails,
+          failed: failedEmails
+        }
+      },
+      details: {
+        old_tracking_numbers: packagesBeforeUpdate.map(p => ({ 
+          id: p.id, 
+          old_track_number: p.track_number || 'Not Set'
+        })),
+        new_track_number: cleanTrackNumber,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error("Update Package Tracking Error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to update package tracking number",
+      details: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+};

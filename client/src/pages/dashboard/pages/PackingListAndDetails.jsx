@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaBox, FaWeight, FaCalendarAlt, FaPlus, FaTrash, FaMoneyBillWave } from "react-icons/fa";
+import UpdatePackageTracking from "./UpdatePackageTracking";
 
 const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) => {
     // Initial list - this should be static with value field added
@@ -35,6 +36,7 @@ const PackingListAndDetails = ({ form, handleChange, setForm, resetTrigger }) =>
     ];
 
     const [packList, setPackList] = useState(initialPackList);
+    
     const [newItemDescription, setNewItemDescription] = useState("");
     
     // Refs to track state and prevent infinite loops
