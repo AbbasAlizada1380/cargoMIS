@@ -81,7 +81,7 @@ const PackageCrud = () => {
   }, [selectedOptionId, priceList]);
   // Fetch initial data
   useEffect(() => {
-    fetchPackages();
+    fetchPackages(currentPage);
     fetchZones();
   }, []);
   // Fetch price list when receiver country or weight changes
@@ -300,7 +300,7 @@ const PackageCrud = () => {
   const onPageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      fetchPackages[pageNumber]
+      fetchPackages(pageNumber)
     }
   };
   const handleSubmit = async (e) => {

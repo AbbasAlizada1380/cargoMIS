@@ -140,26 +140,39 @@ export const findPriceByCountryAndWeight = async (req, res) => {
     }
 
     const weightValue = Number(weight);
+    const countryLower = country.toLowerCase();
 
-    // Find Zone by country
-    const zone = await Zone.findOne({
-      where: Sequelize.literal(`JSON_CONTAINS(countries, '["${country.toLowerCase()}"]')`)
+    // ---------------------------------------------
+    // 1️⃣ Find ALL zones containing the country
+    // ---------------------------------------------
+    const zones = await Zone.findAll({
+      where: Sequelize.literal(`JSON_CONTAINS(countries, '["${countryLower}"]')`)
     });
 
-    if (!zone) {
+    if (!zones || zones.length === 0) {
       return res.status(404).json({ message: "زون مربوطه یافت نشد." });
     }
 
-    // Get all price lists for the zone
+    const zoneIds = zones.map(z => z.id);
+
+    // ---------------------------------------------
+    // 2️⃣ Find ALL price lists for these zone IDs
+    // ---------------------------------------------
     const lists = await PriceList.findAll({
-      where: { zoneId: zone.id },
+      where: { zoneId: zoneIds },
       include: [{ model: TransitWay, attributes: ["id", "name"] }],
       order: [["id", "ASC"]],
     });
 
-    // Filter all items whose range matches the weight
+    if (!lists || lists.length === 0) {
+      return res.status(404).json({ message: "هیچ قیمت‌لیستی برای این زون‌ها یافت نشد." });
+    }
+
+    // ---------------------------------------------
+    // 3️⃣ Filter by weight range
+    // ---------------------------------------------
     const matching = lists.filter(item => {
-      if (typeof item.range !== "object" || item.range === null) return false;
+      if (!item.range || typeof item.range !== "object") return false;
 
       const min = Number(item.range.start);
       const max = Number(item.range.end);
@@ -168,11 +181,12 @@ export const findPriceByCountryAndWeight = async (req, res) => {
     });
 
     if (matching.length === 0) {
-      return res.status(404).json({
-        message: "برای این وزن هیچ قیمت‌لیستی یافت نشد.",
-      });
+      return res.status(404).json({ message: "برای این وزن هیچ قیمت‌لیستی یافت نشد." });
     }
 
+    // ---------------------------------------------
+    // 4️⃣ Return all valid prices
+    // ---------------------------------------------
     res.json({
       message: "تمام قیمت‌های مطابق یافت شد.",
       data: matching,
@@ -183,5 +197,6 @@ export const findPriceByCountryAndWeight = async (req, res) => {
     res.status(500).json({ message: "خطا در دریافت قیمت." });
   }
 };
+
 
 

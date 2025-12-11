@@ -99,7 +99,7 @@ export default function PriceListManager() {
   const handleSubmit = async () => {
     try {
       if (isEdit) {
-        await axios.patch(`${BASE_URL}/pricelist/${editId}`, formData);
+        await axios.put(`${BASE_URL}/pricelist/${editId}`, formData);
       } else {
         await axios.post(`${BASE_URL}/pricelist/`, formData);
       }
