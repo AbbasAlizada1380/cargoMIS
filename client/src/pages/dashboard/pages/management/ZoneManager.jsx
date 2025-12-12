@@ -13,7 +13,8 @@ import {
   FaList,
   FaRegFlag,
   FaCheckCircle,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaSpinner
 } from "react-icons/fa";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -30,12 +31,21 @@ export default function ZoneManager() {
   const [modalOpen, setModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
+  
+  // Loading states
+  const [loading, setLoading] = useState({
+    fetch: true,
+    submit: false,
+    delete: null, // null or ID of zone being deleted
+    edit: null, // null or ID of zone being edited
+  });
 
   useEffect(() => {
     fetchZones();
   }, []);
 
   const fetchZones = async () => {
+    setLoading(prev => ({ ...prev, fetch: true }));
     try {
       const res = await axios.get(`${BASE_URL}/zone/`);
       setZones(res.data);
@@ -46,6 +56,8 @@ export default function ZoneManager() {
         title: "خطا!",
         text: "دریافت اطلاعات مناطق با مشکل مواجه شد",
       });
+    } finally {
+      setLoading(prev => ({ ...prev, fetch: false }));
     }
   };
 
@@ -84,6 +96,8 @@ export default function ZoneManager() {
       setCountryInput("");
     }
 
+    setLoading(prev => ({ ...prev, submit: true }));
+
     try {
       const payload = {
         name: formData.name.trim(),
@@ -112,10 +126,12 @@ export default function ZoneManager() {
         title: "خطا!",
         text: err.response?.data?.message || "مشکلی در ارتباط با سرور رخ داده است",
       });
+    } finally {
+      setLoading(prev => ({ ...prev, submit: false }));
     }
   };
 
-  const deleteZone = (id) => {
+  const deleteZone = async (id) => {
     Swal.fire({
       title: "آیا مطمئن هستید؟",
       text: "این منطقه به همراه تمام اطلاعات مربوطه حذف خواهد شد!",
@@ -128,12 +144,15 @@ export default function ZoneManager() {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
+        setLoading(prev => ({ ...prev, delete: id }));
         try {
           await axios.delete(`${BASE_URL}/zone/${id}`);
           fetchZones();
           Swal.fire("حذف شد!", "منطقه با موفقیت حذف شد", "success");
         } catch (err) {
           Swal.fire("خطا!", "مشکلی در حذف منطقه رخ داد", "error");
+        } finally {
+          setLoading(prev => ({ ...prev, delete: null }));
         }
       }
     });
@@ -163,7 +182,8 @@ export default function ZoneManager() {
             </div>
             <button
               onClick={openModal}
-              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={loading.fetch}
             >
               <FaPlus />
               اضافه کردن منطقه جدید
@@ -177,7 +197,13 @@ export default function ZoneManager() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-blue-700">تعداد مناطق</div>
-                <div className="text-2xl font-bold text-blue-900">{zones.length}</div>
+                <div className="text-2xl font-bold text-blue-900">
+                  {loading.fetch ? (
+                    <FaSpinner className="animate-spin text-blue-500" />
+                  ) : (
+                    zones.length
+                  )}
+                </div>
               </div>
               <FaGlobe className="text-3xl text-blue-500 opacity-70" />
             </div>
@@ -188,7 +214,11 @@ export default function ZoneManager() {
               <div>
                 <div className="text-sm text-green-700">مجموع کشورها</div>
                 <div className="text-2xl font-bold text-green-900">
-                  {zones.reduce((total, zone) => total + zone.countries.length, 0)}
+                  {loading.fetch ? (
+                    <FaSpinner className="animate-spin text-green-500" />
+                  ) : (
+                    zones.reduce((total, zone) => total + zone.countries.length, 0)
+                  )}
                 </div>
               </div>
               <FaFlag className="text-3xl text-green-500 opacity-70" />
@@ -200,10 +230,13 @@ export default function ZoneManager() {
               <div>
                 <div className="text-sm text-purple-700">میانگین کشورها</div>
                 <div className="text-2xl font-bold text-purple-900">
-                  {zones.length > 0
-                    ? (zones.reduce((total, zone) => total + zone.countries.length, 0) / zones.length).toFixed(1)
-                    : 0
-                  }
+                  {loading.fetch ? (
+                    <FaSpinner className="animate-spin text-purple-500" />
+                  ) : (
+                    zones.length > 0
+                      ? (zones.reduce((total, zone) => total + zone.countries.length, 0) / zones.length).toFixed(1)
+                      : 0
+                  )}
                 </div>
               </div>
               <FaList className="text-3xl text-purple-500 opacity-70" />
@@ -224,6 +257,7 @@ export default function ZoneManager() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-3 pl-4 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              disabled={loading.fetch}
             />
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
@@ -235,126 +269,155 @@ export default function ZoneManager() {
             <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
               <FaGlobe className="text-blue-600" />
               لیست مناطق
-              {searchTerm && (
+              {loading.fetch ? (
+                <FaSpinner className="animate-spin text-blue-500" />
+              ) : searchTerm ? (
                 <span className="text-sm font-normal text-gray-600">
                   (نتایج جستجو: {filteredZones.length} مورد)
                 </span>
-              )}
+              ) : null}
             </h3>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
-                <tr>
-                  <th className="py-4 px-6 text-right font-semibold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <FaGlobe />
-                      نام منطقه
-                    </div>
-                  </th>
-                  <th className="py-4 px-6 text-right font-semibold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <FaFlag />
-                      کشورها
-                    </div>
-                  </th>
-                  <th className="py-4 px-6 text-right font-semibold text-gray-700">
-                    <div className="flex items-center gap-2">
-                      <FaList />
-                      تعداد کشورها
-                    </div>
-                  </th>
-                  <th className="py-4 px-6 text-right font-semibold text-gray-700">
-                    عملیات
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-200">
-                {filteredZones.length === 0 ? (
+          {loading.fetch ? (
+            <div className="py-20 flex flex-col items-center justify-center">
+              <FaSpinner className="text-4xl text-blue-500 animate-spin mb-4" />
+              <p className="text-gray-600">در حال بارگذاری مناطق...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
                   <tr>
-                    <td colSpan="4" className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <FaGlobe className="text-4xl text-gray-300 mb-4" />
-                        <p className="text-gray-500 text-lg">منطقه‌ای یافت نشد</p>
-                        <p className="text-gray-400 text-sm mt-2">
-                          {searchTerm ? "نتیجه‌ای برای جستجوی شما یافت نشد" : "هنوز منطقه‌ای ثبت نشده است"}
-                        </p>
+                    <th className="py-4 px-6 text-right font-semibold text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <FaGlobe />
+                        نام منطقه
                       </div>
-                    </td>
+                    </th>
+                    <th className="py-4 px-6 text-right font-semibold text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <FaFlag />
+                        کشورها
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-right font-semibold text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <FaList />
+                        تعداد کشورها
+                      </div>
+                    </th>
+                    <th className="py-4 px-6 text-right font-semibold text-gray-700">
+                      عملیات
+                    </th>
                   </tr>
-                ) : (
-                  filteredZones.map((zone) => (
-                    <tr
-                      key={zone.id}
-                      className="hover:bg-blue-50 transition-colors group"
-                    >
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center">
-                            <FaGlobe className="text-blue-600" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-gray-900">{zone.name}</div>
-                            <div className="text-xs text-gray-500">منطقه ID: {zone.id}</div>
-                          </div>
-                        </div>
-                      </td>
+                </thead>
 
-                      <td className="py-4 px-6">
-                        <div className="flex flex-wrap gap-1.5 max-w-md">
-                          {zone.countries.slice(0, 4).map((country, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-700 rounded-full text-sm border border-emerald-200"
-                            >
-                              <FaRegFlag className="text-xs" />
-                              {country}
-                            </span>
-                          ))}
-                          {zone.countries.length > 4 && (
-                            <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full text-sm">
-                              +{zone.countries.length - 4} کشور دیگر
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-100 to-purple-200 flex items-center justify-center">
-                            <span className="font-bold text-purple-700">{zone.countries.length}</span>
-                          </div>
-                          <span className="text-gray-600">کشور</span>
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-6">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => editModal(zone)}
-                            className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 rounded-xl hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-2"
-                          >
-                            <FaEdit />
-                            <span className="text-sm">ویرایش</span>
-                          </button>
-
-                          <button
-                            onClick={() => deleteZone(zone.id)}
-                            className="px-4 py-2 bg-gradient-to-r from-red-100 to-red-200 text-red-600 rounded-xl hover:from-red-200 hover:to-red-300 transition-all flex items-center gap-2"
-                          >
-                            <FaTrash />
-                            <span className="text-sm">حذف</span>
-                          </button>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredZones.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <FaGlobe className="text-4xl text-gray-300 mb-4" />
+                          <p className="text-gray-500 text-lg">منطقه‌ای یافت نشد</p>
+                          <p className="text-gray-400 text-sm mt-2">
+                            {searchTerm ? "نتیجه‌ای برای جستجوی شما یافت نشد" : "هنوز منطقه‌ای ثبت نشده است"}
+                          </p>
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : (
+                    filteredZones.map((zone) => (
+                      <tr
+                        key={zone.id}
+                        className="hover:bg-blue-50 transition-colors group"
+                      >
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 flex items-center justify-center">
+                              <FaGlobe className="text-blue-600" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-gray-900">{zone.name}</div>
+                              <div className="text-xs text-gray-500">منطقه ID: {zone.id}</div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-6">
+                          <div className="flex flex-wrap gap-1.5 max-w-md">
+                            {zone.countries.slice(0, 4).map((country, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-700 rounded-full text-sm border border-emerald-200"
+                              >
+                                <FaRegFlag className="text-xs" />
+                                {country}
+                              </span>
+                            ))}
+                            {zone.countries.length > 4 && (
+                              <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full text-sm">
+                                +{zone.countries.length - 4} کشور دیگر
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-100 to-purple-200 flex items-center justify-center">
+                              <span className="font-bold text-purple-700">{zone.countries.length}</span>
+                            </div>
+                            <span className="text-gray-600">کشور</span>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-6">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => editModal(zone)}
+                              className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 rounded-xl hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                              disabled={loading.delete === zone.id}
+                            >
+                              {loading.edit === zone.id ? (
+                                <>
+                                  <FaSpinner className="animate-spin" />
+                                  <span className="text-sm">در حال ویرایش...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FaEdit />
+                                  <span className="text-sm">ویرایش</span>
+                                </>
+                              )}
+                            </button>
+
+                            <button
+                              onClick={() => deleteZone(zone.id)}
+                              className="px-4 py-2 bg-gradient-to-r from-red-100 to-red-200 text-red-600 rounded-xl hover:from-red-200 hover:to-red-300 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                              disabled={loading.delete === zone.id || loading.edit === zone.id}
+                            >
+                              {loading.delete === zone.id ? (
+                                <>
+                                  <FaSpinner className="animate-spin" />
+                                  <span className="text-sm">در حال حذف...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FaTrash />
+                                  <span className="text-sm">حذف</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* MODAL */}
@@ -374,7 +437,8 @@ export default function ZoneManager() {
                   </div>
                   <button
                     onClick={() => setModalOpen(false)}
-                    className="text-white hover:text-gray-200 transition-colors"
+                    className="text-white hover:text-gray-200 transition-colors disabled:opacity-50"
+                    disabled={loading.submit}
                   >
                     <FaTimes size={20} />
                   </button>
@@ -399,9 +463,10 @@ export default function ZoneManager() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all disabled:bg-gray-100"
                     placeholder="مثال: اروپا، آسیا، خلیج..."
                     required
+                    disabled={loading.submit}
                   />
                 </div>
 
@@ -424,8 +489,9 @@ export default function ZoneManager() {
                         type="text"
                         value={countryInput}
                         onChange={(e) => setCountryInput(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all disabled:bg-gray-100"
                         placeholder="نام کشور را وارد کنید..."
+                        disabled={loading.submit}
                       />
                       <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     </div>
@@ -446,7 +512,8 @@ export default function ZoneManager() {
                           });
                           setCountryInput("");
                         }}
-                        className="px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all flex items-center gap-2"
+                        className="px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        disabled={loading.submit}
                       >
                         <FaPlus />
                         افزودن
@@ -460,7 +527,8 @@ export default function ZoneManager() {
                           setCountryInput("");
                           setEditCountryIndex(null);
                         }}
-                        className="px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all flex items-center gap-2"
+                        className="px-5 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        disabled={loading.submit}
                       >
                         <FaSave />
                         بروزرسانی
@@ -491,7 +559,8 @@ export default function ZoneManager() {
                                 setCountryInput(country);
                                 setEditCountryIndex(index);
                               }}
-                              className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 rounded-lg hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-1"
+                              className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 rounded-lg hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-1 disabled:opacity-70"
+                              disabled={loading.submit}
                             >
                               <FaEdit className="text-xs" />
                               ویرایش
@@ -503,7 +572,8 @@ export default function ZoneManager() {
                                 );
                                 setFormData({ ...formData, countries: filtered });
                               }}
-                              className="px-3 py-1 bg-gradient-to-r from-red-100 to-red-200 text-red-600 rounded-lg hover:from-red-200 hover:to-red-300 transition-all flex items-center gap-1"
+                              className="px-3 py-1 bg-gradient-to-r from-red-100 to-red-200 text-red-600 rounded-lg hover:from-red-200 hover:to-red-300 transition-all flex items-center gap-1 disabled:opacity-70"
+                              disabled={loading.submit}
                             >
                               <FaTrash className="text-xs" />
                               حذف
@@ -521,17 +591,28 @@ export default function ZoneManager() {
                 <div className="flex justify-between">
                   <button
                     onClick={() => setModalOpen(false)}
-                    className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2"
+                    className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2 disabled:opacity-70"
+                    disabled={loading.submit}
                   >
                     <FaTimes />
                     لغو
                   </button>
                   <button
                     onClick={handleSubmit}
-                    className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2"
+                    className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    disabled={loading.submit}
                   >
-                    <FaSave />
-                    {isEdit ? "بروزرسانی منطقه" : "ذخیره منطقه"}
+                    {loading.submit ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        {isEdit ? "در حال بروزرسانی..." : "در حال ذخیره..."}
+                      </>
+                    ) : (
+                      <>
+                        <FaSave />
+                        {isEdit ? "بروزرسانی منطقه" : "ذخیره منطقه"}
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

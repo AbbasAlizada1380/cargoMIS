@@ -12,8 +12,6 @@ import {
   FaChartLine,
   FaTimes,
   FaSave,
-  FaFilter,
-  FaSortAmountDown,
   FaSearch
 } from "react-icons/fa";
 
@@ -25,6 +23,11 @@ export default function PriceListManager() {
   const [transits, setTransits] = useState([]);
   const [activeTransit, setActiveTransit] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState({
+    submit: false,
+    delete: false,
+    fetch: false
+  });
 
   const [formData, setFormData] = useState({
     zoneId: "",
@@ -44,19 +47,34 @@ export default function PriceListManager() {
   }, []);
 
   const fetchPriceLists = async () => {
-    const res = await axios.get(`${BASE_URL}/priceList`);
-    setPriceLists(res.data);
+    setLoading(prev => ({ ...prev, fetch: true }));
+    try {
+      const res = await axios.get(`${BASE_URL}/priceList`);
+      setPriceLists(res.data);
+    } catch (error) {
+      console.error("Error fetching price lists:", error);
+    } finally {
+      setLoading(prev => ({ ...prev, fetch: false }));
+    }
   };
 
   const fetchZones = async () => {
-    const res = await axios.get(`${BASE_URL}/zone/`);
-    setZones(res.data);
+    try {
+      const res = await axios.get(`${BASE_URL}/zone/`);
+      setZones(res.data);
+    } catch (error) {
+      console.error("Error fetching zones:", error);
+    }
   };
 
   const fetchTransits = async () => {
-    const res = await axios.get(`${BASE_URL}/transitWay/`);
-    setTransits(res.data);
-    if (res.data.length > 0) setActiveTransit(res.data[0].id);
+    try {
+      const res = await axios.get(`${BASE_URL}/transitWay/`);
+      setTransits(res.data);
+      if (res.data.length > 0) setActiveTransit(res.data[0].id);
+    } catch (error) {
+      console.error("Error fetching transits:", error);
+    }
   };
 
   const handleChange = (e) => {
@@ -75,7 +93,7 @@ export default function PriceListManager() {
   const openModal = () => {
     setFormData({
       zoneId: "",
-      transitId: activeTransit,
+      transitId: activeTransit || "",
       range: { start: "", end: "" },
       price: "",
     });
@@ -97,6 +115,9 @@ export default function PriceListManager() {
   };
 
   const handleSubmit = async () => {
+    if (loading.submit) return;
+    
+    setLoading(prev => ({ ...prev, submit: true }));
     try {
       if (isEdit) {
         await axios.put(`${BASE_URL}/pricelist/${editId}`, formData);
@@ -120,11 +141,15 @@ export default function PriceListManager() {
         title: "خطا!",
         text: err.response?.data?.message || "مشکلی در ارتباط با سرور رخ داده است.",
       });
+    } finally {
+      setLoading(prev => ({ ...prev, submit: false }));
     }
   };
 
-  const deletePriceList = (id) => {
-    Swal.fire({
+  const deletePriceList = async (id) => {
+    if (loading.delete) return;
+    
+    const result = await Swal.fire({
       title: "آیا مطمئن هستید؟",
       text: "این عمل قابل بازگشت نیست!",
       icon: "warning",
@@ -134,13 +159,20 @@ export default function PriceListManager() {
       confirmButtonText: "بله، حذف شود",
       cancelButtonText: "لغو",
       reverseButtons: true
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        await axios.delete(`${BASE_URL}/pricelist/${id}`);
-        fetchPriceLists();
-        Swal.fire("حذف شد!", "قیمت مورد نظر حذف شد.", "success");
-      }
     });
+
+    if (!result.isConfirmed) return;
+
+    setLoading(prev => ({ ...prev, delete: true }));
+    try {
+      await axios.delete(`${BASE_URL}/pricelist/${id}`);
+      fetchPriceLists();
+      Swal.fire("حذف شد!", "قیمت مورد نظر حذف شد.", "success");
+    } catch (error) {
+      Swal.fire("خطا!", "مشکلی در حذف قیمت رخ داده است.", "error");
+    } finally {
+      setLoading(prev => ({ ...prev, delete: false }));
+    }
   };
 
   const filteredPriceLists = priceLists.filter((p) => {
@@ -169,10 +201,20 @@ export default function PriceListManager() {
             </div>
             <button
               onClick={openModal}
-              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center gap-2"
+              disabled={loading.fetch}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              <FaPlus />
-              اضافه کردن قیمت جدید
+              {loading.fetch ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  در حال بارگذاری...
+                </>
+              ) : (
+                <>
+                  <FaPlus />
+                  اضافه کردن قیمت جدید
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -192,8 +234,9 @@ export default function PriceListManager() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 pl-4 pr-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                disabled={loading.fetch}
               />
-              <FaFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
           </div>
 
@@ -208,7 +251,8 @@ export default function PriceListManager() {
                 <button
                   key={t.id}
                   onClick={() => setActiveTransit(t.id)}
-                  className={`px-5 py-2.5 rounded-xl font-medium transition-all transform hover:scale-[1.02] flex items-center gap-2 ${
+                  disabled={loading.fetch}
+                  className={`px-5 py-2.5 rounded-xl font-medium transition-all transform hover:scale-[1.02] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     activeTransit === t.id
                       ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 border"
@@ -304,7 +348,16 @@ export default function PriceListManager() {
               </thead>
 
               <tbody className="divide-y divide-gray-200">
-                {filteredPriceLists.length === 0 ? (
+                {loading.fetch ? (
+                  <tr>
+                    <td colSpan="5" className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-gray-600">در حال بارگذاری قیمت‌ها...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredPriceLists.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center">
@@ -373,7 +426,8 @@ export default function PriceListManager() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => editModal(item)}
-                            className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 rounded-xl hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-2"
+                            disabled={loading.submit || loading.delete}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 rounded-xl hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <FaEdit />
                             <span className="text-sm">ویرایش</span>
@@ -381,10 +435,20 @@ export default function PriceListManager() {
 
                           <button
                             onClick={() => deletePriceList(item.id)}
-                            className="px-4 py-2 bg-gradient-to-r from-red-100 to-red-200 text-red-600 rounded-xl hover:from-red-200 hover:to-red-300 transition-all flex items-center gap-2"
+                            disabled={loading.submit || loading.delete}
+                            className="px-4 py-2 bg-gradient-to-r from-red-100 to-red-200 text-red-600 rounded-xl hover:from-red-200 hover:to-red-300 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <FaTrash />
-                            <span className="text-sm">حذف</span>
+                            {loading.delete ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-sm">حذف...</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaTrash />
+                                <span className="text-sm">حذف</span>
+                              </>
+                            )}
                           </button>
                         </div>
                       </td>
@@ -412,8 +476,9 @@ export default function PriceListManager() {
                     </h2>
                   </div>
                   <button
-                    onClick={() => setModalOpen(false)}
-                    className="text-white hover:text-gray-200 transition-colors"
+                    onClick={() => !loading.submit && setModalOpen(false)}
+                    disabled={loading.submit}
+                    className="text-white hover:text-gray-200 transition-colors disabled:opacity-50"
                   >
                     <FaTimes size={20} />
                   </button>
@@ -435,7 +500,8 @@ export default function PriceListManager() {
                     name="zoneId"
                     value={formData.zoneId}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                    disabled={loading.submit}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">انتخاب زون...</option>
                     {zones.map((z) => (
@@ -458,7 +524,8 @@ export default function PriceListManager() {
                       name="start"
                       value={formData.range.start}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                      disabled={loading.submit}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="0"
                       step="0.01"
                     />
@@ -473,7 +540,8 @@ export default function PriceListManager() {
                       name="end"
                       value={formData.range.end}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                      disabled={loading.submit}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="100"
                       step="0.01"
                     />
@@ -486,12 +554,13 @@ export default function PriceListManager() {
                     <FaDollarSign className="text-yellow-500" />
                     قیمت (دلار)
                   </label>
-                  <input
+                    <input
                     type="number"
                     name="price"
                     value={formData.price}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition-all"
+                    disabled={loading.submit}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="0.00"
                     step="0.01"
                   />
@@ -514,21 +583,32 @@ export default function PriceListManager() {
               <div className="p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
                 <div className="flex justify-between">
                   <button
-                    onClick={() => setModalOpen(false)}
-                    className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2"
+                    onClick={() => !loading.submit && setModalOpen(false)}
+                    disabled={loading.submit}
+                    className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <FaTimes />
                     لغو
                   </button>
                   <button
                     onClick={handleSubmit}
-                    className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2"
+                    disabled={loading.submit}
+                    className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] justify-center"
                   >
-                    <FaSave />
-                    {isEdit ? "بروزرسانی قیمت" : "ذخیره قیمت"}
+                    {loading.submit ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {isEdit ? "در حال بروزرسانی..." : "در حال ذخیره..."}
+                      </>
+                    ) : (
+                      <>
+                        <FaSave />
+                        {isEdit ? "بروزرسانی قیمت" : "ذخیره قیمت"}
+                      </>
+                    )}
                   </button>
                 </div>
-              </div>
+              </div> 
             </div>
           </div>
         )}
