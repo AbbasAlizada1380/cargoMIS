@@ -16,41 +16,6 @@ export function getTokenExpiration(token) {
   }
 }
 
-// export default function PrivateRoute() {
-//   const dispatch = useDispatch();
-//   const { accessToken } = useSelector((state) => state.user);
-
-//   if (!accessToken) {
-//     return <Navigate to="/sign-in" replace />;
-//   }
-
-//   const expiresAtMs = getTokenExpiration(accessToken);
-//   const now = Date.now();
-
-//   console.log(getTokenExpiration(accessToken));
-  
-//   // If expired → logout immediately
-//   if (!expiresAtMs || now >= expiresAtMs) {
-//     dispatch(signOutSuccess());
-//     return <Navigate to="/sign-in" replace />;
-//   }
-
-//   // AUTO LOGOUT WHEN TIME REACHES EXPIRATION
-//   useEffect(() => {
-//     const timeLeft = expiresAtMs - now;
-
-//     const timer = setTimeout(() => {
-//       dispatch(signOutSuccess());
-//       window.location.href = "/sign-in"; // force redirect without refresh
-//     }, timeLeft);
-
-//     return () => clearTimeout(timer);
-//   }, [dispatch, expiresAtMs]);
-
-//   return <Outlet />;
-// }
-
-
 export default function PrivateRoute() {
   const dispatch = useDispatch();
   const { accessToken } = useSelector((state) => state.user);
@@ -59,33 +24,68 @@ export default function PrivateRoute() {
     return <Navigate to="/sign-in" replace />;
   }
 
-  // ----------------------------------------
-  // 🔥 FIXED LOGOUT DATE & TIME
-  // Wednesday, 17 December 2025 at 2:23 PM
-  const logoutAt = new Date("2025-12-17T14:26:00");
-  // ----------------------------------------
+  const expiresAtMs = getTokenExpiration(accessToken);
+  const now = Date.now();
 
-  const now = new Date();
-
-  console.log("Logout scheduled at:", logoutAt.getTime());
-
-  // If current time is past the logout time → force logout
-  if (now >= logoutAt) {
+  console.log(getTokenExpiration(accessToken));
+  
+  // If expired → logout immediately
+  if (!expiresAtMs || now >= expiresAtMs) {
     dispatch(signOutSuccess());
     return <Navigate to="/sign-in" replace />;
   }
 
-  // AUTO LOGOUT EXACTLY AT FIXED DATE/TIME
+  // AUTO LOGOUT WHEN TIME REACHES EXPIRATION
   useEffect(() => {
-    const timeLeft = logoutAt - new Date();
+    const timeLeft = expiresAtMs - now;
 
     const timer = setTimeout(() => {
       dispatch(signOutSuccess());
-      window.location.href = "/sign-in";
+      window.location.href = "/sign-in"; // force redirect without refresh
     }, timeLeft);
 
     return () => clearTimeout(timer);
-  }, [dispatch]);
+  }, [dispatch, expiresAtMs]);
 
   return <Outlet />;
 }
+
+
+// export default function PrivateRoute() {
+//   const dispatch = useDispatch();
+//   const { accessToken } = useSelector((state) => state.user);
+
+//   if (!accessToken) {
+//     return <Navigate to="/sign-in" replace />;
+//   }
+
+//   // ----------------------------------------
+//   // 🔥 FIXED LOGOUT DATE & TIME
+//   // Wednesday, 17 December 2025 at 2:23 PM
+//   const logoutAt = new Date("2025-12-17T14:26:00");
+//   // ----------------------------------------
+
+//   const now = new Date();
+
+//   console.log("Logout scheduled at:", logoutAt.getTime());
+
+//   // If current time is past the logout time → force logout
+//   if (now >= logoutAt) {
+//     dispatch(signOutSuccess());
+//     return <Navigate to="/sign-in" replace />;
+//   }
+
+//   // AUTO LOGOUT EXACTLY AT FIXED DATE/TIME
+//   useEffect(() => {
+//     const timeLeft = logoutAt - new Date();
+
+//     const timer = setTimeout(() => {
+//       dispatch(signOutSuccess());
+//       window.location.href = "/sign-in";
+//     }, timeLeft);
+
+//     return () => clearTimeout(timer);
+//   }, [dispatch]);
+
+//   return <Outlet />;
+// }

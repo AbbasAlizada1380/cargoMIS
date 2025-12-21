@@ -7,6 +7,8 @@ import {
   FaSignOutAlt,
   FaUser,
   FaChevronDown,
+  FaTimes,
+  FaBars,
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,7 +21,7 @@ import { shamsiMonths } from "../../utils/dateConvert";
 
 moment.loadPersian({ usePersianDigits: true, dialect: "persian-modern" });
 
-const Navbar = () => {
+const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
   const [dateInfo, setDateInfo] = useState({
     day: "",
     month: "",
@@ -94,14 +96,14 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white text-gray-800 py-2 shadow-sm px-6 grid grid-cols-3 border-b border-gray-200  sticky top-0 z-40 backdrop-blur-sm">
+      <nav className="bg-white border text-gray-800 py-2 shadow-sm px-4 flex items-center justify-between md:grid grid-cols-3 border-b border-gray-200  sticky top-0 z-40 backdrop-blur-sm">
         {/* Left Section - Logo/Brand */}
-        <div className="flex items-center">
+        <div className="flex  items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-xl shadow-lg">
+            <div className="p-2 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-md shadow-lg">
               <MdDashboard size={20} className="text-white" />
             </div>
-            <div className="hidden sm:block">
+            <div className="">
               <h1 className="text-lg font-bold text-gray-800"> افغان کارگو</h1>
               <p className="text-xs text-gray-500">سیستم مدیریت افغان کارگو</p>
             </div>
@@ -109,7 +111,7 @@ const Navbar = () => {
         </div>
 
         {/* Center Section - Date & Time */}
-        <div className="hidden md:flex items-center justify-center">
+        <div className="hidden md:flex items-center justify-end">
           <div className="">
             <div className="text-center flex items-center gap-4">
               <div className="text-right flex items-center gap-x-3">
@@ -125,7 +127,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Section - User Menu & Notifications */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-x-4">
           {/* Notifications Bell */}
           <div className="relative">
             <button className="relative p-2 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all duration-200 group">
@@ -141,7 +143,7 @@ const Navbar = () => {
           {/* User Profile Dropdown */}
           <div ref={profileDropdownRef} className="relative">
             <button
-              className="flex items-center gap-3 group bg-white hover:bg-gray-50 rounded-2xl px-3 py-2 transition-all duration-200 border border-transparent hover:border-cyan-200"
+              className="flex items-center gap-3 group bg-white hover:bg-gray-50 rounded-2xl  py-2 transition-all duration-200 border border-transparent hover:border-cyan-200"
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
             >
               <div className="flex items-center gap-3">
@@ -247,6 +249,16 @@ const Navbar = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+          <div className="lg:hidden ">
+            <div className="flex items-center ">
+              <button
+                onClick={() => setIsMobileOpen(!isMobileOpen)}
+                className="p-2 hover:bg-cyan-600 text-gray-700 rounded-md hover:text-white transition-colors cursor-pointer duration-200"
+              >
+                {isMobileOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+              </button>
+            </div>
           </div>
         </div>
       </nav>

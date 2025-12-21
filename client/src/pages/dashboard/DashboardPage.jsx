@@ -5,14 +5,19 @@ import MainContent from "./MainContent";
 
 const Dashboard = () => {
   const [activeComponent, setActiveComponent] = useState(null);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <div className="h-screen flex-shrink-0">
-        <Sidebar setActiveComponent={setActiveComponent} />
+        <Sidebar
+          isMobileOpen={isMobileOpen}
+          setIsMobileOpen={setIsMobileOpen}
+          setActiveComponent={setActiveComponent}
+        />
       </div>
 
       <div className="flex flex-col flex-1 h-screen overflow-hidden">
-        <Navbar />
+        <Navbar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
         <main className="flex-1 overflow-y-auto   custom-scrollbar">
           <MainContent activeComponent={activeComponent} />
         </main>

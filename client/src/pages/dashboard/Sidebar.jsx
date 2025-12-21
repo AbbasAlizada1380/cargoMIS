@@ -7,16 +7,22 @@ import { signOutSuccess } from "../../state/userSlice/userSlice";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { MdLocalShipping } from "react-icons/md";
+import { FaMapMarkedAlt } from "react-icons/fa";
+import { HiOutlineTruck } from "react-icons/hi";
+import { LuUserPlus } from "react-icons/lu";
+import { BsCurrencyDollar } from "react-icons/bs";
+
+import { MdAddBox } from "react-icons/md";
 
 import { MdOutlineDashboardCustomize } from "react-icons/md";
 import { LucideUserRoundPlus } from "lucide-react";
 import { FaList } from "react-icons/fa";
 import { MdAddShoppingCart } from "react-icons/md";
 
-const Sidebar = ({ setActiveComponent }) => {
+const Sidebar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
   const [selectedC, setSelectedC] = useState("home");
   const [activeC, setActiveC] = useState("home");
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -56,18 +62,46 @@ const Sidebar = ({ setActiveComponent }) => {
   };
 
   const AllComponents = [
-    { name: "صفحه اصلی", value: "home", icon: <MdOutlineDashboardCustomize /> },
-    { name: "بسته جدید", value: "Packages", icon: <MdAddShoppingCart /> },
-    { name: "لیست بسته ها", value: "PackageList", icon: <FaList /> },
-    { name: "مدیریت زون", value: "ZoneManagement", icon: <FaList /> },
-    { name: "مدیریت ترانزیت", value: "TransitWayManagement", icon: <FaList /> },
-    { name: "مدیریت لیست قیمت ها", value: "PriceListManagement", icon: <FaList /> },
+    {
+      name: "صفحه اصلی",
+      value: "home",
+      icon: <MdOutlineDashboardCustomize />,
+    },
+    {
+      name: "بسته جدید",
+      value: "Packages",
+      icon: <MdAddBox />,
+    },
+    {
+      name: "لیست بسته ها",
+      value: "PackageList",
+      icon: <FaList />,
+    },
+    {
+      name: "مدیریت زون",
+      value: "ZoneManagement",
+      icon: <FaMapMarkedAlt />,
+    },
+    {
+      name: "مدیریت ترانزیت",
+      value: "TransitWayManagement",
+      icon: <HiOutlineTruck />,
+    },
+    {
+      name: "مدیریت لیست قیمت ها",
+      value: "PriceListManagement",
+      icon: <BsCurrencyDollar />,
+    },
     {
       name: "ثبت کاربر جدید",
       value: "AddUser",
-      icon: <LucideUserRoundPlus />,
+      icon: <LuUserPlus />,
     },
-    { name: "خروج", value: "signout", icon: <FaSignOutAlt /> },
+    {
+      name: "خروج",
+      value: "signout",
+      icon: <FaSignOutAlt />,
+    },
   ];
 
   let accessibleComponents = [];
@@ -78,8 +112,7 @@ const Sidebar = ({ setActiveComponent }) => {
     if (userRole === "admin") {
       accessibleComponents = AllComponents;
     } else if (userRole === "reception") {
-      const receptionAllowedValues = 
-      [
+      const receptionAllowedValues = [
         "home",
         "Orders",
         "OrdersList",
@@ -121,37 +154,10 @@ const Sidebar = ({ setActiveComponent }) => {
 
   return (
     <>
-      {/* Mobile Header */}
-      {isMobile && (
-        <div className="lg:hidden fixed top-0 left-0 right-0 shadow-lg z-50">
-          <div className="flex items-center justify-between p-4 ">
-            <div dir="rtl" className="flex items-center gap-3">
-              <div className="flex items-center justify-center p-1  rounded-full">
-                <img
-                  src="/logo.png"
-                  alt="Logo"
-                  className="h-8 w-8 rounded-full"
-                />
-              </div>
-              <span className="text-lg font-semibold text-white whitespace-nowrap">
-             افغان کارگو
-              </span>
-            </div>
-
-            <button
-              onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="p-2 hover:bg-cyan-600 rounded-lg transition-colors duration-200"
-            >
-              {isMobileOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Mobile Overlay */}
       {isMobile && isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed  inset-0 bg-black/50 z-40"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -189,54 +195,49 @@ const Sidebar = ({ setActiveComponent }) => {
         )}
 
         {/* Navigation Items */}
-        <ul className="mr-1 px-3">
+        <ul className={`mr-1 px-3 ${isMobile ? "mt-5" : "mt-0"} `}>
           {AllComponents.map((component, index) => (
             <li key={index} className="relative group cursor-pointer mb-1">
               {component.value === "signout" ? (
                 <button
                   onClick={handleSignOutClick}
-                  className={`relative flex items-center w-full px-6 py-2.5 transition-all duration-300 rounded-xl
+                  className={`relative flex items-center cursor-pointer w-full px-4 py-2.5 transition-all duration-300 rounded-md
                     hover:transform hover:scale-105
                     ${
                       activeC === component.value
-                        ? "bg-red-500 text-white shadow-lg"
+                        ? "bg-red-500 text-white font-semibold shadow-md"
                         : "hover:bg-red-500 hover:bg-opacity-20 text-white hover:text-white"
                     }`}
                 >
                   <span className="text-xl transform transition-transform duration-300 group-hover:scale-110">
                     {component.icon}
                   </span>
-                  <span className="mr-4 text-lg font-semibold whitespace-nowrap">
+                  <span className="mr-3 text-md font-semibold whitespace-nowrap">
                     {component.name}
                   </span>
 
                   {/* Hover effect */}
-                  <div className="absolute inset-0 rounded-xl bg-red-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                  <div className="absolute inset-0 rounded-md bg-red-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
                 </button>
               ) : (
                 <button
                   onClick={() => handleComponentClick(component.value)}
                   onMouseEnter={() => setActiveC(component.value)}
                   onMouseLeave={() => setActiveC(selectedC)}
-                  className={`relative flex items-center w-full px-6 py-2.5 transition-all duration-300 rounded-xl
+                  className={`relative flex items-center w-full cursor-pointer px-4 py-2.5 transition-all duration-300 rounded-md
                     hover:transform hover:scale-105
                     ${
                       activeC === component.value
-                        ? "bg-gray-200 text-[#0F3A76] shadow-lg font-bold"
+                        ? "bg-gray-200 text-[#0F3A76] shadow-md font-semibold"
                         : "hover:bg-gray-200 hover:bg-opacity-20 text-white hover:text-white"
                     }`}
                 >
                   <span className="text-xl transform transition-transform duration-300 group-hover:scale-110">
                     {component.icon}
                   </span>
-                  <span className="mr-4 text-lg font-semibold whitespace-nowrap">
+                  <span className="mr-3 text-md font-semibold whitespace-nowrap">
                     {component.name}
                   </span>
-
-                  {/* Active indicator */}
-                  {activeC === component.value && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-white rounded-full" />
-                  )}
 
                   {/* Hover effect */}
                   <div className="absolute inset-0 rounded-xl bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
