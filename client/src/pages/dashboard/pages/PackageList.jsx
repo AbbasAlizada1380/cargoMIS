@@ -421,7 +421,7 @@ const PackageList = ({
                 {packages.map((pkg) => (
                   <tr
                     key={pkg.id}
-                    className={`hover:bg-gray-50 transition-colors ${
+                    className={`hover:bg-gray-50  odd:bg-gray-100 even:bg-white transition-colors ${
                       selectedPackages.includes(pkg.id) ? "bg-blue-50" : ""
                     } ${isSearchActive ? "search-result-row" : ""}`}
                   >
