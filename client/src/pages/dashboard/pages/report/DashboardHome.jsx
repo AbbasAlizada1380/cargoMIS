@@ -20,7 +20,7 @@ import {
   FaDollarSign,
   FaBoxes,
   FaPercent,
-  FaHistory
+  FaHistory,
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -77,22 +77,24 @@ const DashboardHome = () => {
 
   const formatTime = (date) => {
     return new Intl.DateTimeFormat("fa-AF", {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     }).format(date);
   };
 
   // Loading State
   if (loading && !reportData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="relative">
             <div className="w-20 h-20 border-4 border-blue-100 rounded-full mx-auto mb-6"></div>
             <div className="w-20 h-20 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">در حال بارگذاری داشبورد</h3>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            در حال بارگذاری داشبورد
+          </h3>
           <p className="text-gray-500">دریافت آخرین اطلاعات...</p>
         </div>
       </div>
@@ -102,7 +104,7 @@ const DashboardHome = () => {
   // Error State
   if (error && !reportData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center border border-red-100">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FaExclamationTriangle className="text-red-500 text-2xl" />
@@ -132,7 +134,7 @@ const DashboardHome = () => {
     totalOrdersCount,
     timeRange,
     totalPieces,
-    totalIncome
+    totalIncome,
   } = reportData;
 
   const deliveryRate =
@@ -190,23 +192,19 @@ const DashboardHome = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen p-3  md:p-6 ">
       {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-
-
-          <div className="flex  gap-3">
-            {currentUser.role === "admin" && (
-              <div className="transform hover:-translate-y-0.5 transition-transform duration-200">
-                <PackageDownload />
-              </div>
-            )}
-
-          </div>
+      <div className="mb-8  w-full">
+        <div className="">
+          {currentUser.role === "admin" && (
+            <div className="">
+              <PackageDownload />
+            </div>
+          )}
         </div>
+
         {/* Filters Panel */}
-        {showFilters && (
+        {/* {showFilters && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100 animate-slideDown">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -274,7 +272,7 @@ const DashboardHome = () => {
               </button>
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Stats Grid */}
@@ -282,15 +280,15 @@ const DashboardHome = () => {
         {visibleCards.map((card, index) => (
           <div
             key={index}
-            className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group"
+            className="bg-white rounded-md shadow-md hover:shadow-xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group"
           >
-            <div className={`p-1 bg-gradient-to-r ${card.color}`}>
+            <div className={`p-1 bg-gradient-to-r`}>
               <div className="bg-white rounded-2xl p-5">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-xl ${card.bgColor}`}>
-                    <card.icon className={`text-xl ${card.iconColor}`} />
+                  <div className={`p-3 rounded-xl bg-primary`}>
+                    <card.icon className={`text-xl text-white`} />
                   </div>
-                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-sm font-semibold text-gray-600  p-2 rounded-full">
                     {card.trend}
                   </span>
                 </div>
@@ -299,14 +297,9 @@ const DashboardHome = () => {
                   <div className="text-2xl font-bold text-gray-900">
                     {card.value}
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{card.description}</p>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-gray-700">{card.title}</span>
-                  <div className="text-xs text-gray-400 group-hover:text-blue-500 transition-colors">
-                    مشاهده جزئیات →
-                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {card.description}
+                  </p>
                 </div>
               </div>
             </div>
@@ -318,14 +311,16 @@ const DashboardHome = () => {
       {currentUser.role === "admin" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Financial Summary */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-white rounded-md shadow-md p-6 ">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+                <div className="p-3 bg-primary rounded-md">
                   <FaMoneyBillWave className="text-white text-xl" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">خلاصه مالی</h2>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    خلاصه مالی
+                  </h2>
                   <p className="text-sm text-gray-500">وضعیت مالی کلی سیستم</p>
                 </div>
               </div>
@@ -335,57 +330,71 @@ const DashboardHome = () => {
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center p-4 rounded-xl bg-green-50 border border-green-100">
+              <div className="flex justify-between items-center p-4 rounded-md bg-green-50 border border-green-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-green-100 rounded-lg">
                     <FaWallet className="text-green-600" />
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">مجموع دریافتی</div>
-                    <div className="text-lg font-bold text-gray-900">{formatCurrency(totalReceivedMoney)}</div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {formatCurrency(totalReceivedMoney)}
+                    </div>
                   </div>
                 </div>
                 <div className="text-sm text-green-600 font-medium">+12%</div>
               </div>
 
-              <div className="flex justify-between items-center p-4 rounded-xl bg-amber-50 border border-amber-100">
+              <div className="flex justify-between items-center p-4 rounded-md bg-amber-50 border border-amber-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-100 rounded-lg">
                     <FaClock className="text-amber-600" />
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">مجموع باقیمانده</div>
-                    <div className="text-lg font-bold text-gray-900">{formatCurrency(totalPendingMoney)}</div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {formatCurrency(totalPendingMoney)}
+                    </div>
                   </div>
                 </div>
-                <div className="text-sm text-amber-600 font-medium">در انتظار</div>
+                <div className="text-sm text-amber-600 font-medium">
+                  در انتظار
+                </div>
               </div>
 
-              <div className="flex justify-between items-center p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100">
+              <div className="flex justify-between items-center p-4 rounded-md bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <FaChartLine className="text-blue-600" />
                   </div>
                   <div>
                     <div className="text-sm text-gray-600">درآمد کل</div>
-                    <div className="text-xl font-bold text-blue-800">{formatCurrency(totalIncome)}</div>
+                    <div className="text-xl font-bold text-blue-800">
+                      {formatCurrency(totalIncome)}
+                    </div>
                   </div>
                 </div>
-                <div className="text-sm font-medium text-blue-600">نمای کلی</div>
+                <div className="text-sm font-medium text-blue-600">
+                  نمای کلی
+                </div>
               </div>
             </div>
           </div>
 
           {/* Order Status Summary */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-white rounded-md shadow-md p-6 ">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
+                <div className="p-3 bg-primary rounded-md">
                   <FaBoxOpen className="text-white text-xl" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">وضعیت سفارشات</h2>
-                  <p className="text-sm text-gray-500">آمار تحویل و در انتظار</p>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    وضعیت سفارشات
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    آمار تحویل و در انتظار
+                  </p>
                 </div>
               </div>
             </div>
@@ -394,7 +403,9 @@ const DashboardHome = () => {
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-700 font-medium">نرخ تحویل</span>
-                  <span className="text-lg font-bold text-gray-900">{deliveryRate.toFixed(1)}%</span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {deliveryRate.toFixed(1)}%
+                  </span>
                 </div>
                 <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
@@ -411,7 +422,9 @@ const DashboardHome = () => {
                       <FaCheckCircle className="text-green-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">{formatNumber(deliveredOrdersCount)}</div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {formatNumber(deliveredOrdersCount)}
+                      </div>
                       <div className="text-sm text-gray-600">تحویل شده</div>
                     </div>
                   </div>
@@ -423,7 +436,9 @@ const DashboardHome = () => {
                       <FaClock className="text-amber-600" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-gray-900">{formatNumber(notDeliveredOrdersCount)}</div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {formatNumber(notDeliveredOrdersCount)}
+                      </div>
                       <div className="text-sm text-gray-600">در انتظار</div>
                     </div>
                   </div>
@@ -432,7 +447,10 @@ const DashboardHome = () => {
 
               <div className="text-center pt-4 border-t border-gray-100">
                 <p className="text-sm text-gray-500">
-                  مجموع سفارشات: <span className="font-bold text-gray-900">{formatNumber(totalOrdersCount)}</span>
+                  مجموع سفارشات:{" "}
+                  <span className="font-bold text-gray-900">
+                    {formatNumber(totalOrdersCount)}
+                  </span>
                 </p>
               </div>
             </div>
@@ -444,4 +462,3 @@ const DashboardHome = () => {
 };
 
 export default DashboardHome;
-

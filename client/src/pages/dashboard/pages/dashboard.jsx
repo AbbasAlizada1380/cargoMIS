@@ -5,14 +5,14 @@ import AnalyticsDashboard from "./report/AnalyticsDashboard";
 
 const Dashboard = () => {
   return (
-    <div className=" p-6 bg-gray-50 min-h-screen text-right" dir="rtl">
+    <div className="bg-gray-100 min-h-screen text-right" dir="rtl">
       {/* Main Dashboard Title */}
-      <h1 className=" text-center text-2xl lg:text-3xl font-bold text-gray-800 mb-6">
+      {/* <h1 className=" text-center md:text-right text-2xl lg:text-2xl font-bold text-gray-800 mb-6">
         داشبورد افغان کارگو
-      </h1>
+      </h1> */}
 
       {/* Render the FinancialReports component */}
-      <div className="mt-6">
+      <div className="">
         <DashboardHome />
         {/* <AnalyticsDashboard /> */}
       </div>
