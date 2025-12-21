@@ -20,15 +20,27 @@ import {
   FaCheckSquare,
   FaSquare,
   FaSearch,
-  FaExclamationTriangle
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import PrintShippingBill from "./PrintShippingBill";
-import { packageService, updatePackageLocation } from "../services/packageService";
+import {
+  packageService,
+  updatePackageLocation,
+} from "../services/packageService";
 import SearchBar from "../searching/SearchBar";
 import UpdatePackageTracking from "./UpdatePackageTracking";
 import Pagination from "../pagination/Pagination";
 
-const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,totalPages,onPageChange }) => {
+const PackageList = ({
+  setPackages,
+  packages,
+  onEdit,
+  onDelete,
+  mode,
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedPackages, setSelectedPackages] = useState([]);
@@ -41,8 +53,8 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
   const [originalPackages, setOriginalPackages] = useState([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
-    const [selectedPack, setSelectedPack] = useState(null);
-    const [isTOpen, setIsTOpen] = useState(false);
+  const [selectedPack, setSelectedPack] = useState(null);
+  const [isTOpen, setIsTOpen] = useState(false);
   // Store original packages on first load
   useEffect(() => {
     if (packages.length > 0 && originalPackages.length === 0) {
@@ -61,7 +73,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fa-IR');
+    return date.toLocaleDateString("fa-IR");
   };
 
   const formatCurrency = (amount) => {
@@ -80,9 +92,9 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
 
   // Handle package selection
   const handleSelectPackage = (pkgId) => {
-    setSelectedPackages(prev => {
+    setSelectedPackages((prev) => {
       if (prev.includes(pkgId)) {
-        return prev.filter(id => id !== pkgId);
+        return prev.filter((id) => id !== pkgId);
       } else {
         return [...prev, pkgId];
       }
@@ -94,7 +106,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
     if (selectAll) {
       setSelectedPackages([]);
     } else {
-      const allIds = packages.map(pkg => pkg.id);
+      const allIds = packages.map((pkg) => pkg.id);
       setSelectedPackages(allIds);
     }
     setSelectAll(!selectAll);
@@ -118,11 +130,14 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
 
     setLoading(true);
     try {
-      const result = await updatePackageLocation(selectedPackages, locationName);
+      const result = await updatePackageLocation(
+        selectedPackages,
+        locationName
+      );
 
       // Update local packages state
-      setPackages(prevPackages =>
-        prevPackages.map(pkg =>
+      setPackages((prevPackages) =>
+        prevPackages.map((pkg) =>
           selectedPackages.includes(pkg.id)
             ? { ...pkg, location: locationName }
             : pkg
@@ -131,8 +146,8 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
 
       // Also update original packages if search is not active
       if (!isSearchActive && originalPackages.length > 0) {
-        setOriginalPackages(prev =>
-          prev.map(pkg =>
+        setOriginalPackages((prev) =>
+          prev.map((pkg) =>
             selectedPackages.includes(pkg.id)
               ? { ...pkg, location: locationName }
               : pkg
@@ -159,7 +174,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
   // Handle search results from SearchBar
   const handleSearchResults = (searchResults) => {
     setSearchError(null); // Clear any previous errors
-    
+
     if (searchResults.length === 0) {
       // No results found
       if (searchTerm.trim() !== "") {
@@ -186,7 +201,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
     console.error("Search error in PackageList:", errorMessage);
     setSearchError("خطا در اتصال به سرور. لطفاً دوباره تلاش کنید.");
     setIsSearchActive(false);
-    
+
     // Fallback: Show all packages if search fails
     setPackages(originalPackages);
   };
@@ -214,7 +229,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
     }
 
     setIsSearchActive(true);
-    const filtered = originalPackages.filter(pkg => {
+    const filtered = originalPackages.filter((pkg) => {
       const searchLower = searchTerm.toLowerCase();
       return (
         pkg.id?.toString().toLowerCase().includes(searchLower) ||
@@ -225,10 +240,12 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
         pkg.totalCash?.toString().includes(searchLower)
       );
     });
-    
+
     setPackages(filtered);
     if (filtered.length === 0) {
-      setSearchError(`هیچ بسته‌ای با مشخصات "${searchTerm}" یافت نشد (جستجوی محلی)`);
+      setSearchError(
+        `هیچ بسته‌ای با مشخصات "${searchTerm}" یافت نشد (جستجوی محلی)`
+      );
     } else {
       setSearchError(null);
     }
@@ -236,8 +253,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
 
   return (
     <div className="mt-8">
-      {/* Header */}
-      <div className="bg-[#0F3A76] rounded-t-xl shadow-lg p-4 text-white">
+      <div className="bg-primary rounded-t-md shadow-md p-4 text-white">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <FaBox className="text-3xl" />
@@ -251,31 +267,13 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                   </span>
                 ) : (
                   <span>
-                    مجموع: {packages.length} بسته | انتخاب شده: {selectedPackages.length}
+                    مجموع: {packages.length} بسته | انتخاب شده:{" "}
+                    {selectedPackages.length}
                   </span>
                 )}
               </p>
             </div>
           </div>
-
-          {/* Search Bar */}
-          <div className="w-full md:w-96">
-            <SearchBar
-              onSearchResults={handleSearchResults}
-              onSearchError={handleSearchError}
-              placeholder="جستجوی بسته (شناسه، فرستنده، گیرنده، موقعیت...)"
-              debounceDelay={500}
-            />
-            
-            {/* Search error message */}
-            {searchError && (
-              <div className="mt-2 text-sm text-red-300 bg-red-900/30 p-2 rounded-lg">
-                <FaExclamationTriangle className="inline ml-1" />
-                {searchError}
-              </div>
-            )}
-          </div>
-
           <div className="hidden md:flex items-center gap-4">
             {isSearchActive && (
               <button
@@ -294,6 +292,23 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                 <FaMapMarkerAlt />
                 <span>به‌روزرسانی موقعیت ({selectedPackages.length})</span>
               </button>
+            )}
+          </div>
+          {/* Search Bar */}
+          <div className="w-full md:w-[500px]">
+            <SearchBar
+              onSearchResults={handleSearchResults}
+              onSearchError={handleSearchError}
+              placeholder="جستجوی بسته (شناسه، فرستنده، گیرنده، موقعیت...)"
+              debounceDelay={500}
+            />
+
+            {/* Search error message */}
+            {searchError && (
+              <div className="mt-2 text-sm text-red-300 bg-red-900/30 p-2 rounded-lg">
+                <FaExclamationTriangle className="inline ml-1" />
+                {searchError}
+              </div>
             )}
           </div>
         </div>
@@ -340,7 +355,8 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
               <>
                 <FaSearch className="text-5xl text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg mb-4">
-                  {searchError || `هیچ بسته‌ای با مشخصات "${searchTerm}" یافت نشد`}
+                  {searchError ||
+                    `هیچ بسته‌ای با مشخصات "${searchTerm}" یافت نشد`}
                 </p>
                 <button
                   onClick={handleClearSearch}
@@ -374,7 +390,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                       )}
                     </button>
                   </th>
-                  
+
                   <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700 border-b">
                     شناسه
                   </th>
@@ -406,10 +422,8 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                   <tr
                     key={pkg.id}
                     className={`hover:bg-gray-50 transition-colors ${
-                      selectedPackages.includes(pkg.id) ? 'bg-blue-50' : ''
-                    } ${
-                      isSearchActive ? 'search-result-row' : ''
-                    }`}
+                      selectedPackages.includes(pkg.id) ? "bg-blue-50" : ""
+                    } ${isSearchActive ? "search-result-row" : ""}`}
                   >
                     {/* Checkbox Cell */}
                     <td className="py-3 px-4 text-center">
@@ -428,11 +442,13 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                     <td className="py-3 px-4">
                       <div className="text-sm font-medium text-gray-900">
                         {pkg.id}
-                        {isSearchActive && searchTerm && pkg.id?.toString().includes(searchTerm) && (
-                          <span className="mr-2 inline-block px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                            ✓
-                          </span>
-                        )}
+                        {isSearchActive &&
+                          searchTerm &&
+                          pkg.id?.toString().includes(searchTerm) && (
+                            <span className="mr-2 inline-block px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                              ✓
+                            </span>
+                          )}
                       </div>
                     </td>
 
@@ -475,7 +491,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                         {formatCurrency(pkg.totalCash)}
                       </div>
                     </td>
-                    
+
                     <td className="py-3 px-4">
                       <div className="font-medium text-gray-900">
                         {pkg.location || "تعیین نشده"}
@@ -510,7 +526,10 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                           <FaPrint className="text-sm" />
                         </button>
                         <button
-                          onClick={() => {setSelectedPack(pkg.id); setIsTOpen(!isTOpen)}}
+                          onClick={() => {
+                            setSelectedPack(pkg.id);
+                            setIsTOpen(!isTOpen);
+                          }}
                           className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
                           title="جستجو"
                         >
@@ -522,10 +541,14 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                 ))}
               </tbody>
             </table>
-           < Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange}/>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
           </div>
         )}
-        
+
         {/* Mobile Selection Controls */}
         {selectedPackages.length > 0 && (
           <div className="md:hidden fixed bottom-4 left-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-10">
@@ -553,12 +576,12 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
             </div>
           </div>
         )}
-        
+
         {isPrintModalOpen && (
-          <PrintShippingBill 
-            isOpen={isPrintModalOpen} 
-            onClose={handleClosePrintModal} 
-            data={selectedPackage} 
+          <PrintShippingBill
+            isOpen={isPrintModalOpen}
+            onClose={handleClosePrintModal}
+            data={selectedPackage}
           />
         )}
       </div>
@@ -579,13 +602,14 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                 <FaTimes />
               </button>
             </div>
-            
+
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                <span className="font-bold">{selectedPackages.length}</span> بسته انتخاب شده است
+                <span className="font-bold">{selectedPackages.length}</span>{" "}
+                بسته انتخاب شده است
               </p>
             </div>
-            
+
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 نام مکان جدید
@@ -598,7 +622,7 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={handleUpdateLocation}
@@ -628,7 +652,14 @@ const PackageList = ({setPackages, packages, onEdit, onDelete, mode,currentPage,
         </div>
       )}
 
-         {isTOpen && <div><  UpdatePackageTracking setIsTOpen={setIsTOpen}          packageId={selectedPack}/></div>}
+      {isTOpen && (
+        <div>
+          <UpdatePackageTracking
+            setIsTOpen={setIsTOpen}
+            packageId={selectedPack}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PackageList from "./PackageList";
 import { packageService } from "../services/packageService";
+import { FaBox } from "react-icons/fa";
 
 const Pack = () => {
   const [packages, setPackages] = useState([]);
@@ -11,7 +12,7 @@ const Pack = () => {
   const onPageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      fetchPackages(pageNumber)
+      fetchPackages(pageNumber);
     }
   };
   useEffect(() => {
@@ -23,8 +24,8 @@ const Pack = () => {
       setLoading(true);
       const data = await packageService.getAllPackages(currentPage);
       setPackages(data.packages);
-      setCurrentPage(data.currentPage)
-      setTotalPages(data.totalPages)
+      setCurrentPage(data.currentPage);
+      setTotalPages(data.totalPages);
     } catch (error) {
       console.error("Error fetching packages:", error);
       alert("Error loading packages");
@@ -45,7 +46,7 @@ const Pack = () => {
     try {
       await packageService.deletePackage(id);
       // Remove from local state
-      setPackages(packages.filter(pkg => pkg.id !== id));
+      setPackages(packages.filter((pkg) => pkg.id !== id));
       alert("Package deleted successfully");
     } catch (error) {
       console.error("Error deleting package:", error);
@@ -53,36 +54,31 @@ const Pack = () => {
     }
   };
 
- if (loading) {
-  return (
-    <div className="flex justify-center items-center h-64">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">در حال بارگذاری بسته‌ها...</p>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">در حال بارگذاری بسته‌ها...</p>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <PackageList
+        setPackages={setPackages}
+        packages={packages}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        mode={Mode}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </div>
   );
-}
-
-return (
-  <div className="p-4">
-    <div className="mb-6 text-right">
-      <h1 className="text-2xl font-bold text-gray-800">مدیریت بسته‌ها</h1>
-      <p className="text-gray-600">مجموع بسته‌ها: {packages.length}</p>
-    </div>
-    
-    <PackageList
-      setPackages={setPackages}
-      packages={packages}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-      mode={Mode}
-     currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-    />
-  </div>
-);
 };
 
 export default Pack;

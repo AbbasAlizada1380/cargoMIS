@@ -11,7 +11,7 @@
 @theme {
   --font-vazir: "Vazirmatn";
   --breakpoint-3xl: 120rem;
-  --color-primary: oklch(71.5% 0.143 215.221);
+  --color-primary: #0F3A76;
   --color-secondary: #f1f1f1;
 }
 

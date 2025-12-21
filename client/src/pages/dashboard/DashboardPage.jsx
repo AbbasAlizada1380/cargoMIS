@@ -18,7 +18,7 @@ const Dashboard = () => {
 
       <div className="flex flex-col flex-1 h-screen overflow-hidden">
         <Navbar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
-        <main className="flex-1 overflow-y-auto   custom-scrollbar">
+        <main className="flex-1 overflow-y-auto bg-gray-100  custom-scrollbar">
           <MainContent activeComponent={activeComponent} />
         </main>
       </div>

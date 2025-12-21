@@ -14,7 +14,7 @@ import {
   FaEdit,
   FaTrash,
   FaCalculator,
-  FaCalendar
+  FaCalendar,
 } from "react-icons/fa";
 import { GiWeight } from "react-icons/gi";
 import PackingListAndDetails from "./PackingListAndDetails";
@@ -26,13 +26,13 @@ const PackageCrud = () => {
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [priceList, setPriceList] = useState(null);
-    const [totalPages, setTotalPages] = useState(1);
-    const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [calculatedTotals, setCalculatedTotals] = useState({
     totalWeight: 0,
     totalPieces: 0,
-    totalValue: 0
+    totalValue: 0,
   });
 
   const [form, setForm] = useState({
@@ -66,15 +66,19 @@ const PackageCrud = () => {
     // Pack list will be stored here
     packList: [],
   });
-  const [resetPackingListTrigger, setResetPackingListTrigger] = useState(Date.now());
+  const [resetPackingListTrigger, setResetPackingListTrigger] = useState(
+    Date.now()
+  );
   // Sync transitWay with selected option when priceList changes
   useEffect(() => {
     if (selectedOptionId && priceList && priceList.data) {
-      const selectedOption = priceList.data.find(option => option.id === selectedOptionId);
+      const selectedOption = priceList.data.find(
+        (option) => option.id === selectedOptionId
+      );
       if (selectedOption && selectedOption.Transit.name !== form.transitWay) {
-        setForm(prev => ({
+        setForm((prev) => ({
           ...prev,
-          transitWay: selectedOption.Transit.name
+          transitWay: selectedOption.Transit.name,
         }));
       }
     }
@@ -87,7 +91,11 @@ const PackageCrud = () => {
   // Fetch price list when receiver country or weight changes
   useEffect(() => {
     const fetchPriceList = async () => {
-      if (form.receiverCountry && form.totalWeight && parseFloat(form.totalWeight) > 0) {
+      if (
+        form.receiverCountry &&
+        form.totalWeight &&
+        parseFloat(form.totalWeight) > 0
+      ) {
         const weight = parseFloat(form.totalWeight);
         try {
           setLoading(true);
@@ -110,21 +118,21 @@ const PackageCrud = () => {
             // Calculate but don't override user input for perKgCash
             const OTotalCash = (totalWeight * price).toFixed(2);
 
-            setForm(prevForm => ({
+            setForm((prevForm) => ({
               ...prevForm,
               OPerKgCash: cheapestOption.price,
               transitWay: cheapestOption.Transit.name,
-              OTotalCash: OTotalCash
+              OTotalCash: OTotalCash,
             }));
 
             setSelectedOptionId(cheapestOption.id);
           } else {
             // Reset transit info if no options available
-            setForm(prevForm => ({
+            setForm((prevForm) => ({
               ...prevForm,
               OPerKgCash: "",
               transitWay: "",
-              OTotalCash: ""
+              OTotalCash: "",
             }));
             setSelectedOptionId(null);
           }
@@ -133,11 +141,11 @@ const PackageCrud = () => {
           setPriceList(null);
           setSelectedOptionId(null);
           // Reset transit info on error
-          setForm(prevForm => ({
+          setForm((prevForm) => ({
             ...prevForm,
             OPerKgCash: "",
             transitWay: "",
-            OTotalCash: ""
+            OTotalCash: "",
           }));
         } finally {
           setLoading(false);
@@ -146,11 +154,11 @@ const PackageCrud = () => {
         setPriceList(null);
         setSelectedOptionId(null);
         // Reset transit info if no weight or country
-        setForm(prevForm => ({
+        setForm((prevForm) => ({
           ...prevForm,
           OPerKgCash: "",
           transitWay: "",
-          OTotalCash: ""
+          OTotalCash: "",
         }));
       }
     };
@@ -176,7 +184,7 @@ const PackageCrud = () => {
     const OTotalCash = (weight * OPerKg).toFixed(2);
 
     // Only update if values have changed
-    setForm(prev => {
+    setForm((prev) => {
       if (
         prev.totalCash !== totalCash ||
         prev.remain !== remain ||
@@ -186,7 +194,7 @@ const PackageCrud = () => {
           ...prev,
           totalCash,
           remain,
-          OTotalCash
+          OTotalCash,
         };
       }
       return prev;
@@ -200,9 +208,9 @@ const PackageCrud = () => {
 
     if (received > totalCash) {
       alert("مبلغ دریافتی نمی‌تواند از مجموع کل بیشتر باشد!");
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        received: totalCash.toString()
+        received: totalCash.toString(),
       }));
     }
   }, [form.totalCash, form.received]);
@@ -212,8 +220,8 @@ const PackageCrud = () => {
       setLoading(true);
       const data = await packageService.getAllPackages(page);
       setPackages(data.packages);
-      setCurrentPage(data.currentPage)
-      setTotalPages(data.totalPages)
+      setCurrentPage(data.currentPage);
+      setTotalPages(data.totalPages);
     } catch (err) {
       console.error("خطا در دریافت بسته‌ها:", err);
       alert("خطا در دریافت بسته‌ها");
@@ -240,9 +248,9 @@ const PackageCrud = () => {
     if (name.includes("Cash") || name === "value" || name === "received") {
       // Allow only numbers and one decimal point
       if (value === "" || /^\d*\.?\d*$/.test(value)) {
-        setForm(prev => ({
+        setForm((prev) => ({
           ...prev,
-          [name]: value
+          [name]: value,
         }));
       }
       return;
@@ -252,8 +260,8 @@ const PackageCrud = () => {
     if (name === "transitWay") {
       // Find the selected option from priceList
       if (priceList && priceList.data) {
-        const selectedOption = priceList.data.find(option =>
-          option.Transit.name === value
+        const selectedOption = priceList.data.find(
+          (option) => option.Transit.name === value
         );
 
         if (selectedOption) {
@@ -262,11 +270,11 @@ const PackageCrud = () => {
           const OTotalCash = (weight * price).toFixed(2);
 
           // Update form with the selected option
-          setForm(prevForm => ({
+          setForm((prevForm) => ({
             ...prevForm,
             [name]: value,
             OPerKgCash: selectedOption.price,
-            OTotalCash: OTotalCash
+            OTotalCash: OTotalCash,
           }));
 
           // Update selected option ID to highlight the correct card
@@ -277,35 +285,38 @@ const PackageCrud = () => {
     }
 
     // For other fields
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
-      [name]: processedValue
+      [name]: processedValue,
     }));
   };
 
-  const selectPriceOption = useCallback((option) => {
-    const price = parseFloat(option.price);
-    const weight = parseFloat(form.totalWeight) || 0;
-    const OTotalCash = (weight * price).toFixed(2);
+  const selectPriceOption = useCallback(
+    (option) => {
+      const price = parseFloat(option.price);
+      const weight = parseFloat(form.totalWeight) || 0;
+      const OTotalCash = (weight * price).toFixed(2);
 
-    setForm(prevForm => ({
-      ...prevForm,
-      OPerKgCash: option.price,
-      transitWay: option.Transit.name,
-      OTotalCash: OTotalCash
-      // Don't update perKgCash - user will enter manually
-    }));
-    setSelectedOptionId(option.id);
-  }, [form.totalWeight]);
+      setForm((prevForm) => ({
+        ...prevForm,
+        OPerKgCash: option.price,
+        transitWay: option.Transit.name,
+        OTotalCash: OTotalCash,
+        // Don't update perKgCash - user will enter manually
+      }));
+      setSelectedOptionId(option.id);
+    },
+    [form.totalWeight]
+  );
   const onPageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      fetchPackages(pageNumber)
+      fetchPackages(pageNumber);
     }
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-setLoading(true)
+    setLoading(true);
     // Validate required fields
     if (!form.totalWeight || parseFloat(form.totalWeight) <= 0) {
       alert("لطفاً وزن بسته را وارد کنید");
@@ -369,11 +380,11 @@ setLoading(true)
 
       resetForm();
       fetchPackages();
-      setLoading(false)
+      setLoading(false);
     } catch (err) {
       console.error("خطا در ذخیره:", err);
       alert("خطا در ذخیره بسته");
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -408,7 +419,7 @@ setLoading(true)
     setCalculatedTotals({
       totalWeight: 0,
       totalPieces: 0,
-      totalValue: 0
+      totalValue: 0,
     });
     setResetPackingListTrigger(Date.now());
   };
@@ -455,28 +466,25 @@ setLoading(true)
     }
   };
 
-
-
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen  p-4 md:p-6">
+      <div className="">
         {/* Header */}
-        <div className="mb-8 bg-[#0F3A76] rounded-xl shadow-lg p-6 text-white">
+        <div className="mb-8 bg-white  rounded-md shadow-md p-6 ">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-3">
-                <FaBox className="text-4xl" />
-                {editingId ? "ویرایش بسته" : "ایجاد بسته جدید"}
+              <h1 className="text-3xl font-bold flex text-gray-700 items-center gap-4">
+                <FaBox className="text-4xl text-primary" />
+                {editingId ? "ویرایش بسته" : " اضافه کردن بسته جدید"}
               </h1>
-              <p className="text-blue-100 mt-2">
+              <p className="text-gray-500 mt-2 mr-12">
                 مدیریت ارسال بسته‌ها با محاسبات قیمت خودکار
               </p>
             </div>
             <div className="hidden md:block">
-              <div className="flex items-center gap-2 bg-white/10 p-3 rounded-lg">
-                <GiWeight className="text-2xl" />
-                <div>
-                  <div className="text-sm">مجموع بسته‌ها</div>
+              <div className="flex items-center gap-2 bg-primary p-3 rounded-md">
+                <div className="text-gray-100">
+                  <div className="text-sm font-semibold">مجموع بسته‌ها</div>
                   <div className="text-xl font-bold">{packages.length}</div>
                 </div>
               </div>
@@ -489,22 +497,26 @@ setLoading(true)
           <div className="lg:col-span-2">
             {/* Transit Options Section */}
             {priceList && priceList.data && priceList.data.length > 0 && (
-              <div className="mb-6 bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="mb-6 bg-white rounded-md shadow-md overflow-hidden">
                 <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4">
                   <h3 className="text-white font-semibold text-lg flex items-center gap-2">
                     <FaTruck />
                     گزینه‌های حمل و نقل موجود برای {form.receiverCountry}
                   </h3>
                   <p className="text-green-100 text-sm mt-1">
-                    وزن: {form.totalWeight} کیلوگرم • برای انتخاب روی هر گزینه کلیک کنید
+                    وزن: {form.totalWeight} کیلوگرم • برای انتخاب روی هر گزینه
+                    کلیک کنید
                   </p>
                 </div>
                 <div className="p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {priceList.data.map((option) => {
-                      const isCheapest = priceList.data.reduce((min, current) =>
-                        parseFloat(current.price) < parseFloat(min.price) ? current : min
-                      ).id === option.id;
+                      const isCheapest =
+                        priceList.data.reduce((min, current) =>
+                          parseFloat(current.price) < parseFloat(min.price)
+                            ? current
+                            : min
+                        ).id === option.id;
 
                       const isSelected = selectedOptionId === option.id;
                       const weight = parseFloat(form.totalWeight) || 0;
@@ -516,15 +528,20 @@ setLoading(true)
                           key={option.id}
                           type="button"
                           onClick={() => selectPriceOption(option)}
-                          className={`p-4 rounded-lg border-2 transition-all transform hover:scale-[1.02] ${isSelected
-                            ? 'border-blue-500 bg-blue-50 shadow-md'
-                            : 'border-gray-200 hover:border-blue-300'
-                            }`}
+                          className={`p-4 rounded-lg border-2 transition-all transform hover:scale-[1.02] ${
+                            isSelected
+                              ? "border-blue-500 bg-blue-50 shadow-md"
+                              : "border-gray-200 hover:border-blue-300"
+                          }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                                <div
+                                  className={`w-3 h-3 rounded-full ${
+                                    isSelected ? "bg-blue-500" : "bg-gray-300"
+                                  }`}
+                                ></div>
                                 <span className="font-semibold text-gray-900">
                                   {option.Transit.name}
                                 </span>
@@ -545,11 +562,16 @@ setLoading(true)
                             <div className="text-right">
                               <div className="text-2xl font-bold text-blue-600">
                                 ${option.price}
-                                <span className="text-sm font-normal text-gray-500">/کیلو</span>
+                                <span className="text-sm font-normal text-gray-500">
+                                  /کیلو
+                                </span>
                               </div>
                               {form.totalWeight && weight > 0 && (
                                 <div className="text-sm text-gray-500 mt-1">
-                                  مجموع: <span className="font-semibold">${totalPrice}</span>
+                                  مجموع:{" "}
+                                  <span className="font-semibold">
+                                    ${totalPrice}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -571,8 +593,12 @@ setLoading(true)
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm text-blue-800 font-medium">گزینه انتخاب شده</div>
-                        <div className="text-lg font-semibold text-gray-900">{form.transitWay}</div>
+                        <div className="text-sm text-blue-800 font-medium">
+                          گزینه انتخاب شده
+                        </div>
+                        <div className="text-lg font-semibold text-gray-900">
+                          {form.transitWay}
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-blue-600">
@@ -580,7 +606,10 @@ setLoading(true)
                         </div>
                         {form.totalWeight && (
                           <div className="text-sm text-gray-600">
-                            مجموع دفتری: <span className="font-bold">${form.OTotalCash || "0.00"}</span>
+                            مجموع دفتری:{" "}
+                            <span className="font-bold">
+                              ${form.OTotalCash || "0.00"}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -591,18 +620,20 @@ setLoading(true)
             )}
 
             {/* Package Form */}
-            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white rounded-md shadow-md p-6"
+            >
               {/* Form Content */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Sender Section */}
-                <div className="md:col-span-1 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FaUser className="text-purple-600" />
+                <div className="md:col-span-1  rounded-lg">
+                  <h4 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <FaUser className="text-gray-500" size={24} />
                     اطلاعات فرستنده
                   </h4>
                   <div className="space-y-4">
                     <FormInput
-                      icon={<FaUser />}
                       label="نام فرستنده"
                       name="senderName"
                       value={form.senderName}
@@ -612,7 +643,6 @@ setLoading(true)
                     />
 
                     <FormInput
-                      icon={<FaGlobeAmericas />}
                       label="آدرس فرستنده"
                       name="senderAddress"
                       value={form.senderAddress}
@@ -621,28 +651,25 @@ setLoading(true)
                       placeholder="آدرس کامل"
                     />
 
-                      <FormInput
-                        icon={<FaUser />}
-                        label="ایمیل"
-                        name="senderEmail"
-                        type="email"
-                        value={form.senderEmail}
-                        onChange={handleChange}
-                        placeholder="email@example.com"
-                      />
-
-                      <FormInput
-                        icon={<FaUser />}
-                        label="شماره تماس"
-                        name="senderPhoneNumber"
-                        value={form.senderPhoneNumber}
-                        onChange={handleChange}
-                        required
-                        placeholder="+1234567890"
-                      />
+                    <FormInput
+                      label="ایمیل"
+                      name="senderEmail"
+                      type="email"
+                      value={form.senderEmail}
+                      onChange={handleChange}
+                      placeholder="email@example.com"
+                    />
 
                     <FormInput
-                      icon={<FaGlobeAmericas />}
+                      label="شماره تماس"
+                      name="senderPhoneNumber"
+                      value={form.senderPhoneNumber}
+                      onChange={handleChange}
+                      required
+                      placeholder="+1234567890"
+                    />
+
+                    <FormInput
                       label="کشور فرستنده"
                       name="senderCountry"
                       value={form.senderCountry}
@@ -654,9 +681,9 @@ setLoading(true)
                 </div>
 
                 {/* Receiver Section */}
-                <div className="md:col-span-1 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FaUser className="text-green-600" />
+                <div className="md:col-span-1   rounded-lg">
+                  <h4 className="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <FaUser className="text-gray-500" size={24} />
                     اطلاعات گیرنده
                   </h4>
                   <div className="space-y-4">
@@ -680,25 +707,25 @@ setLoading(true)
                       placeholder="آدرس کامل"
                     />
 
-                      <FormInput
-                        icon={<FaUser />}
-                        label="ایمیل"
-                        name="receiverEmail"
-                        type="email"
-                        value={form.receiverEmail}
-                        onChange={handleChange}
-                        placeholder="email@example.com"
-                      />
+                    <FormInput
+                      icon={<FaUser />}
+                      label="ایمیل"
+                      name="receiverEmail"
+                      type="email"
+                      value={form.receiverEmail}
+                      onChange={handleChange}
+                      placeholder="email@example.com"
+                    />
 
-                      <FormInput
-                        icon={<FaUser />}
-                        label="شماره تماس"
-                        name="receiverPhoneNumber"
-                        value={form.receiverPhoneNumber}
-                        onChange={handleChange}
-                        required
-                        placeholder="+1234567890"
-                      />
+                    <FormInput
+                      icon={<FaUser />}
+                      label="شماره تماس"
+                      name="receiverPhoneNumber"
+                      value={form.receiverPhoneNumber}
+                      onChange={handleChange}
+                      required
+                      placeholder="+1234567890"
+                    />
 
                     <FormSelect
                       icon={<FaGlobeAmericas />}
@@ -722,10 +749,9 @@ setLoading(true)
                   />
                 </div>
 
-
                 {/* Pricing Section - FIXED */}
-                <div className="md:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
-                                  {/* Input Row 1 */}
+                <div className="md:col-span-2 bg-gray-100 p-4 rounded-md">
+                  {/* Input Row 1 */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <FormInput
                       icon={<FaMoneyBillWave />}
@@ -743,7 +769,6 @@ setLoading(true)
                     <div>
                       <label className="flex flex-col">
                         <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                          <FaTruck />
                           روش حمل و نقل
                           {false && <span className="text-red-500">*</span>}
                         </span>
@@ -752,18 +777,33 @@ setLoading(true)
                             name="transitWay"
                             value={form.transitWay}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all bg-white"
+                            className="w-full px-4 py-3   rounded-md bg-gray-200 focus:ring-2 focus:ring-primary  outline-none appearance-none transition-all"
                           >
                             <option value="">انتخاب روش حمل و نقل</option>
-                            {priceList && priceList.data && priceList.data.map((option) => (
-                              <option key={option.id} value={option.Transit.name}>
-                                {option.Transit.name} (${option.price}/کیلو)
-                              </option>
-                            ))}
+                            {priceList &&
+                              priceList.data &&
+                              priceList.data.map((option) => (
+                                <option
+                                  key={option.id}
+                                  value={option.Transit.name}
+                                >
+                                  {option.Transit.name} (${option.price}/کیلو)
+                                </option>
+                              ))}
                           </select>
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <svg
+                              className="w-5 h-5 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
                             </svg>
                           </div>
                         </div>
@@ -774,7 +814,8 @@ setLoading(true)
                         <div className="mt-2 text-sm text-blue-600">
                           <div className="flex items-center gap-1">
                             <FaCheck className="text-xs" />
-                            انتخاب شده: {form.transitWay} - ${form.OPerKgCash || "0.00"}/کیلو
+                            انتخاب شده: {form.transitWay} - $
+                            {form.OPerKgCash || "0.00"}/کیلو
                           </div>
                           {form.totalWeight && form.OPerKgCash && (
                             <div className="text-xs text-gray-600 mt-1">
@@ -800,28 +841,38 @@ setLoading(true)
                   </div>
 
                   {/* Input Row 2 */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="p-3 bg-white rounded-lg border">
-                      <div className="text-sm text-gray-500 mb-1">مجموع دفتری ($)</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div className="p-5 bg-white rounded-md shadow-md">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-500 mb-1">
+                          مجموع دفتری ($)
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          (وزن × نرخ دفتری) = {form.totalWeight || "0"} ×{" "}
+                          {form.OPerKgCash || "0"}
+                        </div>
+                      </div>
                       <div className="text-2xl font-bold text-blue-600">
                         ${form.OTotalCash || "0.00"}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        (وزن × نرخ دفتری) = {form.totalWeight || "0"} × {form.OPerKgCash || "0"}
-                      </div>
                     </div>
 
-                    <div className="p-3 bg-white rounded-lg border">
-                      <div className="text-sm text-gray-500 mb-1">مجموع کل ($)</div>
+                    <div className="p-5 bg-white rounded-md shadow-md">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-500 mb-1">
+                          مجموع کل ($)
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          (وزن × نرخ دستی) = {form.totalWeight || "0"} ×{" "}
+                          {form.perKgCash || "0"}
+                        </div>
+                      </div>
                       <div className="text-2xl font-bold text-green-600">
                         ${form.totalCash || "0.00"}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        (وزن × نرخ دستی) = {form.totalWeight || "0"} × {form.perKgCash || "0"}
-                      </div>
                     </div>
 
-                    <div>
+                    <div className="col-span-2 mt-3">
                       <FormInput
                         icon={<FaMoneyBillWave />}
                         label="دریافتی ($)"
@@ -838,20 +889,31 @@ setLoading(true)
                   </div>
 
                   {/* Remain Section */}
-                  <div className="p-4 bg-white rounded-lg border-2 border-orange-200">
+                  <div className="p-4 bg-white rounded-md shadow-md">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm text-gray-500 mb-1">مانده حساب ($)</div>
+                        <div className="text-sm text-gray-500 mb-1">
+                          مانده حساب ($)
+                        </div>
                         <div className="text-3xl font-bold text-orange-600">
                           ${form.remain || "0.00"}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-600">
-                          (مجموع کل - دریافتی) = {form.totalCash || "0.00"} - {form.received || "0.00"}
+                          (مجموع کل - دریافتی) = {form.totalCash || "0.00"} -{" "}
+                          {form.received || "0.00"}
                         </div>
-                        <div className={`text-xs mt-2 px-3 py-1 rounded-full ${parseFloat(form.remain) > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                          {parseFloat(form.remain) > 0 ? 'پرداخت نشده' : 'تسویه شده'}
+                        <div
+                          className={`text-xs mt-2 px-3 py-1 rounded-full ${
+                            parseFloat(form.remain) > 0
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {parseFloat(form.remain) > 0
+                            ? "پرداخت نشده"
+                            : "تسویه شده"}
                         </div>
                       </div>
                     </div>
@@ -901,7 +963,7 @@ setLoading(true)
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    className="px-6 py-3 border-2 bg-gray-200 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                   >
                     بازنشانی فرم
                   </button>
@@ -913,18 +975,20 @@ setLoading(true)
           {/* Right Sidebar - Package List Preview */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4">
+              <div className="bg-white rounded-md shadow-md overflow-hidden">
+                <div className="bg-primary p-4">
                   <h3 className="text-white font-semibold flex items-center gap-2">
                     <FaBox />
-                    بسته‌های اخیر
+                    بسته‌ های اخیر
                   </h3>
                 </div>
                 <div className="p-4">
                   {loading ? (
                     <div className="text-center py-8">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                      <p className="mt-4 text-gray-600">در حال بارگذاری بسته‌ها...</p>
+                      <p className="mt-4 text-gray-600">
+                        در حال بارگذاری بسته‌ها...
+                      </p>
                     </div>
                   ) : packages.length === 0 ? (
                     <div className="text-center py-8">
@@ -932,11 +996,11 @@ setLoading(true)
                       <p className="text-gray-500">هنوز بسته‌ای وجود ندارد</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {packages.slice(0, 5).map((pkg) => (
                         <div
                           key={pkg.id}
-                          className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                          className="p-3 border-b border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                         >
                           <div className="flex items-start justify-between">
                             <div>
@@ -979,7 +1043,12 @@ setLoading(true)
 
                   {packages.length > 5 && (
                     <button
-                      onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                      onClick={() =>
+                        window.scrollTo({
+                          top: document.body.scrollHeight,
+                          behavior: "smooth",
+                        })
+                      }
                       className="w-full mt-4 py-2 text-center text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-1"
                     >
                       مشاهده همه بسته‌ها
@@ -1008,7 +1077,13 @@ setLoading(true)
                     <div className="pt-2 border-t border-white/20 mt-2">
                       <div className="flex justify-between text-lg">
                         <span>مجموع:</span>
-                        <span className="font-bold">${(parseFloat(form.totalWeight || 0) * parseFloat(form.perKgCash || 0)).toFixed(2)}</span>
+                        <span className="font-bold">
+                          $
+                          {(
+                            parseFloat(form.totalWeight || 0) *
+                            parseFloat(form.perKgCash || 0)
+                          ).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1038,21 +1113,21 @@ setLoading(true)
 const FormSelect = ({ icon, label, options, ...props }) => (
   <label className="flex flex-col">
     <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-      {icon}
       {label}
       {props.required && <span className="text-red-500">*</span>}
     </span>
     <div className="relative">
       <select
         {...props}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all bg-white"
+        className="w-full px-4 py-3  bg-gray-200 rounded-md focus:ring-1 focus:ring-primary outline-none appearance-none transition-all"
       >
         <option value="">انتخاب {label}</option>
         {options &&
           Array.isArray(options) &&
           options.map((option) => {
-            const value = typeof option === 'string' ? option : option.value;
-            const labelText = typeof option === 'string' ? option : option.label;
+            const value = typeof option === "string" ? option : option.value;
+            const labelText =
+              typeof option === "string" ? option : option.label;
             return (
               <option key={value} value={value}>
                 {labelText}
@@ -1066,14 +1141,13 @@ const FormSelect = ({ icon, label, options, ...props }) => (
 const FormInput = ({ icon, label, ...props }) => (
   <label className="flex flex-col">
     <span className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-      {icon}
       {label}
       {props.required && <span className="text-red-500">*</span>}
     </span>
     <div className="relative">
       <input
         {...props}
-        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+        className="w-full px-4 py-3 bg-gray-200  rounded-md focus:ring-1 focus:ring-primary  outline-none transition-all"
       />
       {props.type === "number" && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
