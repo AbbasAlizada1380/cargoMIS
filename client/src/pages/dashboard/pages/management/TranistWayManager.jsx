@@ -10,6 +10,7 @@ import {
   List,
 } from "lucide-react";
 import { FaGlobe } from "react-icons/fa";
+import { FaRegEdit } from "react-icons/fa";
 
 export default function TransitWayManager() {
   const [transitWays, setTransitWays] = useState([]);
@@ -188,8 +189,8 @@ export default function TransitWayManager() {
                 <div
                   className={`p-2 rounded-lg ${
                     editId
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-blue-100 text-blue-600"
+                      ? "bg-green-100 text-green-500"
+                      : "bg-blue-100 text-primary"
                   }`}
                 >
                   {editId ? (
@@ -207,8 +208,8 @@ export default function TransitWayManager() {
                 <div className="relative group">
                   <input
                     type="text"
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl 
-                    focus:outline-none focus:border-blue-500 focus:bg-white 
+                    className="w-full px-4 py-3 bg-gray-100 border-2 border-gray-200 rounded-md
+                    focus:outline-none  focus:ring-1 ring-primary
                     transition-all duration-300 text-gray-800 placeholder-transparent
                     hover:border-gray-300 peer"
                     value={name}
@@ -218,11 +219,11 @@ export default function TransitWayManager() {
                   />
                   <label
                     htmlFor="transit-name"
-                    className="absolute right-3 top-3 px-2 bg-white text-gray-500 
+                    className="absolute right-3 top-3 px-2 bg-gray-100 text-gray-500 
                     transition-all duration-300 transform -translate-y-6 scale-90 
                     origin-top-right peer-placeholder-shown:translate-y-0 
-                    peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 
-                    peer-focus:scale-90 peer-focus:text-blue-600 pointer-events-none"
+                    peer-placeholder-shown:scale-100 peer-focus:bg-white peer-focus:-translate-y-6 
+                    peer-focus:scale-90 peer-focus:text-primary pointer-events-none"
                   >
                     نام طریق ترانزیت
                   </label>
@@ -233,15 +234,9 @@ export default function TransitWayManager() {
                     type="submit"
                     disabled={isLoading}
                     className={`flex-1 flex items-center justify-center gap-2 
-                    ${
-                      editId
-                        ? "bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                    } 
-                    text-white py-3 px-4 rounded-xl font-semibold 
-                    transition-all duration-300 transform hover:-translate-y-0.5 
-                    active:translate-y-0 shadow-lg hover:shadow-xl 
-                    disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+                    ${editId ? "bg-green-500" : "bg-primary"} 
+                    text-white py-3 px-4 rounded-md font-semibold 
+                    transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
                   >
                     {isLoading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -264,10 +259,9 @@ export default function TransitWayManager() {
                       onClick={handleCancelEdit}
                       disabled={isLoading}
                       className="flex items-center justify-center gap-2 px-4 py-3 
-                      bg-gradient-to-r from-gray-500 to-gray-600 text-white 
+                      bg-red-500 text-white 
                       rounded-xl font-semibold transition-all duration-300 
-                      hover:from-gray-600 hover:to-gray-700 
-                      transform hover:-translate-y-0.5 active:translate-y-0 
+                      hover:from-gray-600 hover:to-gray-700 cursor-pointer
                       shadow-lg hover:shadow-xl disabled:opacity-50 
                       disabled:cursor-not-allowed disabled:transform-none"
                     >
@@ -286,18 +280,20 @@ export default function TransitWayManager() {
               {/* Table Header */}
               <div className="p-6 border-b border-gray-200 ">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-x-2">
                     <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                      <List className="w-6 h-6 text-blue-600" />
+                      <List className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-gray-800">
-                        طریق‌های ترانزیت
+                        طریق‌ های ترانزیت
                       </h2>
-                      <p className="text-gray-600 text-sm mt-1">
-                        مجموع: {transitWays.length} مورد
-                      </p>
                     </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-600 text-sm mt-1">
+                      مجموع: {transitWays.length} مورد
+                    </p>
                   </div>
                   {isLoading && (
                     <div className="flex items-center text-blue-600">
@@ -315,13 +311,13 @@ export default function TransitWayManager() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="py-4 px-6 text-right font-semibold text-gray-700 border-b border-gray-200 min-w-[120px]">
+                      <th className="py-2 px-6 text-right font-semibold text-gray-700 border-b border-gray-200 min-w-[120px]">
                         آی‌دی
                       </th>
-                      <th className="py-4 px-6 text-right font-semibold text-gray-700 border-b border-gray-200 min-w-[200px]">
+                      <th className="py-2 px-6 text-right font-semibold text-gray-700 border-b border-gray-200 min-w-[200px]">
                         نام طریق ترانزیت
                       </th>
-                      <th className="py-4 px-6 text-right font-semibold text-gray-700 border-b border-gray-200 min-w-[180px]">
+                      <th className="py-2 px-6 text-right font-semibold text-gray-700 border-b border-gray-200 min-w-[180px]">
                         عملیات
                       </th>
                     </tr>
@@ -333,44 +329,29 @@ export default function TransitWayManager() {
                         className={`transition-all duration-300 hover:bg-gray-50
                         ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                       >
-                        <td className="py-4 px-6 border-b border-gray-200">
-                          <span
-                            className="inline-flex items-center justify-center w-10 h-10 
-                          bg-gradient-to-r from-blue-100 to-indigo-100 
-                          text-blue-700 font-bold rounded-lg"
-                          >
-                            {item.id}
-                          </span>
+                        <td className="py-3 px-6 border-b border-gray-200">
+                          <span className=" text-gray-700 ">{item.id}</span>
                         </td>
-                        <td className="py-4 px-6 border-b border-gray-200">
+                        <td className="py-3 px-6 border-b border-gray-200">
                           <div className="flex items-center">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full ml-3"></div>
                             <span className="text-gray-800 font-medium">
                               {item.name}
                             </span>
                           </div>
                         </td>
-                        <td className="py-4 px-6 border-b border-gray-200">
-                          <div className="flex gap-2">
+                        <td className="py-3 px-6 border-b border-gray-200">
+                          <div className="flex items-center gap-x-2">
                             <button
                               onClick={() => handleEdit(item)}
-                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 
-                              text-white rounded-lg font-medium transition-all duration-300 
-                              transform hover:-translate-y-0.5 active:translate-y-0 
-                              shadow-md hover:shadow-lg hover:from-yellow-600 hover:to-amber-600"
+                              className="text-green-500 px-2"
                             >
-                              <Edit3 className="w-4 h-4" />
-                              ویرایش
+                              <FaRegEdit className="" size={24} />
                             </button>
                             <button
                               onClick={() => handleDelete(item.id)}
-                              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 
-                              text-white rounded-lg font-medium transition-all duration-300 
-                              transform hover:-translate-y-0.5 active:translate-y-0 
-                              shadow-md hover:shadow-lg hover:from-red-600 hover:to-pink-600"
+                              className="text-red-500 px-2"
                             >
-                              <Trash2 className="w-4 h-4" />
-                              حذف
+                              <Trash2 className="" size={24} />
                             </button>
                           </div>
                         </td>
@@ -402,7 +383,7 @@ export default function TransitWayManager() {
         </div>
         {/* Stats Bar */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+          <div className="bg-primary/10 rounded-md p-4 ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">تعداد کل</p>
@@ -415,7 +396,8 @@ export default function TransitWayManager() {
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+          <div className="bg-primary/10 rounded-md p-4 ">
+            {" "}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">در حال ویرایش</p>
@@ -428,7 +410,8 @@ export default function TransitWayManager() {
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+          <div className="bg-primary/10 rounded-md p-4 ">
+            {" "}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">وضعیت</p>
