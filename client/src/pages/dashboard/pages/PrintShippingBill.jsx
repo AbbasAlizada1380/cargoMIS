@@ -362,7 +362,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             {/* Phone Numbers */}
             <div className="flex items-center justify-center gap-2 mb-1">
               <FaPhone className="text-cyan-300" />
-              <span>تماس: ۰۷۸۹۳۸۴۷۰۰ - ۰۷۹۹۳۰۶۴۳۷ - ۰۷۴۸۸۵۲۵۶۹</span>
+              <span>تماس: 0780177060 - 0779710996 </span>
             </div>
 
             {/* Address */}

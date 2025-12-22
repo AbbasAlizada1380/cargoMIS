@@ -1,6 +1,7 @@
 import Package from "../Models/package.js";
 import { Op, fn, col, literal } from "sequelize";
 
+
 export const getPackageStatistics = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -29,21 +30,27 @@ export const getPackageStatistics = async (req, res) => {
         "remain",
         "received",
         "transitWay",
-        "createdAt"
+        "location",       // ✅ IMPORTANT
+        "createdAt",
       ],
-      order: [["createdAt", "DESC"]]
+      order: [["createdAt", "DESC"]],
     });
 
     const statistics = {
       totalPackagesCount: packages.length,
-      totalIncome: 0, // مجموع totalCash
-      totalReceivedMoney: 0, // مجموع received
-      totalPendingMoney: 0, // مجموع remain
-      totalWeight: 0, // مجموع totalWeight
-      totalPieces: 0, // مجموع piece
-      totalOfficeIncome: 0, // مجموع OTotalCash
+      totalIncome: 0,
+      totalReceivedMoney: 0,
+      totalPendingMoney: 0,
+      totalWeight: 0,
+      totalPieces: 0,
+      totalOfficeIncome: 0,
       averageWeight: 0,
       averageTotalCash: 0,
+
+      // ✅ NEW
+      locationStatistics: {},
+      locations: [],
+
       timeRange: {
         startDate: startDate || null,
         endDate: endDate || null,
@@ -58,6 +65,7 @@ export const getPackageStatistics = async (req, res) => {
       const totalWeight = parseFloat(pkg.totalWeight) || 0;
       const piece = parseInt(pkg.piece) || 0;
       const OTotalCash = parseFloat(pkg.OTotalCash) || 0;
+      const location = pkg.location || "Unknown";
 
       statistics.totalIncome += totalCash;
       statistics.totalReceivedMoney += received;
@@ -65,6 +73,10 @@ export const getPackageStatistics = async (req, res) => {
       statistics.totalWeight += totalWeight;
       statistics.totalPieces += piece;
       statistics.totalOfficeIncome += OTotalCash;
+
+      // 📍 LOCATION COUNT
+      statistics.locationStatistics[location] =
+        (statistics.locationStatistics[location] || 0) + 1;
     });
 
     // Calculate averages
@@ -75,15 +87,30 @@ export const getPackageStatistics = async (req, res) => {
 
     // Calculate percentages
     if (statistics.totalIncome > 0) {
-      statistics.receivedPercentage = (statistics.totalReceivedMoney / statistics.totalIncome) * 100;
-      statistics.pendingPercentage = (statistics.totalPendingMoney / statistics.totalIncome) * 100;
-      statistics.profitPercentage = ((statistics.totalIncome - statistics.totalOfficeIncome) / statistics.totalIncome) * 100;
+      statistics.receivedPercentage =
+        (statistics.totalReceivedMoney / statistics.totalIncome) * 100;
+
+      statistics.pendingPercentage =
+        (statistics.totalPendingMoney / statistics.totalIncome) * 100;
+
+      statistics.profitPercentage =
+        ((statistics.totalIncome - statistics.totalOfficeIncome) /
+          statistics.totalIncome) *
+        100;
     }
 
-    res.status(200).json({ 
-      success: true, 
+    // Convert location object → array (frontend-friendly)
+    statistics.locations = Object.entries(
+      statistics.locationStatistics
+    ).map(([location, count]) => ({
+      location,
+      count,
+    }));
+
+    res.status(200).json({
+      success: true,
       data: statistics,
-      message: "آمار بسته‌ها با موفقیت دریافت شد"
+      message: "آمار بسته‌ها با موفقیت دریافت شد",
     });
   } catch (error) {
     console.error("Error in getPackageStatistics:", error);
@@ -94,6 +121,7 @@ export const getPackageStatistics = async (req, res) => {
     });
   }
 };
+
 
 /**
  * Package Statistics using Sequelize aggregate functions

@@ -222,13 +222,9 @@ const sendCustomerNotification = async (email, subject, message, packageData = n
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Method:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.transitWay || 'N/A'}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${'Afghan Cargo' || 'N/A'}</td>
               </tr>
               <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Estimated Delivery:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">
-                  ${packageData.date ? new Date(packageData.date).toLocaleDateString() : 'N/A'}
-                </td>
               </tr>
             </table>
           </div>
@@ -353,8 +349,8 @@ export const updatePackageLocation = async (req, res) => {
       // Send email to admin (original notification)
       await sendPackageNotification(
         "📍 Package Location Updated",
-        `Package location has been updated:<br>
-         <strong>${oldLocation}</strong> → <strong>${location}</strong>`,
+        `Package location has been updated to:<br>
+      <strong>${location}</strong>`,
         packageData
       );
 
@@ -599,7 +595,7 @@ const sendPackageNotification = async (subject, message, packageData = null) => 
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Way:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.transitWay || 'N/A'}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${'Afghan Cargo' || 'N/A'}</td>
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Total Cash:</td>
@@ -648,7 +644,7 @@ const sendPackageNotification = async (subject, message, packageData = null) => 
   }
 };
 /* ============================================================
-   CREATE PACKAGE + SENDER + RECEIVER
+   CREATE PACKAGE + SENDER + RECEIVER + EMAILS
 ============================================================ */
 export const createPackage = async (req, res) => {
   try {
@@ -670,31 +666,78 @@ export const createPackage = async (req, res) => {
     const newPackage = await Package.create({
       sender: newSender.id,
       receiver: newReceiver.id,
-      location: "Kabul Stock",
+      location: "Afghan Cargo Stock",
       ...packageData,
     });
 
-    // Send email notification with complete data
+    // Prepare full package data for emails
+    const packageEmailData = {
+      id: newPackage.id,
+      Sender: newSender,
+      Receiver: newReceiver,
+      ...newPackage.toJSON(),
+    };
+
+    /* ==========================
+       📧 ADMIN EMAIL
+    ========================== */
     await sendPackageNotification(
-      "📦 New Package Created Successfully",
-      `A new package has been created in the system.`,
-      {
-        id: newPackage.id,
-        Sender: newSender, // Complete sender object
-        Receiver: newReceiver, // Complete receiver object
-        ...newPackage.toJSON() // All package data
-      }
+      "📦 New Package Created",
+      `A new package has been successfully created in the system.`,
+      packageEmailData
     );
+
+    /* ==========================
+       📧 SENDER EMAIL
+    ========================== */
+    if (newSender.email) {
+      await sendCustomerNotification(
+        newSender.email,
+        `📦 Your Package Has Been Registered (#${newPackage.id})`,
+        `Your package has been successfully registered and is currently at:<br>
+         <strong>${newPackage.location}</strong><br><br>
+         You will be notified when the status changes.`,
+        packageEmailData
+      );
+    }
+
+    /* ==========================
+       📧 RECEIVER EMAIL
+    ========================== */
+    if (newReceiver.email) {
+      await sendCustomerNotification(
+        newReceiver.email,
+        `📦 A Package Is On The Way To You (#${newPackage.id})`,
+        `A package has been sent to you and is currently at:<br>
+         <strong>${newPackage.location}</strong><br><br>
+         You will receive updates as the package moves.`,
+        packageEmailData
+      );
+    }
 
     return res.status(201).json({
       message: "Package, sender, and receiver created successfully",
-      data: { sender: newSender, receiver: newReceiver, package: newPackage },
+      data: {
+        sender: newSender,
+        receiver: newReceiver,
+        package: newPackage,
+      },
+      notifications: {
+        adminEmailSent: true,
+        senderEmailSent: !!newSender.email,
+        receiverEmailSent: !!newReceiver.email,
+      },
     });
+
   } catch (error) {
     console.error("Create Package Error:", error);
-    return res.status(500).json({ error: "Failed to create package" });
+    return res.status(500).json({
+      error: "Failed to create package",
+      details: error.message,
+    });
   }
 };
+
 
 /* ============================================================
    UPDATE PACKAGE + OPTIONAL SENDER/RECEIVER

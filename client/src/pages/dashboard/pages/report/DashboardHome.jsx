@@ -51,7 +51,7 @@ const DashboardHome = () => {
       if (type !== "all") params.type = type;
 
       const response = await axios.get(`${BASE_URL}/report`, { params });
-      setReportData(response.data.data);
+      setReportData(response.data.data);      
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {
@@ -68,7 +68,7 @@ const DashboardHome = () => {
   }, []);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("fa-AF").format(amount) + " افغانی";
+    return new Intl.NumberFormat("fa-AF").format(amount) + " دالر  ";
   };
 
   const formatNumber = (number) => {
@@ -301,18 +301,61 @@ const DashboardHome = () => {
                   </div>
                   <p className="text-sm text-gray-600 mt-1">{card.description}</p>
                 </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <span className="text-sm font-medium text-gray-700">{card.title}</span>
-                  <div className="text-xs text-gray-400 group-hover:text-blue-500 transition-colors">
-                    مشاهده جزئیات →
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         ))}
       </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
+  {reportData.locations.map((card, index) => {
+    // Generate different colors for each card
+    const colorClasses = [
+      { bg: "from-blue-500 to-blue-600", icon: "bg-blue-100", text: "text-blue-600" },
+      { bg: "from-emerald-500 to-emerald-600", icon: "bg-emerald-100", text: "text-emerald-600" },
+      { bg: "from-purple-500 to-purple-600", icon: "bg-purple-100", text: "text-purple-600" },
+      { bg: "from-amber-500 to-amber-600", icon: "bg-amber-100", text: "text-amber-600" },
+      { bg: "from-rose-500 to-rose-600", icon: "bg-rose-100", text: "text-rose-600" },
+      { bg: "from-cyan-500 to-cyan-600", icon: "bg-cyan-100", text: "text-cyan-600" },
+      { bg: "from-violet-500 to-violet-600", icon: "bg-violet-100", text: "text-violet-600" },
+      { bg: "from-lime-500 to-lime-600", icon: "bg-lime-100", text: "text-lime-600" },
+    ];
+    
+    const colors = colorClasses[index % colorClasses.length];
+    
+    return (
+      <div
+        key={index}
+        className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group cursor-pointer"
+      >
+        <div className={`p-1 bg-gradient-to-r ${colors.bg}`}>
+          <div className="bg-white rounded-2xl p-6">
+            <div className="flex items-start justify-between mb-5">
+              <div className={`p-3 rounded-xl ${colors.icon} flex items-center justify-center`}>
+                <span className={`text-lg font-bold ${colors.text}`}>
+                  {card.location.charAt(0)}
+                </span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full mb-1">
+                  شماره {index + 1}
+                </span>
+                <span className="text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  {card.count.toLocaleString('fa-IR')}
+                </span>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
+                {card.location}
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div> 
 
       {/* Detailed Financial Section */}
       {currentUser.role === "admin" && (
@@ -372,68 +415,6 @@ const DashboardHome = () => {
                   </div>
                 </div>
                 <div className="text-sm font-medium text-blue-600">نمای کلی</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Order Status Summary */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl">
-                  <FaBoxOpen className="text-white text-xl" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">وضعیت سفارشات</h2>
-                  <p className="text-sm text-gray-500">آمار تحویل و در انتظار</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-700 font-medium">نرخ تحویل</span>
-                  <span className="text-lg font-bold text-gray-900">{deliveryRate.toFixed(1)}%</span>
-                </div>
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000"
-                    style={{ width: `${deliveryRate}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <FaCheckCircle className="text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900">{formatNumber(deliveredOrdersCount)}</div>
-                      <div className="text-sm text-gray-600">تحویل شده</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 rounded-lg">
-                      <FaClock className="text-amber-600" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900">{formatNumber(notDeliveredOrdersCount)}</div>
-                      <div className="text-sm text-gray-600">در انتظار</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center pt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-500">
-                  مجموع سفارشات: <span className="font-bold text-gray-900">{formatNumber(totalOrdersCount)}</span>
-                </p>
               </div>
             </div>
           </div>

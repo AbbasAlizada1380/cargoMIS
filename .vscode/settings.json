@@ -1,0 +1,7 @@
+{
+    "prettier.enableDebugLogs": true,
+    "prettier.experimentalTernaries": true,
+    "prettier.jsxSingleQuote": false,
+    "prettier.useTabs": true,
+    "prettier.vueIndentScriptAndStyle": true
+}
