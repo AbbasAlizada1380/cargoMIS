@@ -166,7 +166,7 @@ const Sidebar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
       <div
         className={`
           h-full transition-all duration-300 ease-in-out 
-        bg-[#0F3A76]
+        bg-primary
           overflow-y-auto
           ${
             isMobile
