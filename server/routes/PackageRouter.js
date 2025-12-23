@@ -11,6 +11,8 @@ import {
   updatePackageLocation,
   searchPackagesByName,
   updatePackageTracking,
+  getPackagesWithRemaining,
+  closePackageRemaining,
 } from "../Controllers/PackageController.js";
 
 const packageRouter = express.Router();
@@ -22,11 +24,13 @@ const packageRouter = express.Router();
 // Create package + sender + receiver
 packageRouter.post("/track/:id", updatePackageTracking);
 packageRouter.post("/updateLocation/:id", updatePackageLocation);
+packageRouter.post("/updateRemaining/:id", closePackageRemaining);
 packageRouter.post("/", createPackage);
 
 // Get all packages
 packageRouter.get("/transitWays", getAllTransitWays);
 packageRouter.get("/Range*", getPackagesByRange);
+packageRouter.get("/remaining", getPackagesWithRemaining);
 packageRouter.get("/search", searchPackagesByName);
 packageRouter.get("/", getAllPackages);
 

@@ -26,6 +26,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useSelector } from "react-redux";
 import PackageDownload from "./OrderDownload.jsx";
+import RemainingPackages from "../RemainingPackages.jsx"
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -40,6 +41,7 @@ const DashboardHome = () => {
   const [reportType, setReportType] = useState("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
+  const [showModel, setShowModel] = useState(false)
 
   const fetchReportData = async (start = null, end = null, type = "all") => {
     try {
@@ -68,7 +70,7 @@ const DashboardHome = () => {
   }, []);
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("fa-AF").format(amount) + " افغانی";
+    return new Intl.NumberFormat("fa-AF").format(amount) + " دالر  ";
   };
 
   const formatNumber = (number) => {
@@ -148,7 +150,7 @@ const DashboardHome = () => {
       color: "from-blue-600 to-blue-800",
       bgColor: "bg-blue-50",
       iconColor: "text-blue-600",
-      description: "مجموع درآمد سفارشات",
+      description: "مجموع درآمد ",
       role: "admin",
       trend: "+12%",
     },
@@ -159,7 +161,7 @@ const DashboardHome = () => {
       color: "from-emerald-500 to-emerald-700",
       bgColor: "bg-emerald-50",
       iconColor: "text-emerald-600",
-      description: "مبالغ دریافت شده",
+      description: "مبلغ دریافت شده",
       role: "admin",
       trend: "+8%",
     },
@@ -170,7 +172,7 @@ const DashboardHome = () => {
       color: "from-amber-500 to-amber-700",
       bgColor: "bg-amber-50",
       iconColor: "text-amber-600",
-      description: "مبالغ در انتظار دریافت",
+      description: "مبلغ باقیمانده",
       role: "admin",
       trend: "-3%",
     },
@@ -181,7 +183,7 @@ const DashboardHome = () => {
       color: "from-purple-500 to-purple-700",
       bgColor: "bg-purple-50",
       iconColor: "text-purple-600",
-      description: "کل سفارشات ثبت شده",
+      description: "تعداد کل بسته های ثبت شده",
       role: "reception",
       trend: "+15%",
     },
@@ -277,34 +279,97 @@ const DashboardHome = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
-        {visibleCards.map((card, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-md shadow-md hover:shadow-xl cursor-pointer transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group"
-          >
-            <div className={`p-1 bg-gradient-to-r`}>
-              <div className="bg-white rounded-2xl p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-primary`}>
-                    <card.icon className={`text-xl text-white`} />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-600  p-2 rounded-full">
-                    {card.trend}
-                  </span>
-                </div>
+        {visibleCards.map((card, index) => {
+          const isRemainingCard = card.title === "مانده حساب";
 
-                <div className="mb-3">
-                  <div className="text-2xl font-bold text-gray-900">
-                    {card.value}
+          return (
+            <div
+              key={index}
+              onClick={isRemainingCard ? () => setShowModel(prev => !prev) : undefined}
+              className={`
+        bg-white rounded-md shadow-md border border-gray-100 overflow-hidden
+        transition-all duration-300 transform
+        ${isRemainingCard
+                  ? "cursor-pointer hover:shadow-xl hover:-translate-y-1"
+                  : "cursor-default"}
+      `}
+            >
+              <div className="p-1 bg-gradient-to-r">
+                <div className="bg-white rounded-2xl p-5">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-3 rounded-xl bg-primary">
+                      <card.icon className="text-xl text-white" />
+                    </div>
+
+                    <span className="text-sm font-semibold text-gray-600 p-2 rounded-full">
+                      {card.trend}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {card.description}
-                  </p>
+
+                  <div className="mb-3">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {card.value}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {card.description}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
+        {reportData.locations.map((card, index) => {
+          // Generate different colors for each card
+          const colorClasses = [
+            { bg: "from-blue-500 to-blue-600", icon: "bg-blue-100", text: "text-blue-600" },
+            { bg: "from-emerald-500 to-emerald-600", icon: "bg-emerald-100", text: "text-emerald-600" },
+            { bg: "from-purple-500 to-purple-600", icon: "bg-purple-100", text: "text-purple-600" },
+            { bg: "from-amber-500 to-amber-600", icon: "bg-amber-100", text: "text-amber-600" },
+            { bg: "from-rose-500 to-rose-600", icon: "bg-rose-100", text: "text-rose-600" },
+            { bg: "from-cyan-500 to-cyan-600", icon: "bg-cyan-100", text: "text-cyan-600" },
+            { bg: "from-violet-500 to-violet-600", icon: "bg-violet-100", text: "text-violet-600" },
+            { bg: "from-lime-500 to-lime-600", icon: "bg-lime-100", text: "text-lime-600" },
+          ];
+
+          const colors = colorClasses[index % colorClasses.length];
+
+          return (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden group cursor-pointer"
+            >
+              <div className={`p-1 bg-gradient-to-r ${colors.bg}`}>
+                <div className="bg-white rounded-2xl p-6">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className={`p-3 rounded-xl ${colors.icon} flex items-center justify-center`}>
+                      <span className={`text-lg font-bold ${colors.text}`}>
+                        {card.location.charAt(0)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full mb-1">
+                        شماره {index + 1}
+                      </span>
+                      <span className="text-2xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                        {card.count.toLocaleString('fa-IR')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 truncate">
+                      {card.location}
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Detailed Financial Section */}
@@ -345,7 +410,7 @@ const DashboardHome = () => {
                 <div className="text-sm text-green-600 font-medium">+12%</div>
               </div>
 
-              <div className="flex justify-between items-center p-4 rounded-md bg-amber-50 border border-amber-100">
+              <div onClick={() => setShowModel(!showModel)} className="flex justify-between items-center p-4 rounded-md bg-amber-50 border border-amber-100">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-100 rounded-lg">
                     <FaClock className="text-amber-600" />
@@ -380,83 +445,25 @@ const DashboardHome = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {showModel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="relative w-[95%] h-[95%] bg-white rounded-xl shadow-xl overflow-y-auto">
 
-          {/* Order Status Summary */}
-          <div className="bg-white rounded-md shadow-md p-6 ">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary rounded-md">
-                  <FaBoxOpen className="text-white text-xl" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    وضعیت سفارشات
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    آمار تحویل و در انتظار
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Close Button */}
+            <button
+              onClick={() => setShowModel(false)}
+              className="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl"
+            >
+              ✕
+            </button>
 
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-700 font-medium">نرخ تحویل</span>
-                  <span className="text-lg font-bold text-gray-900">
-                    {deliveryRate.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000"
-                    style={{ width: `${deliveryRate}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <FaCheckCircle className="text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {formatNumber(deliveredOrdersCount)}
-                      </div>
-                      <div className="text-sm text-gray-600">تحویل شده</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 rounded-lg">
-                      <FaClock className="text-amber-600" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {formatNumber(notDeliveredOrdersCount)}
-                      </div>
-                      <div className="text-sm text-gray-600">در انتظار</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center pt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-500">
-                  مجموع سفارشات:{" "}
-                  <span className="font-bold text-gray-900">
-                    {formatNumber(totalOrdersCount)}
-                  </span>
-                </p>
-              </div>
-            </div>
+            <RemainingPackages />
           </div>
         </div>
       )}
+
     </div>
   );
 };

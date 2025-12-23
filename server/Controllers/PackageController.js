@@ -4,6 +4,41 @@ import Package from "../Models/package.js";
 import { Op } from "sequelize";
 import nodemailer from "nodemailer";
 
+export const getPackagesWithRemaining = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1; // default page 1
+    const limit = 30;                           // 30 packages per page
+    const offset = (page - 1) * limit;
+
+    const { count, rows: packages } = await Package.findAndCountAll({
+      where: {
+        remain: {
+          [Op.gt]: 0, // remaining > 0
+        },
+      },
+      limit,
+      offset,
+      order: [["id", "DESC"]],
+      include: [
+        { model: Customer, as: "Sender" },
+        { model: Customer, as: "Receiver" },
+      ],
+    });
+
+    return res.status(200).json({
+      totalPackages: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      packages,
+    });
+
+  } catch (error) {
+    console.error("Get Packages With Remaining Error:", error);
+    return res.status(500).json({ error: "Failed to get packages with remaining" });
+  }
+};
+
+
 export const searchPackagesByName = async (req, res) => {
   try {
     const { name } = req.query;
@@ -28,7 +63,7 @@ export const searchPackagesByName = async (req, res) => {
           required: false, // Always include sender if exists
         },
         {
-          association: "Receiver", 
+          association: "Receiver",
           attributes: ["id", "name", "phoneNumber", "country"],
           required: false, // Always include receiver if exists
         },
@@ -39,13 +74,13 @@ export const searchPackagesByName = async (req, res) => {
     // Filter packages where EITHER sender OR receiver name matches (case-insensitive)
     const filteredPackages = packages.filter(pkg => {
       // Check if package has sender and sender name matches
-      const senderMatch = pkg.Sender && 
+      const senderMatch = pkg.Sender &&
         pkg.Sender.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       // Check if package has receiver and receiver name matches
-      const receiverMatch = pkg.Receiver && 
+      const receiverMatch = pkg.Receiver &&
         pkg.Receiver.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       // Include package if either sender OR receiver matches
       return senderMatch || receiverMatch;
     });
@@ -60,7 +95,7 @@ export const searchPackagesByName = async (req, res) => {
       });
 
       // Find similar names (partial matches)
-      const suggestions = Array.from(allNames).filter(fullName => 
+      const suggestions = Array.from(allNames).filter(fullName =>
         fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         searchTerm.toLowerCase().includes(fullName.toLowerCase().substring(0, 3))
       ).slice(0, 5); // Limit to 5 suggestions
@@ -77,9 +112,9 @@ export const searchPackagesByName = async (req, res) => {
 
     // Enhance results with match type information
     const enhancedPackages = filteredPackages.map(pkg => {
-      const senderMatch = pkg.Sender && 
+      const senderMatch = pkg.Sender &&
         pkg.Sender.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const receiverMatch = pkg.Receiver && 
+      const receiverMatch = pkg.Receiver &&
         pkg.Receiver.name.toLowerCase().includes(searchTerm.toLowerCase());
 
       return {
@@ -87,8 +122,8 @@ export const searchPackagesByName = async (req, res) => {
         matchInfo: {
           matchesSender: senderMatch,
           matchesReceiver: receiverMatch,
-          matchType: senderMatch && receiverMatch ? "both" : 
-                    senderMatch ? "sender" : "receiver",
+          matchType: senderMatch && receiverMatch ? "both" :
+            senderMatch ? "sender" : "receiver",
           highlightedName: searchTerm
         }
       };
@@ -222,13 +257,9 @@ const sendCustomerNotification = async (email, subject, message, packageData = n
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Method:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.transitWay || 'N/A'}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${'Afghan Cargo' || 'N/A'}</td>
               </tr>
               <tr>
-                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Estimated Delivery:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">
-                  ${packageData.date ? new Date(packageData.date).toLocaleDateString() : 'N/A'}
-                </td>
               </tr>
             </table>
           </div>
@@ -341,7 +372,7 @@ export const updatePackageLocation = async (req, res) => {
       // Find the old location from before update
       const oldPackage = packagesBeforeUpdate.find(p => p.id === pkg.id);
       const oldLocation = oldPackage ? oldPackage.location : 'Unknown';
-      
+
       // Create package data for email
       const packageData = {
         id: pkg.id,
@@ -353,8 +384,8 @@ export const updatePackageLocation = async (req, res) => {
       // Send email to admin (original notification)
       await sendPackageNotification(
         "📍 Package Location Updated",
-        `Package location has been updated:<br>
-         <strong>${oldLocation}</strong> → <strong>${location}</strong>`,
+        `Package location has been updated to:<br>
+      <strong>${location}</strong>`,
         packageData
       );
 
@@ -386,7 +417,7 @@ export const updatePackageLocation = async (req, res) => {
     // If updating multiple packages, send a summary email to admin
     if (updatedPackages.length > 1) {
       const packageIds = updatedPackages.map(p => p.id).join(', ');
-      const packageNames = updatedPackages.map(p => 
+      const packageNames = updatedPackages.map(p =>
         `${p.id} (${p.Receiver?.name || 'Unknown'})`
       ).join('<br>');
 
@@ -403,7 +434,7 @@ export const updatePackageLocation = async (req, res) => {
       // Count email notifications sent
       const senderEmailsSent = updatedPackages.filter(p => p.Sender?.email).length;
       const receiverEmailsSent = updatedPackages.filter(p => p.Receiver?.email).length;
-      
+
       return res.status(200).json({
         message: `Successfully updated location for ${updatedCount} package(s)`,
         data: updatedPackages,
@@ -414,9 +445,9 @@ export const updatePackageLocation = async (req, res) => {
           totalCustomerEmails: senderEmailsSent + receiverEmailsSent
         },
         details: {
-          oldLocations: packagesBeforeUpdate.map(p => ({ 
-            id: p.id, 
-            oldLocation: p.location 
+          oldLocations: packagesBeforeUpdate.map(p => ({
+            id: p.id,
+            oldLocation: p.location
           })),
           newLocation: location,
           timestamp: new Date().toISOString()
@@ -438,9 +469,9 @@ export const updatePackageLocation = async (req, res) => {
         totalCustomerEmails: senderEmailSent + receiverEmailSent
       },
       details: {
-        oldLocations: packagesBeforeUpdate.map(p => ({ 
-          id: p.id, 
-          oldLocation: p.location 
+        oldLocations: packagesBeforeUpdate.map(p => ({
+          id: p.id,
+          oldLocation: p.location
         })),
         newLocation: location,
         timestamp: new Date().toISOString()
@@ -599,7 +630,7 @@ const sendPackageNotification = async (subject, message, packageData = null) => 
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Way:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${packageData.transitWay || 'N/A'}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${'Afghan Cargo' || 'N/A'}</td>
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Total Cash:</td>
@@ -648,7 +679,7 @@ const sendPackageNotification = async (subject, message, packageData = null) => 
   }
 };
 /* ============================================================
-   CREATE PACKAGE + SENDER + RECEIVER
+   CREATE PACKAGE + SENDER + RECEIVER + EMAILS
 ============================================================ */
 export const createPackage = async (req, res) => {
   try {
@@ -670,31 +701,78 @@ export const createPackage = async (req, res) => {
     const newPackage = await Package.create({
       sender: newSender.id,
       receiver: newReceiver.id,
-      location: "Kabul Stock",
+      location: "Afghan Cargo Stock",
       ...packageData,
     });
 
-    // Send email notification with complete data
+    // Prepare full package data for emails
+    const packageEmailData = {
+      id: newPackage.id,
+      Sender: newSender,
+      Receiver: newReceiver,
+      ...newPackage.toJSON(),
+    };
+
+    /* ==========================
+       📧 ADMIN EMAIL
+    ========================== */
     await sendPackageNotification(
-      "📦 New Package Created Successfully",
-      `A new package has been created in the system.`,
-      {
-        id: newPackage.id,
-        Sender: newSender, // Complete sender object
-        Receiver: newReceiver, // Complete receiver object
-        ...newPackage.toJSON() // All package data
-      }
+      "📦 New Package Created",
+      `A new package has been successfully created in the system.`,
+      packageEmailData
     );
+
+    /* ==========================
+       📧 SENDER EMAIL
+    ========================== */
+    if (newSender.email) {
+      await sendCustomerNotification(
+        newSender.email,
+        `📦 Your Package Has Been Registered (#${newPackage.id})`,
+        `Your package has been successfully registered and is currently at:<br>
+         <strong>${newPackage.location}</strong><br><br>
+         You will be notified when the status changes.`,
+        packageEmailData
+      );
+    }
+
+    /* ==========================
+       📧 RECEIVER EMAIL
+    ========================== */
+    if (newReceiver.email) {
+      await sendCustomerNotification(
+        newReceiver.email,
+        `📦 A Package Is On The Way To You (#${newPackage.id})`,
+        `A package has been sent to you and is currently at:<br>
+         <strong>${newPackage.location}</strong><br><br>
+         You will receive updates as the package moves.`,
+        packageEmailData
+      );
+    }
 
     return res.status(201).json({
       message: "Package, sender, and receiver created successfully",
-      data: { sender: newSender, receiver: newReceiver, package: newPackage },
+      data: {
+        sender: newSender,
+        receiver: newReceiver,
+        package: newPackage,
+      },
+      notifications: {
+        adminEmailSent: true,
+        senderEmailSent: !!newSender.email,
+        receiverEmailSent: !!newReceiver.email,
+      },
     });
+
   } catch (error) {
     console.error("Create Package Error:", error);
-    return res.status(500).json({ error: "Failed to create package" });
+    return res.status(500).json({
+      error: "Failed to create package",
+      details: error.message,
+    });
   }
 };
+
 
 /* ============================================================
    UPDATE PACKAGE + OPTIONAL SENDER/RECEIVER
@@ -710,7 +788,7 @@ export const updatePackage = async (req, res) => {
         { model: Customer, as: "Receiver" },
       ],
     });
-    
+
     if (!pkg) return res.status(404).json({ error: "Package not found" });
 
     // Store old data for comparison
@@ -761,7 +839,7 @@ export const updatePackage = async (req, res) => {
       changes.push(`Location: ${oldPackageData.location} → ${packageData.location}`);
     }
 
-    const changeMessage = changes.length > 0 
+    const changeMessage = changes.length > 0
       ? `Changes made: ${changes.join(', ')}`
       : 'Package details updated';
 
@@ -776,7 +854,7 @@ export const updatePackage = async (req, res) => {
       }
     );
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Package updated successfully",
       data: pkg
     });
@@ -799,7 +877,7 @@ export const deletePackage = async (req, res) => {
         { model: Customer, as: "Receiver" },
       ],
     });
-    
+
     if (!pkg) return res.status(404).json({ error: "Package not found" });
 
     // Store data for notification before deletion
@@ -821,7 +899,7 @@ export const deletePackage = async (req, res) => {
       packageInfo
     );
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "Package deleted successfully",
       deletedPackage: packageInfo
     });
@@ -909,7 +987,7 @@ export const updatePackageTracking = async (req, res) => {
       // Find the old tracking number from before update
       const oldPackage = packagesBeforeUpdate.find(p => p.id === pkg.id);
       const oldTrackNumber = oldPackage ? oldPackage.track_number || 'Not Set' : 'Not Set';
-      
+
       // Create package data for email
       const packageData = {
         id: pkg.id,
@@ -968,7 +1046,7 @@ export const updatePackageTracking = async (req, res) => {
     // If updating multiple packages, send a summary email to admin
     if (updatedPackages.length > 1) {
       const packageIds = updatedPackages.map(p => p.id).join(', ');
-      const packageNames = updatedPackages.map(p => 
+      const packageNames = updatedPackages.map(p =>
         `${p.id} (${p.Receiver?.name || 'Unknown'})`
       ).join('<br>');
 
@@ -1015,8 +1093,8 @@ export const updatePackageTracking = async (req, res) => {
         }
       },
       details: {
-        old_tracking_numbers: packagesBeforeUpdate.map(p => ({ 
-          id: p.id, 
+        old_tracking_numbers: packagesBeforeUpdate.map(p => ({
+          id: p.id,
           old_track_number: p.track_number || 'Not Set'
         })),
         new_track_number: cleanTrackNumber,
@@ -1032,5 +1110,57 @@ export const updatePackageTracking = async (req, res) => {
       details: error.message,
       timestamp: new Date().toISOString()
     });
+  }
+};
+export const closePackageRemaining = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pkg = await Package.findByPk(id, {
+      include: [
+        { model: Customer, as: "Sender" },
+        { model: Customer, as: "Receiver" },
+      ],
+    });
+
+    if (!pkg) {
+      return res.status(404).json({ error: "Package not found" });
+    }
+
+    // Update financial status
+    pkg.remain = 0;
+    pkg.received = pkg.totalCash;
+
+    await pkg.save();
+
+    // Store data for notification
+    const packageInfo = {
+      id: pkg.id,
+      Sender: pkg.Sender,
+      Receiver: pkg.Receiver,
+      ...pkg.toJSON(),
+    };
+
+    // Send email notification
+    await sendPackageNotification(
+      "✅ Package Payment Completed",
+      `
+      Package #${pkg.id} has been fully settled.<br/>
+      Total Cash: ${pkg.totalCash}<br/>
+      Received Cash: ${pkg.receivedCash}<br/>
+      Remaining: 0<br/>
+      Completion Time: ${new Date().toLocaleString()}
+      `,
+      packageInfo
+    );
+
+    return res.status(200).json({
+      message: "Package remaining cleared and payment completed",
+      package: packageInfo,
+    });
+
+  } catch (error) {
+    console.error("Close Package Remaining Error:", error);
+    return res.status(500).json({ error: "Failed to close package remaining" });
   }
 };
