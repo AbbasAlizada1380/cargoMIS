@@ -26,7 +26,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
   const dueDate = moment(data.date).format("jYYYY/jMM/jDD");
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4 print:bg-transparent print:p-0">
+    <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50  print:bg-transparent print:p-0">
       <div>
         <div
           id="printable-area"
@@ -38,7 +38,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
           }}
         >
           {/* Header */}
-          <div className="bg-gradient-to-l from-blue-800 to-blue-600 text-white p-4 border-b-4 border-blue-900 flex items-center justify-between">
+          <div className="bg-primary text-white p-4  flex items-center justify-between">
             {/* Logo and Company Name */}
             <div className="flex items-center gap-3 mb-3 md:mb-0">
               <img
@@ -47,7 +47,9 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
                 className="h-16 w-16 object-contain rounded-full border-2 border-white"
               />
               <div className="flex flex-col text-center md:text-left">
-                <h1 className="text-2xl font-bold leading-tight">افغان کارگو</h1>
+                <h1 className="text-2xl font-bold leading-tight">
+                  افغان کارگو
+                </h1>
                 <p className="text-sm opacity-90">Afghan Cargo Services</p>
               </div>
             </div>
@@ -74,14 +76,18 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               </p>
               <p>
                 <span className="font-semibold">شماره تماس:</span>{" "}
-                {data.Sender.phoneNumber?.replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]) || "-"}
+                {data.Sender.phoneNumber?.replace(
+                  /\d/g,
+                  (d) => "۰۱۲۳۴۵۶۷۸۹"[d]
+                ) || "-"}
               </p>
               <p>
                 <span className="font-semibold">آدرس:</span>{" "}
                 {data.Sender.address}
               </p>
               <p>
-                <span className="font-semibold">ایمیل:</span> {data.Sender.email || "-"}
+                <span className="font-semibold">ایمیل:</span>{" "}
+                {data.Sender.email || "-"}
               </p>
             </div>
           </div>
@@ -97,16 +103,22 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               </p>
               <p>
                 <span className="font-semibold">شماره تماس:</span>{" "}
-                {data.Receiver.phoneNumber?.replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]) || "-"}
+                {data.Receiver.phoneNumber?.replace(
+                  /\d/g,
+                  (d) => "۰۱۲۳۴۵۶۷۸۹"[d]
+                ) || "-"}
               </p>
               <p>
                 <span className="font-semibold">آدرس:</span>{" "}
                 {data.Receiver.address}
               </p>
               <p>
-                <span className="font-semibold">ایمیل:</span> {data.Receiver.email || "-"}
-              </p> <p>
-                <span className="font-semibold">کشور:</span> {data.Receiver.country || "-"}
+                <span className="font-semibold">ایمیل:</span>{" "}
+                {data.Receiver.email || "-"}
+              </p>{" "}
+              <p>
+                <span className="font-semibold">کشور:</span>{" "}
+                {data.Receiver.country || "-"}
               </p>
             </div>
           </div>
@@ -130,7 +142,9 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
                   <td className="border border-gray-300 p-1 font-semibold">
                     تعداد:
                   </td>
-                  <td className="border border-gray-300 p-1">{formatNumber(data.piece)}</td>
+                  <td className="border border-gray-300 p-1">
+                    {formatNumber(data.piece)}
+                  </td>
                 </tr>
                 <tr>
                   <td className="border border-gray-300 p-1 font-semibold">
@@ -152,9 +166,13 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             </table>
 
             <div className="mt-6">
-              <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-3 rounded-t-lg">
+              <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-3 ">
                 <h3 className="text-white font-bold text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
                   </svg>
                   لیست بسته‌بندی
@@ -162,147 +180,183 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               </div>
 
               {/* Split tables if more than 7 items */}
-             {data.packList && data.packList.length > 7 ? (
-  <div className="grid grid-cols-2 gap-4 border border-gray-300 p-4">
-    {/* First Table - Items 1-7 */}
-    <div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">#</th>
-              <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">نام جنس</th>
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">تعداد</th>
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">وزن</th>
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">ارزش ($)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.packList.slice(0, 7).map((item, index) => (
-              <tr
-                key={index}
-                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
-              >
-                <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
-                  {formatNumber(index + 1)}
-                </td>
-                <td className="py-2 px-3 text-right border border-gray-300 font-medium">
-                  {item.description}
-                </td>
-                <td className="py-2 px-3 text-center border border-gray-300">
-                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                    {formatNumber(item.qty || 0)}
-                  </span>
-                </td>
-                <td className="py-2 px-3 text-center border border-gray-300">
-                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                    {formatNumber(item.weight || 0)}
-                  </span>
-                </td>
-                <td className="py-2 px-3 text-center border border-gray-300">
-                  <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                    ${formatNumber(item.value || 0)}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+              {data.packList && data.packList.length > 7 ? (
+                <div className="grid grid-cols-2 gap-4 border border-gray-300 p-4">
+                  {/* First Table - Items 1-7 */}
+                  <div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              #
+                            </th>
+                            <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">
+                              نام جنس
+                            </th>
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              تعداد
+                            </th>
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              وزن
+                            </th>
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              ارزش ($)
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.packList.slice(0, 7).map((item, index) => (
+                            <tr
+                              key={index}
+                              className={`${
+                                index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              } hover:bg-blue-50`}
+                            >
+                              <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
+                                {formatNumber(index + 1)}
+                              </td>
+                              <td className="py-2 px-3 text-right border border-gray-300 font-medium">
+                                {item.description}
+                              </td>
+                              <td className="py-2 px-3 text-center border border-gray-300">
+                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                                  {formatNumber(item.qty || 0)}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-center border border-gray-300">
+                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                                  {formatNumber(item.weight || 0)}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-center border border-gray-300">
+                                <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                                  ${formatNumber(item.value || 0)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
 
-    {/* Second Table - Items 8+ */}
-    <div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">#</th>
-              <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">نام جنس</th>
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">تعداد</th>
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">وزن</th>
-              <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">ارزش ($)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.packList.slice(7).map((item, index) => (
-              <tr
-                key={index + 7}
-                className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
-              >
-                <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
-                  {formatNumber(index + 8)}
-                </td>
-                <td className="py-2 px-3 text-right border border-gray-300 font-medium">
-                  {item.description}
-                </td>
-                <td className="py-2 px-3 text-center border border-gray-300">
-                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                    {formatNumber(item.qty || 0)}
-                  </span>
-                </td>
-                <td className="py-2 px-3 text-center border border-gray-300">
-                  <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                    {formatNumber(item.weight || 0)}
-                  </span>
-                </td>
-                <td className="py-2 px-3 text-center border border-gray-300">
-                  <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                    ${formatNumber(item.value || 0)}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-) : (
-  <div className="overflow-x-auto border border-gray-300">
-    <table className="w-full text-xs">
-      <thead>
-        <tr className="bg-gray-100">
-          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">#</th>
-          <th className="py-2 px-3 text-right font-bold text-gray-700 border-l border-gray-300">نام جنس</th>
-          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">تعداد</th>
-          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">وزن (کیلو)</th>
-          <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">ارزش ($)</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.packList.map((item, index) => (
-          <tr
-            key={index}
-            className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50`}
-          >
-            <td className="py-2 px-3 text-center font-bold text-gray-800 border-t border-gray-300 border-l">
-              {formatNumber(index + 1)}
-            </td>
-            <td className="py-2 px-3 text-right border-t border-gray-300 border-l font-medium">
-              {item.description}
-            </td>
-            <td className="py-2 px-3 text-center border border-gray-300">
-              <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                {formatNumber(item.qty || 0)}
-              </span>
-            </td>
-            <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
-              <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-                {formatNumber(item.weight || 0)}
-              </span>
-            </td>
-            <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
-              <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
-              {formatCurrency(item.value || 0)}
-              </span>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+                  {/* Second Table - Items 8+ */}
+                  <div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              #
+                            </th>
+                            <th className="py-2 px-3 text-right font-bold text-gray-700 border border-gray-300">
+                              نام جنس
+                            </th>
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              تعداد
+                            </th>
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              وزن
+                            </th>
+                            <th className="py-2 px-3 text-center font-bold text-gray-700 border border-gray-300">
+                              ارزش ($)
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.packList.slice(7).map((item, index) => (
+                            <tr
+                              key={index + 7}
+                              className={`${
+                                index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              } hover:bg-blue-50`}
+                            >
+                              <td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
+                                {formatNumber(index + 8)}
+                              </td>
+                              <td className="py-2 px-3 text-right border border-gray-300 font-medium">
+                                {item.description}
+                              </td>
+                              <td className="py-2 px-3 text-center border border-gray-300">
+                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                                  {formatNumber(item.qty || 0)}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-center border border-gray-300">
+                                <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                                  {formatNumber(item.weight || 0)}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-center border border-gray-300">
+                                <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                                  ${formatNumber(item.value || 0)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-gray-300">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">
+                          #
+                        </th>
+                        <th className="py-2 px-3 text-right font-bold text-gray-700 border-l border-gray-300">
+                          نام جنس
+                        </th>
+                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">
+                          تعداد
+                        </th>
+                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">
+                          وزن (کیلو)
+                        </th>
+                        <th className="py-2 px-3 text-center font-bold text-gray-700 border-l border-gray-300">
+                          ارزش ($)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.packList.map((item, index) => (
+                        <tr
+                          key={index}
+                          className={`${
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          } hover:bg-blue-50`}
+                        >
+                          <td className="py-2 px-3 text-center font-bold text-gray-800 border-t border-gray-300 border-l">
+                            {formatNumber(index + 1)}
+                          </td>
+                          <td className="py-2 px-3 text-right border-t border-gray-300 border-l font-medium">
+                            {item.description}
+                          </td>
+                          <td className="py-2 px-3 text-center border border-gray-300">
+                            <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                              {formatNumber(item.qty || 0)}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
+                            <span className="w-16 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                              {formatNumber(item.weight || 0)}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-center border-t border-gray-300 border-l">
+                            <span className="w-20 px-2 py-1 border border-gray-400 rounded text-center inline-block">
+                              {formatCurrency(item.value || 0)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
 
@@ -313,17 +367,29 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-sm">
                   <span>مجموع کل:</span>
-                  <span className="text-cyan-800">{formatCurrency(data.totalCash)}</span>
+                  <span className="text-cyan-800">
+                    {formatCurrency(data.totalCash)}
+                  </span>
                 </div>
                 <div className="flex justify-between font-bold border-t border-gray-300 pt-1 text-sm">
                   <span>دریافتی:</span>
-                  <span className="text-green-600">{formatCurrency(data.received || 0)}</span>
+                  <span className="text-green-600">
+                    {formatCurrency(data.received || 0)}
+                  </span>
                 </div>
                 <div className="flex justify-between font-bold border-t border-gray-300 pt-1">
-                  <span className={data.remain > 0 ? "text-red-600" : "text-green-600"}>
+                  <span
+                    className={
+                      data.remain > 0 ? "text-red-600" : "text-green-600"
+                    }
+                  >
                     باقیمانده:
                   </span>
-                  <span className={data.remain > 0 ? "text-red-600" : "text-green-600"}>
+                  <span
+                    className={
+                      data.remain > 0 ? "text-red-600" : "text-green-600"
+                    }
+                  >
                     {formatCurrency(data.remain)}
                   </span>
                 </div>
@@ -355,18 +421,14 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
           </div>
 
           {/* Footer */}
-          <div
-            id="footer-area"
-            className="bg-gray-800 text-white p-3 text-center text-xs"
-          >
+          <div id="footer-area" className="bg-primary text-white  px-4 py-4 ">
             {/* Phone Numbers */}
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <FaPhone className="text-cyan-300" />
+            <div className="flex items-center  text-base gap-2 pb-2 ">
               <span>تماس: ۰۷۸۹۳۸۴۷۰۰ - ۰۷۹۹۳۰۶۴۳۷ - ۰۷۴۸۸۵۲۵۶۹</span>
             </div>
 
             {/* Address */}
-            <p className="text-cyan-200 mt-1">
+            <p className="text-white font-semibold text-base  pb-2">
               آدرس: مارکیت بهار سراب، تانک تیل، دشت برچی، کابل، افغانستان
             </p>
           </div>
@@ -410,6 +472,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
             position: absolute;
             left: 0;
             top: 0;
+            padding-right: 20mm;
             width: 210mm !important;
             height: 297mm !important;
             box-shadow: none !important;
