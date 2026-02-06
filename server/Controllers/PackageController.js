@@ -207,6 +207,7 @@ export const getPackagesByRange = async (req, res) => {
   }
 };
 
+// In sendCustomerNotification function, change this:
 const sendCustomerNotification = async (email, subject, message, packageData = null) => {
   try {
     if (!email) {
@@ -214,6 +215,16 @@ const sendCustomerNotification = async (email, subject, message, packageData = n
       return;
     }
 
+    // Add this line to get EMAIL_CONFIG
+    const EMAIL_CONFIG = {
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL || 'your-email@gmail.com',
+        pass: process.env.EMAIL_PASSWORD || 'your-app-password'
+      }
+    };
+
+    // ... rest of the function
     const htmlContent = packageData ? `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">
@@ -697,11 +708,13 @@ export const createPackage = async (req, res) => {
     // 2️⃣ Create receiver
     const newReceiver = await Customer.create(receiver);
 
-    // 3️⃣ Create package
+    // 3️⃣ Create package - FIXED: use packageData.idDocument and packageData.idDocumentMetadata
     const newPackage = await Package.create({
       sender: newSender.id,
       receiver: newReceiver.id,
       location: "Afghan Cargo Stock",
+      idDocument: packageData.idDocument || null,
+      idDocumentMetadata: packageData.idDocumentMetadata || {},
       ...packageData,
     });
 
@@ -780,7 +793,8 @@ export const createPackage = async (req, res) => {
 export const updatePackage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { sender, receiver, packageData } = req.body;
+    const { sender, receiver, packageData, idDocument, idDocumentMetadata } = req.body; // Add these
+
 
     const pkg = await Package.findByPk(id, {
       include: [
@@ -812,8 +826,13 @@ export const updatePackage = async (req, res) => {
     }
 
     // 3️⃣ Update package data
-    if (packageData) {
-      await pkg.update(packageData);
+    if (packageData || idDocument || idDocumentMetadata) {
+      const updateData = {
+        ...packageData,
+        ...(idDocument !== undefined && { idDocument }),
+        ...(idDocumentMetadata !== undefined && { idDocumentMetadata })
+      };
+      await pkg.update(updateData);
     }
 
     // Refresh to get updated data
@@ -1127,9 +1146,9 @@ export const closePackageRemaining = async (req, res) => {
       return res.status(404).json({ error: "Package not found" });
     }
 
-    // Update financial status
+    // Update financial status - FIX HERE
     pkg.remain = 0;
-    pkg.received = pkg.totalCash;
+    pkg.received = pkg.totalCash || 0; // Use received, not receivedCash
 
     await pkg.save();
 
@@ -1141,14 +1160,14 @@ export const closePackageRemaining = async (req, res) => {
       ...pkg.toJSON(),
     };
 
-    // Send email notification
+    // Send email notification - FIX THE TEMPLATE
     await sendPackageNotification(
       "✅ Package Payment Completed",
       `
       Package #${pkg.id} has been fully settled.<br/>
-      Total Cash: ${pkg.totalCash}<br/>
-      Received Cash: ${pkg.receivedCash}<br/>
-      Remaining: 0<br/>
+      Total Cash: $${pkg.totalCash || 0}<br/>
+      Received Cash: $${pkg.received || 0}<br/>
+      Remaining: $${pkg.remain || 0}<br/>
       Completion Time: ${new Date().toLocaleString()}
       `,
       packageInfo
@@ -1164,3 +1183,80 @@ export const closePackageRemaining = async (req, res) => {
     return res.status(500).json({ error: "Failed to close package remaining" });
   }
 };
+
+export const getPackagesByRunQuery = async (req, res) => {
+  try {
+    const { run } = req.query;
+
+    if (!run || isNaN(parseInt(run))) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid run number as query parameter",
+      });
+    }
+
+    const runNumber = parseInt(run);
+
+    const packages = await Package.findAll({
+      where: {
+        run: runNumber,
+      },
+      include: [
+        {
+          model: Customer,
+          as: "Sender",
+        },
+        {
+          model: Customer,
+          as: "Receiver",
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: packages.length,
+      data: packages,
+    });
+  } catch (error) {
+    console.error("Error fetching packages by run query:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
+export const updatePackageIdDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { idDocument, idDocumentMetadata } = req.body;
+
+    const pkg = await Package.findByPk(id);
+    if (!pkg) {
+      return res.status(404).json({ error: "Package not found" });
+    }
+
+    await pkg.update({
+      idDocument,
+      idDocumentMetadata
+    });
+
+    // Send notification
+    await sendPackageNotification(
+      "📄 Package ID Document Updated",
+      `ID document has been ${idDocument ? 'updated' : 'removed'} for Package #${id}`,
+      pkg
+    );
+
+    return res.status(200).json({
+      message: "Package ID document updated successfully",
+      data: pkg
+    });
+  } catch (error) {
+    console.error("Update ID Document Error:", error);
+    return res.status(500).json({ error: "Failed to update ID document" });
+  }
+};
+// Export if needed
+export { sendPackageNotification }; 

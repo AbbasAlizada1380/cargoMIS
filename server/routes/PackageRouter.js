@@ -13,6 +13,7 @@ import {
   updatePackageTracking,
   getPackagesWithRemaining,
   closePackageRemaining,
+  getPackagesByRunQuery,
 } from "../Controllers/PackageController.js";
 
 const packageRouter = express.Router();
@@ -32,6 +33,7 @@ packageRouter.get("/transitWays", getAllTransitWays);
 packageRouter.get("/Range*", getPackagesByRange);
 packageRouter.get("/remaining", getPackagesWithRemaining);
 packageRouter.get("/search", searchPackagesByName);
+packageRouter.get("/run", getPackagesByRunQuery);
 packageRouter.get("/", getAllPackages);
 
 // Get package by ID

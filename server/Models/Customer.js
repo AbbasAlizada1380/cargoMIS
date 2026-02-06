@@ -9,6 +9,9 @@ const Customer = sequelize.define(
     email: DataTypes.STRING,
     phoneNumber: DataTypes.STRING,
     country: DataTypes.STRING,
+    state: DataTypes.STRING,
+    city: DataTypes.STRING,
+    zipCode: DataTypes.STRING,
   },
   {
     tableName: "customers",

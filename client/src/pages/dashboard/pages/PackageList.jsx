@@ -412,6 +412,9 @@ const PackageList = ({
                   <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700 border-b">
                     موقعیت
                   </th>
+                   <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700 border-b">
+                    نمبر رن
+                  </th>
                   <th className="py-3 px-4 text-right text-sm font-semibold text-gray-700 border-b">
                     عملیات
                   </th>
@@ -497,7 +500,11 @@ const PackageList = ({
                         {pkg.location || "تعیین نشده"}
                       </div>
                     </td>
-
+                    <td className="py-3 px-4">
+                      <div className="font-medium text-gray-900">
+                        {pkg.run || "تعیین نشده"}
+                      </div>
+                    </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         {mode !== "list" && (

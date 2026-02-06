@@ -1,28 +1,27 @@
-import React from "react";
 import { FaDownload, FaFilePdf } from "react-icons/fa";
 
 const Regulation = ({ companyName = "افغان کارگو", data }) => {
-  const downloadRegulationPDF = () => {
-    const printWindow = window.open("", "_blank", "width=800,height=900");
-    if (!printWindow) {
-      alert("لطفاً پاپ‌آپ را برای پرینت مجاز کنید");
-      return;
-    }
+	const downloadRegulationPDF = () => {
+		const printWindow = window.open("", "_blank", "width=800,height=900");
+		if (!printWindow) {
+			alert("لطفاً پاپ‌آپ را برای پرینت مجاز کنید");
+			return;
+		}
 
-    const isoDate = data.date;
+		const isoDate = data.date;
 
-    const persianDate = new Intl.DateTimeFormat("fa-IR-u-nu-arabext", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).format(new Date(isoDate));
+		const persianDate = new Intl.DateTimeFormat("fa-IR-u-nu-arabext", {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+		}).format(new Date(isoDate));
 
-    const docNumber = data?.id.toLocaleString("fa-IR");
+		const docNumber = data?.id.toLocaleString("fa-IR");
 
-    // Get the logo URL - assuming it's hosted at /logo.png
-    const logoUrl = window.location.origin + '/logo.png';
+		// Get the logo URL - assuming it's hosted at /logo.png
+		const logoUrl = window.location.origin + "/logo.png";
 
-    printWindow.document.write(`
+		printWindow.document.write(`
       <!DOCTYPE html>
       <html lang="fa" dir="rtl">
       <head>
@@ -66,19 +65,18 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             background: white;
             margin: 0mm auto;
             position: relative;
-          
+            padding-right:20mm;
             overflow: hidden;
           }
 
           /* Header - Compact version */
           .print-header {
-            background: linear-gradient(to left, #1e40af, #2563eb);
+            background: #0f3a76;
             color: white;
-            padding: 5mm;
+            padding: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 10px;
           }
 
           .header-left {
@@ -88,8 +86,8 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           }
 
           .logo-circle {
-            width: 48px;
-            height: 48px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             border: 2px solid white;
             display: flex;
@@ -112,13 +110,13 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           }
 
           .company-name-fa {
-            font-size: 16px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 2px;
           }
 
           .company-name-en {
-            font-size: 10px;
+            font-size: 14px;
             opacity: 0.95;
           }
 
@@ -126,6 +124,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
+            justity:center;
             gap: 3px;
           }
 
@@ -151,8 +150,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             border-right: 2px solid #1e40af;
             border-radius: 3px;
             padding: 8px 10px;
-            margin: 0 0 12px 0;
-            text-align: center;
+            margin-top:4px;
           }
 
           .intro-text {
@@ -164,14 +162,13 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
           /* Section Styling - Compact */
           .section {
-            margin: 12px 0;
+            margin: 0;
           }
 
           .section-title {
             font-size: 14px;
             font-weight: bold;
             color: #1e3a8a;
-            padding-right:5mm;
           }
 
           /* Regulations List - Compact */
@@ -199,10 +196,8 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             color: #1e40af;
             font-weight: bold;
             font-size: 11px;
-            background: #e0f2fe;
             width: 18px;
             height: 18px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -215,92 +210,64 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
           /* Contact Information - Compact */
           .contact-section {
-            background: #eef2ff;
-            border: 1px solid #c7d2fe;
-            border-radius: 4px;
-            padding: 5mm;
-            margin:10px;
+            background: #0f3a76;
+            padding:16px;
           }
 
           .contact-title {
-            font-size: 12px;
+            font-size: 16px;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #ffffff;
             margin-bottom: 6px;
             text-align: center;
-          }
-
-          .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 5px;
           }
 
           .contact-item {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 10px;
-          }
-
-          .contact-icon {
-            color: #1e40af;
-            font-size: 11px;
-            min-width: 16px;
-            flex-shrink: 0;
+            color:#ffffff;
+            font-size: 16px;
           }
 
           /* Signature Section */
           .signature-section {
-            margin-top: 15px;
-            padding-top: 10px;
             border-top: 1px solid #d1d5db;
+            margin-top: 16px;
+            padding: 12px;
             display: flex;
-            padding: 5mm;
             justify-content: space-between;
             align-items: flex-start;
           }
 
           .signature-box {
             width: 48%;
+            border: 1px solid #d1d5db;
             text-align: center;
+            height: 86px;
           }
 
           .signature-title {
             font-size: 12px;
+            margin-top: 5px;
             font-weight: bold;
             color: #1e3a8a;
-            margin-bottom: 8px;
           }
 
           .signature-area {
-            height: 90px;
-            border: 1px solid #666;
-            margin-bottom: 5px;
             position: relative;
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            padding-bottom: 10px;
           }
 
           .signature-label {
             font-size: 10px;
             color: #666;
-            margin-top: 3px;
           }
-
-          .company-signature {
-            border: 1px solid #1e40af;
-            background: #f0f9ff;
-          }
-
-          .customer-signature {
-            border: 1px dashed #666;
-          }
-
           .signature-name {
             font-size: 11px;
+            padding-top: 24px;
             font-weight: bold;
             color: #1e3a8a;
             text-align: center;
@@ -309,7 +276,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
           /* Footer - Compact */
           .footer {
-            margin-top: 10px;
+            margin-top: 16px;
             padding-top: 8px;
             border-top: 1px solid #d1d5db;
             text-align: center;
@@ -346,7 +313,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             }
 
             .print-header {
-              background: linear-gradient(to left, #1e40af, #2563eb) !important;
+              background: #0f3a76 !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
@@ -391,7 +358,7 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             </div>
             <div class="header-right">
               <div class="doc-info-item">
-                <span class="doc-info-label">شماره سند:</span>
+                <span class="doc-info-label">شماره بل:</span>
                 <span class="doc-info-value">${docNumber}</span>
               </div>
               <div class="doc-info-item">
@@ -403,7 +370,9 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
 
           <!-- Introduction -->
           <div class="intro-box">
-            <p class="intro-text">قرارداد انتقال محموله بین شرکت ${companyName} و مشتری محترم ${data?.Sender?.name || "مشتری"} به شرح ذیل تنظیم شده است</p>
+            <p class="intro-text">قرارداد انتقال محموله بین شرکت ${companyName} و مشتری محترم ${
+			data?.Sender?.name || "مشتری"
+		} به شرح ذیل تنظیم شده است</p>
           </div>
 
         <!-- Company Responsibilities -->
@@ -427,7 +396,9 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
     <li class="regulation-item">در صورت درج شدن معلومات نادرست توسط فرستنده، اگر محموله توسط نهادهای ذیربط برگردانده شود، مبلغ یا کرایه ارسال بسته اعاده نشده و مبلغ برگشت بسته نیز به عهده فرستنده می‌باشد.</li>
     <li class="regulation-item">اگر اشیای قیمتی بدون بیمه و درج قیمت صحیح توسط افغان کارگو ارسال گردد، در صورت تخریب یا مفقود شدن یا وضع شدن هزینه‌های انبارداری (Storage) و تأخیر (Demurrage)، کرایه اخذ شده قابل استرداد نمی‌باشد.</li>
     <li class="regulation-item">ارسال پول نقد، زیورات قیمتی، مایعات، ادویه توسط افغان کارگو قابل انتقال نیستند.</li>
-    <li class="regulation-item">محموله مذکور باید مطابق جواز تجاری به کشور مقصد صادر گردد. در صورتی که محموله غیرقانونی (مانند مواد مخدر، مواد نشه‌آور، مواد انفجاری و تمام اموال غیرقانونی که خلاف قوانین ملی و بین‌المللی باشد و نگهداری آنها جرم شمرده شود) در این محموله جابجا شده باشد، مسؤولیت قانونی (شامل مسؤولیت جزایی) آن به عهده شخص فرستنده می‌باشد.بنا بر این اینجانب ${data.Sender.name} دارنده نمبر تذکره ............... تعهد مینمایم که هیچ نوع مواد ممنوعه فوق الذکر در محموله جاسازی و جابجا نشده در صورت کشف چنین موردی، افغان کارگو هیچ نوع مسؤولیتی ندارد و در قبال چنین موارد به نهاد های مربوطه مسوول پاسخگو میباشم.</li>
+    <li class="regulation-item">محموله مذکور باید مطابق جواز تجاری به کشور مقصد صادر گردد. در صورتی که محموله غیرقانونی (مانند مواد مخدر، مواد نشه‌آور، مواد انفجاری و تمام اموال غیرقانونی که خلاف قوانین ملی و بین‌المللی باشد و نگهداری آنها جرم شمرده شود) در این محموله جابجا شده باشد، مسؤولیت قانونی (شامل مسؤولیت جزایی) آن به عهده شخص فرستنده می‌باشد.بنا بر این اینجانب ${
+			data.Sender.name
+		} دارنده نمبر تذکره ............... تعهد مینمایم که هیچ نوع مواد ممنوعه فوق الذکر در محموله جاسازی و جابجا نشده در صورت کشف چنین موردی، افغان کارگو هیچ نوع مسؤولیتی ندارد و در قبال چنین موارد به نهاد های مربوطه مسوول پاسخگو میباشم.</li>
     <li class="regulation-item">در صورتی که در کشورهای مبدأ، مسیر یا مقصد، محموله شما مورد ارزیابی و تحقیقات امنیتی قرار گیرد، در صورت تقاضای جدی آنها، مشتری مکلف به ارائه معلومات در مورد اموال و بسته‌های خود می‌باشد.</li>
     <li class="regulation-item">هرگاه بر محموله در کشور مقصد مالیات و سایر مصارف حکومتی وضع شود، شخص گیرنده مکلف به پرداخت آن می‌باشد.</li>
     <li class="regulation-item">در صورت پیش آمدن حالات غیرمترقبه مثل: اتفاقات طبیعی، آتش‌سوزی، کودتا، جنگ، محدودیت‌ها بالای حکومت افغانستان و امثال آن، که محموله به تأخیر مواجه شود، افغان کارگو هیچ‌گونه مسؤولیتی ندارد.</li>
@@ -435,7 +406,9 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
     <li class="regulation-item">شخص گیرنده مکلف است در صورت نیاز به گمرکات کشور مقصد، اسناد لازم را ارائه دهد. در صورتی که شخص گیرنده مشکلاتی مانند نداشتن اسناد قانونی، بدهی دولتی، عدم موجودیت در آدرس داده شده، قرار گرفتن در وضعیت‌های اضطراری و غیره داشته باشد که شرکت بین‌المللی نتواند محموله را تحویل دهد، افغان کارگو هیچ نوع مسؤولیتی ندارد.</li>
     <li class="regulation-item">شخص گیرنده مکلف است حین باز کردن بسته از جزئیات آن فیلم گرفته تا در صورت کمبود یا آسیب، مستندسازی شود.</li>
     <li class="regulation-item">شخص فرستنده مکلف است تا در هنگام تسلیم اجناس خود به افغان کارگو، این شرایط را به دقت مطالعه نموده و با آگاهی کامل این قرارداد را که دارای 17 ماده می‌باشد، امضا نماید. همچنین این قرارداد بعد از تسلیم مال به کشور مقصد توسط شخص گیرنده قابل اعتبار نیست.</li>
-    <li class="regulation-item">اینجانب ${data.Sender.name} این قرداد را مطالعه نمودم و تمام شرایط آنرا خواندم و قبول میدارم </li>
+    <li class="regulation-item">اینجانب ${
+			data.Sender.name
+		} این قرداد را مطالعه نمودم و تمام شرایط آنرا خواندم و قبول میدارم </li>
   </ol>
 </div>
 
@@ -450,7 +423,9 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
             <div class="signature-box">
               <div class="signature-title">امضاء مشتری</div>
               <div class="signature-area customer-signature">
-                <div class="signature-name">${data?.Sender?.name || "مشتری"}</div>
+                <div class="signature-name">${
+									data?.Sender?.name || "مشتری"
+								}</div>
               </div>
             </div>
           </div>
@@ -458,17 +433,13 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
           <div class="contact-section">
             <div class="contact-grid">
               <div class="contact-item">
-                <span class="contact-icon">📞</span>
-                <span>تلفن: 0780177060  - 077971099 </span>
+
+                <span>تماس: ۰۷۸۰۱۷۷۰۶۰ - ۰۷۷۹۷۱۰۹۹۶ </span>
               </div>
               <div class="contact-item">
-                <span class="contact-icon">🏢</span>
+
                 <span>آدرس: مارکیت بهار سراب، تانک تیل، دشت برچی، کابل، افغانستان</span>
-              </div>
-              <div class="contact-item">
-                <span class="contact-icon">📧</span>
-                <span>ایمیل: info@afghancargo.af</span>
-              </div>
+              </div> 
             </div>
           </div>
         </div>
@@ -505,23 +476,23 @@ const Regulation = ({ companyName = "افغان کارگو", data }) => {
       </html>
     `);
 
-    printWindow.document.close();
-  };
+		printWindow.document.close();
+	};
 
-  return (
-    <div className="flex justify-center p-4">
-      <button
-        onClick={downloadRegulationPDF}
-        className="flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-800 
+	return (
+		<div className="flex justify-center p-4">
+			<button
+				onClick={downloadRegulationPDF}
+				className="flex items-center gap-3 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-800 
                    text-white rounded-lg hover:from-blue-700 hover:to-blue-900 
                    shadow-md hover:shadow-lg border border-blue-500"
-      >
-        <FaFilePdf className="text-lg" />
-        <FaDownload className="text-md" />
-        <span className="font-semibold">دانلود مقررات شرکت</span>
-      </button>
-    </div>
-  );
+			>
+				<FaFilePdf className="text-lg" />
+				<FaDownload className="text-md" />
+				<span className="font-semibold">دانلود مقررات شرکت</span>
+			</button>
+		</div>
+	);
 };
 
 export default Regulation;
