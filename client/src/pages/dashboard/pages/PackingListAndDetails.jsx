@@ -168,8 +168,8 @@ const PackingListAndDetails = ({
           piecesArray.push({
             id: parseInt(key),
             weight: piece.weight?.toString() || "",
-            hasDimensions: !!(piece.height && piece.width && piece.length && 
-                             piece.height > 0 && piece.width > 0 && piece.length > 0),
+            hasDimensions: !!(piece.height && piece.width && piece.length &&
+              piece.height > 0 && piece.width > 0 && piece.length > 0),
             height: piece.height?.toString() || "",
             width: piece.width?.toString() || "",
             length: piece.length?.toString() || "",
@@ -177,7 +177,7 @@ const PackingListAndDetails = ({
             actualWeight: piece.actualWeight?.toString() || piece.weight?.toString() || "",
           });
         });
-        
+
         if (piecesArray.length > 0) {
           setPieceCards(piecesArray);
           setPieceInput(piecesArray.length.toString());
@@ -805,6 +805,19 @@ const PackingListAndDetails = ({
               value={form.track_number || ""}
               onChange={handleChange}
               placeholder="شماره رهگیری بسته"
+              className="w-full px-4 py-3 bg-white rounded-md focus:ring-1 focus:ring-primary outline-none transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              ارزش بسته
+            </label>
+            <input
+              type="text"
+              name="value"
+              value={form.value || ""}
+              onChange={handleChange}
+              placeholder="ارزش بسته"
               className="w-full px-4 py-3 bg-white rounded-md focus:ring-1 focus:ring-primary outline-none transition-all"
             />
           </div>

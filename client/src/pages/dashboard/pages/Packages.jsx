@@ -371,6 +371,7 @@ const PackageCrud = () => {
     const packageData = {
       totalWeight: parseFloat(form.totalWeight) || 0,
       piece: parseInt(form.piece) || 0,
+      value: parseInt(form.value) || 0,
       value: parseFloat(form.value) || 0,
       perKgCash: parseFloat(form.perKgCash) || 0,
       OPerKgCash: parseFloat(form.OPerKgCash) || 0,
