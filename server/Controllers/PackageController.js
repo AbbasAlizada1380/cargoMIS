@@ -717,15 +717,20 @@ export const createPackage = async (req, res) => {
       idDocumentMetadata: packageData.idDocumentMetadata || {},
       ...packageData,
     });
+        // 4️⃣ Generate formatted ID using the newly created ID
+    const formattedPackageId = `AC${newPackage.id.toString().padStart(6, '0')}`;
+
+    // 5️⃣ Update the package with formatted ID
+    await newPackage.update({ formattedId: formattedPackageId });
 
     // Prepare full package data for emails
     const packageEmailData = {
       id: newPackage.id,
+      formattedId: formattedPackageId,
       Sender: newSender,
       Receiver: newReceiver,
       ...newPackage.toJSON(),
     };
-
     /* ==========================
        📧 ADMIN EMAIL
     ========================== */

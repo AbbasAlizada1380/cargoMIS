@@ -616,25 +616,6 @@ const PackingListAndDetails = ({
               )}
             </div>
           </div>
-
-          {/* Status indicator */}
-          {pieceCards.length > 0 && (
-            <div className="mt-4 p-3 bg-white/10 rounded-md">
-              <div className="flex items-center justify-between">
-                <div className="text-amber-100 text-sm">
-                  {pieceCards.length} قطعه ایجاد شده
-                </div>
-                <div className="text-white text-sm font-medium">
-                  وزن کل: {weightWithDimensions.toFixed(2)} کیلوگرم
-                  {dimensionWeightTotal > 0 && (
-                    <span className="text-amber-200 mr-2">
-                      (وزن ابعادی: {dimensionWeightTotal.toFixed(2)} کیلوگرم)
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {pieceCards.length > 0 && (

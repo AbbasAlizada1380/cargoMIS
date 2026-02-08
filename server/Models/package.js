@@ -13,7 +13,11 @@ const Package = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-
+    formattedId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
+    },
     totalWeight: DataTypes.FLOAT,
     piece: DataTypes.INTEGER,
     value: DataTypes.FLOAT,

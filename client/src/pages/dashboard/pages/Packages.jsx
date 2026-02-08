@@ -333,12 +333,6 @@ const PackageCrud = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Validate required fields
-    if (!form.totalWeight || parseFloat(form.totalWeight) <= 0) {
-      alert("لطفاً وزن بسته را وارد کنید");
-      setLoading(false);
-      return;
-    }
 
     if (!form.perKgCash || parseFloat(form.perKgCash) <= 0) {
       alert("لطفاً نرخ دستی هر کیلو را وارد کنید");
