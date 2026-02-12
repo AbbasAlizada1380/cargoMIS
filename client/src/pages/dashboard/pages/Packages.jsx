@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import { GiWeight } from "react-icons/gi";
 import PackingListAndDetails from "./PackingListAndDetails";
+import Calculator from "../Calculator/Calculator.jsx";
 
 const PackageCrud = () => {
   const [packages, setPackages] = useState([]);
@@ -219,7 +220,6 @@ const PackageCrud = () => {
     const received = parseFloat(form.received) || 0;
 
     if (received > totalCash) {
-      alert("مبلغ دریافتی نمی‌تواند از مجموع کل بیشتر باشد!");
       setForm((prev) => ({
         ...prev,
         received: totalCash.toString(),
@@ -335,7 +335,7 @@ const PackageCrud = () => {
     setLoading(true);
 
     if (!form.perKgCash || parseFloat(form.perKgCash) <= 0) {
-      alert("لطفاً نرخ دستی هر کیلو را وارد کنید");
+      alert("لطفاً نرخ مشتری هر کیلو را وارد کنید");
       setLoading(false);
       return;
     }
@@ -365,7 +365,6 @@ const PackageCrud = () => {
     const packageData = {
       totalWeight: parseFloat(form.totalWeight) || 0,
       piece: parseInt(form.piece) || 0,
-      value: parseInt(form.value) || 0,
       value: parseFloat(form.value) || 0,
       perKgCash: parseFloat(form.perKgCash) || 0,
       OPerKgCash: parseFloat(form.OPerKgCash) || 0,
@@ -567,24 +566,30 @@ const PackageCrud = () => {
           </div>
         </div>
 
-        <div className="">
-          {/* Main Form Section */}
-          <div className="">
-            {/* Transit Options Section */}
-            {priceList && priceList.data && priceList.data.length > 0 && (
-              <div className="mb-6 bg-white rounded-md shadow-md overflow-hidden">
-                <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4">
-                  <h3 className="text-white font-semibold text-lg flex items-center gap-2">
-                    <FaTruck />
-                    گزینه‌های حمل و نقل موجود برای {form.receiverCountry}
-                  </h3>
-                  <p className="text-green-100 text-sm mt-1">
-                    وزن: {form.totalWeight} کیلوگرم • برای انتخاب روی هر گزینه
-                    کلیک کنید
-                  </p>
-                </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Sidebar - Scrollable Window containing both Transit Options and Calculator */}
+          <div className="lg:col-span-1 order-2 lg:order-1">
+            <div className="bg-white rounded-md shadow-md overflow-hidden sticky top-4 max-h-[calc(100vh-2rem)] flex flex-col">
+              {/* Fixed Header */}
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 flex-shrink-0">
+                <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                  <FaTruck />
+                  گزینه‌های حمل و نقل
+                </h3>
+                <p className="text-green-100 text-sm mt-1">
+                  {form.receiverCountry ? (
+                    <>مقصد: {form.receiverCountry} • وزن: {form.totalWeight || '0'} کیلوگرم</>
+                  ) : (
+                    'لطفاً کشور گیرنده را انتخاب کنید'
+                  )}
+                </p>
+              </div>
+
+              {/* Scrollable Content Area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Transit Options - Only show if data exists */}
+                {priceList && priceList.data && priceList.data.length > 0 && (
+                  <div className="space-y-3">
                     {priceList.data.map((option) => {
                       const isCheapest =
                         priceList.data.reduce((min, current) =>
@@ -604,7 +609,7 @@ const PackageCrud = () => {
                           key={option.id}
                           type="button"
                           onClick={() => selectPriceOption(option)}
-                          className={`p-4 rounded-lg border-2 transition-all transform hover:scale-[1.02] ${isSelected
+                          className={`w-full p-4 rounded-lg border-2 transition-all transform hover:scale-[1.02] text-right ${isSelected
                             ? "border-blue-500 bg-blue-50 shadow-md"
                             : "border-gray-200 hover:border-blue-300"
                             }`}
@@ -633,10 +638,10 @@ const PackageCrud = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-left">
                               <div className="text-2xl font-bold text-blue-600">
                                 ${option.price}
-                                <span className="text-sm font-normal text-gray-500">
+                                <span className="text-sm font-normal text-gray-500 mr-1">
                                   /کیلو
                                 </span>
                               </div>
@@ -653,7 +658,7 @@ const PackageCrud = () => {
                           {isSelected && (
                             <div className="mt-3 pt-3 border-t border-blue-200">
                               <div className="flex items-center justify-center text-blue-600 font-medium">
-                                <FaCheck className="mr-2" />
+                                <FaCheck className="ml-2" />
                                 انتخاب شده
                               </div>
                             </div>
@@ -661,39 +666,98 @@ const PackageCrud = () => {
                         </button>
                       );
                     })}
-                  </div>
 
-                  {/* Selection Summary */}
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm text-blue-800 font-medium">
-                          گزینه انتخاب شده
-                        </div>
-                        <div className="text-lg font-semibold text-gray-900">
-                          {form.transitWay}
+                    {/* Selection Summary */}
+                    {form.transitWay && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm text-blue-800 font-medium">
+                              گزینه انتخاب شده
+                            </div>
+                            <div className="text-lg font-semibold text-gray-900">
+                              {form.transitWay}
+                            </div>
+                          </div>
+                          <div className="text-left">
+                            <div className="text-2xl font-bold text-blue-600">
+                              ${form.OPerKgCash || "0.00"}/کیلو
+                            </div>
+                            {form.totalWeight && (
+                              <div className="text-sm text-gray-600">
+                                مجموع دفتری:{" "}
+                                <span className="font-bold">
+                                  ${form.OTotalCash || "0.00"}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">
-                          ${form.OPerKgCash || "0.00"}/کیلو
+                    )}
+                  </div>
+                )}
+
+                {/* Empty State - Show when no transit options */}
+                {(!priceList || !priceList.data || priceList.data.length === 0) && (
+                  <div className="text-center py-8">
+                    <div className="flex flex-col items-center justify-center">
+                      <FaGlobeAmericas className="text-5xl text-gray-300 mb-3" />
+                      <p className="text-gray-600 font-medium mb-2">
+                        {!form.receiverCountry
+                          ? "لطفاً کشور گیرنده را انتخاب کنید"
+                          : !form.totalWeight || parseFloat(form.totalWeight) <= 0
+                            ? "لطفاً وزن بسته را وارد کنید"
+                            : "هیچ گزینه حمل و نقلی یافت نشد"
+                        }
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {!form.receiverCountry
+                          ? "برای مشاهده گزینه‌های حمل و نقل، ابتدا کشور مقصد را انتخاب کنید"
+                          : !form.totalWeight || parseFloat(form.totalWeight) <= 0
+                            ? "برای مشاهده گزینه‌های حمل و نقل، وزن بسته را وارد کنید"
+                            : "برای کشور و وزن وارد شده، گزینه حمل و نقلی موجود نیست"
+                        }
+                      </p>
+
+                      {/* Show current values */}
+                      <div className="mt-4 w-full bg-gray-50 rounded-lg p-3 text-right">
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">کشور گیرنده:</span>
+                          <span className="font-medium text-gray-800">
+                            {form.receiverCountry || 'انتخاب نشده'}
+                          </span>
                         </div>
-                        {form.totalWeight && (
-                          <div className="text-sm text-gray-600">
-                            مجموع دفتری:{" "}
-                            <span className="font-bold">
-                              ${form.OTotalCash || "0.00"}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">وزن بسته:</span>
+                          <span className="font-medium text-gray-800">
+                            {form.totalWeight || '0'} کیلوگرم
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
+                )}
+
+                {/* Divider - Only show if both sections are present */}
+                {priceList && priceList.data && priceList.data.length > 0 && (
+                  <div className="border-t border-gray-200 my-2"></div>
+                )}
+
+                {/* Calculator Section - Always visible */}
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <FaCalculator className="text-purple-600" />
+                    <h4 className="font-semibold text-gray-700">ماشین حساب</h4>
+                  </div>
+                  <Calculator />
                 </div>
               </div>
-            )}
+            </div>
+          </div>
 
-            {/* Package Form */}
+          {/* Package Form - Right Side (takes 2/3 of the space) */}
+          <div className="lg:col-span-2 order-1 lg:order-2">
             <form
               onSubmit={handleSubmit}
               className="bg-white rounded-md shadow-md p-6"
@@ -888,7 +952,7 @@ const PackageCrud = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <FormInput
                       icon={<FaMoneyBillWave />}
-                      label="نرخ دستی هر کیلو ($)"
+                      label="نرخ مشتری هر کیلو ($)"
                       name="perKgCash"
                       type="text"
                       value={form.perKgCash}
@@ -910,6 +974,7 @@ const PackageCrud = () => {
                             value={form.transitWay}
                             onChange={handleChange}
                             className="w-full px-4 py-3 rounded-md bg-gray-200 focus:ring-2 focus:ring-primary outline-none appearance-none transition-all"
+                            disabled={!priceList || !priceList.data || priceList.data.length === 0}
                           >
                             <option value="">انتخاب روش حمل و نقل</option>
                             {priceList &&
@@ -968,7 +1033,6 @@ const PackageCrud = () => {
                       placeholder="0.00"
                       pattern="\d*\.?\d*"
                       title="لطفاً عدد وارد کنید"
-                      readOnly
                       className="bg-gray-100"
                     />
                   </div>
@@ -1033,8 +1097,6 @@ const PackageCrud = () => {
                         title="لطفاً عدد وارد کنید"
                       />
                     </div>
-
-
                   </div>
 
                   {/* Remain Section */}

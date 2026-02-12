@@ -23,31 +23,10 @@ const PackingListAndDetails = ({
     { description: "لباس زنانه", qty: "", weight: "", value: "" },
     { description: "مردانه لباس", qty: "", weight: "", value: "" },
     { description: "چادر", qty: "", weight: "", value: "" },
-    { description: "پلون مردانه", qty: "", weight: "", value: "" },
-    { description: "گزاره", qty: "", weight: "", value: "" },
+    { description: "پتلون مردانه", qty: "", weight: "", value: "" },
     { description: "جاکت زنانه", qty: "", weight: "", value: "" },
-    { description: "بلوز", qty: "", weight: "", value: "" },
-    { description: "واسکت", qty: "", weight: "", value: "" },
-    { description: "بوت", qty: "", weight: "", value: "" },
-    { description: "گند افغانی", qty: "", weight: "", value: "" },
-    { description: "گردن بند", qty: "", weight: "", value: "" },
-    { description: "بیک", qty: "", weight: "", value: "" },
-    { description: "کرتی", qty: "", weight: "", value: "" },
-    { description: "پوش بالش", qty: "", weight: "", value: "" },
-    { description: "پوش توشک", qty: "", weight: "", value: "" },
-    { description: "زیرپوش بالش", qty: "", weight: "", value: "" },
-    { description: "زیرپوش توشک", qty: "", weight: "", value: "" },
-    { description: "قالین", qty: "", weight: "", value: "" },
-    { description: "نمد", qty: "", weight: "", value: "" },
-    { description: "پرده", qty: "", weight: "", value: "" },
-    { description: "میوه خشک", qty: "", weight: "", value: "" },
-    { description: "قروت", qty: "", weight: "", value: "" },
-    { description: "گیاه یونانی", qty: "", weight: "", value: "" },
-    { description: "ترموز", qty: "", weight: "", value: "" },
-    { description: "ماهی تابه", qty: "", weight: "", value: "" },
-    { description: "چاینک", qty: "", weight: "", value: "" },
-    { description: "ملاقه", qty: "", weight: "", value: "" },
-    { description: "پیاله", qty: "", weight: "", value: "" },
+
+
   ];
 
   const [packList, setPackList] = useState(initialPackList);
@@ -58,18 +37,18 @@ const PackingListAndDetails = ({
   const isInitialMount = useRef(true);
   const lastPackListRef = useRef([]);
   const shouldUpdateParent = useRef(true);
+  const lastPieceCardsRef = useRef(""); // Add this to track pieceCards changes
+  const lastTotalWeightRef = useRef(""); // Add this to track totalWeight changes
 
-  // Format date function - UPDATED to handle both formats
+  // Format date function
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
 
     try {
-      // If it's already in YYYY-MM-DD format, return as is
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
         return dateString;
       }
 
-      // Handle format: "2026-02-11 00:00:00" (from database)
       if (dateString.includes(' ')) {
         const [datePart] = dateString.split(' ');
         if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
@@ -77,9 +56,8 @@ const PackingListAndDetails = ({
         }
       }
 
-      // Handle ISO format: "2026-02-09T00:00:00.000Z"
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return ""; // Invalid date
+      if (isNaN(date.getTime())) return "";
 
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -108,15 +86,16 @@ const PackingListAndDetails = ({
       setPieceInput("");
       shouldUpdateParent.current = true;
       lastPackListRef.current = [];
+      lastPieceCardsRef.current = "";
+      lastTotalWeightRef.current = "";
     }
   }, [resetTrigger]);
 
-  // Initialize component when editing or form changes - UPDATED
+  // Initialize component when editing
   useEffect(() => {
     if (isEditing) {
       // Initialize packList from form.packList
       if (form.packList && form.packList.length > 0) {
-        // Create a map of saved items for quick lookup
         const savedItemsMap = {};
         form.packList.forEach(item => {
           if (item.description) {
@@ -128,7 +107,6 @@ const PackingListAndDetails = ({
           }
         });
 
-        // Update initial items with saved values
         const updatedPackList = initialPackList.map(item => {
           if (savedItemsMap[item.description]) {
             return {
@@ -141,7 +119,6 @@ const PackingListAndDetails = ({
           return item;
         });
 
-        // Add custom items
         const customItems = form.packList.filter(item =>
           item.description && !initialPackList.some(initialItem => initialItem.description === item.description)
         );
@@ -181,14 +158,14 @@ const PackingListAndDetails = ({
         if (piecesArray.length > 0) {
           setPieceCards(piecesArray);
           setPieceInput(piecesArray.length.toString());
+          lastPieceCardsRef.current = JSON.stringify(piecesArray);
         }
       }
 
-      // Format date if needed - but don't update form if already formatted
+      // Format date if needed
       if (form.date && typeof form.date === 'string') {
         const formattedDate = formatDateForInput(form.date);
         if (formattedDate !== form.date) {
-          // Use setTimeout to avoid updating during render
           setTimeout(() => {
             setForm(prev => ({
               ...prev,
@@ -198,7 +175,7 @@ const PackingListAndDetails = ({
         }
       }
     }
-  }, [isEditing, form.packList, form.pieceDetails, form.date, setForm]);
+  }, [isEditing]); // Remove dependencies to prevent re-runs
 
   // Handle date change
   const handleDateChange = (e) => {
@@ -243,20 +220,23 @@ const PackingListAndDetails = ({
     };
   }, [pieceCards]);
 
-  // Update pieceDetails in form
+  // Update pieceDetails in form - FIXED with proper change detection
   useEffect(() => {
     if (pieceCards.length > 0) {
       const { totalWeight } = calculateTotalWeightWithDimensions();
 
-      // Update form if total weight changed
-      if (parseFloat(form.totalWeight) !== totalWeight) {
+      // Check if totalWeight changed to avoid infinite loop
+      const totalWeightStr = totalWeight.toString();
+      if (lastTotalWeightRef.current !== totalWeightStr) {
+        lastTotalWeightRef.current = totalWeightStr;
+
         setForm(prev => ({
           ...prev,
-          totalWeight: totalWeight.toString()
+          totalWeight: totalWeightStr
         }));
       }
 
-      // Update pieceDetails in form
+      // Create pieceDetails object
       const pieceDetailsObj = {};
       pieceCards.forEach(card => {
         const height = parseFloat(card.height) || 0;
@@ -279,19 +259,29 @@ const PackingListAndDetails = ({
         };
       });
 
-      setForm(prev => ({
-        ...prev,
-        pieceDetails: pieceDetailsObj,
-        piece: pieceCards.length.toString()
-      }));
+      // Check if pieceDetails actually changed before updating
+      const pieceDetailsStr = JSON.stringify(pieceDetailsObj);
+      if (lastPieceCardsRef.current !== pieceDetailsStr) {
+        lastPieceCardsRef.current = pieceDetailsStr;
+
+        setForm(prev => ({
+          ...prev,
+          pieceDetails: pieceDetailsObj,
+          piece: pieceCards.length.toString()
+        }));
+      }
     } else if (form.pieceDetails && Object.keys(form.pieceDetails).length > 0) {
-      setForm(prev => ({
-        ...prev,
-        pieceDetails: {},
-        piece: "0"
-      }));
+      // Check if we need to clear
+      if (lastPieceCardsRef.current !== "{}") {
+        lastPieceCardsRef.current = "{}";
+        setForm(prev => ({
+          ...prev,
+          pieceDetails: {},
+          piece: "0"
+        }));
+      }
     }
-  }, [pieceCards, calculateTotalWeightWithDimensions]);
+  }, [pieceCards, calculateTotalWeightWithDimensions]); // Keep dependencies but with change detection
 
   // Handle editing mode for packList
   useEffect(() => {
@@ -413,47 +403,52 @@ const PackingListAndDetails = ({
     setPackList(updatedPackList);
   };
 
-  // Handle piece card changes
+  // Handle piece card changes - FIXED to handle dimension weight properly
   const handlePieceCardChange = (index, field, value) => {
     const updatedCards = [...pieceCards];
 
     if (field === "hasDimensions") {
       updatedCards[index][field] = !updatedCards[index][field];
 
+      // Reset dimension fields if toggling off
       if (!updatedCards[index][field]) {
         updatedCards[index].height = "";
         updatedCards[index].width = "";
         updatedCards[index].length = "";
         updatedCards[index].dimensionWeight = "";
+      } else {
+        // When turning on dimensions, just set the flag
+        // Don't recalculate anything yet
       }
     } else if (field === "weight" || field === "height" || field === "width" || field === "length") {
+      // Allow only numbers and one decimal point
       if (value === "" || /^\d*\.?\d*$/.test(value)) {
-        updatedCards[index][field] = value.replace(/^0+(?=\d)/, "");
+        // Clean the value
+        const cleanValue = value.replace(/^0+(?=\d)/, "");
+        updatedCards[index][field] = cleanValue;
 
+        // Auto-calculate dimension weight if all dimensions are filled
         if (field === "height" || field === "width" || field === "length") {
-          calculateDimensionWeight(index, updatedCards);
+          // Calculate dimension weight for this card
+          const card = updatedCards[index];
+          const height = parseFloat(card.height) || 0;
+          const width = parseFloat(card.width) || 0;
+          const length = parseFloat(card.length) || 0;
+
+          if (height > 0 && width > 0 && length > 0) {
+            const dimensionWeight = (height * width * length) / 5000;
+            updatedCards[index].dimensionWeight = dimensionWeight.toFixed(2);
+          } else {
+            updatedCards[index].dimensionWeight = "";
+          }
         }
       } else {
-        return;
+        return; // Invalid input, don't update
       }
     }
 
+    // Update the state with new cards
     setPieceCards(updatedCards);
-  };
-
-  // Calculate dimension weight for a specific card
-  const calculateDimensionWeight = (index, cards) => {
-    const card = cards[index];
-    const height = parseFloat(card.height) || 0;
-    const width = parseFloat(card.width) || 0;
-    const length = parseFloat(card.length) || 0;
-
-    if (height > 0 && width > 0 && length > 0) {
-      const dimensionWeight = (height * width * length) / 5000;
-      card.dimensionWeight = dimensionWeight.toFixed(2);
-    } else {
-      card.dimensionWeight = "";
-    }
   };
 
   // Handle piece input change
@@ -499,12 +494,18 @@ const PackingListAndDetails = ({
       });
 
       setPieceCards(newPieceCards);
+
+      // Reset the ref to trigger update
+      lastPieceCardsRef.current = "";
+
+      // Update piece count in form
       setForm(prev => ({
         ...prev,
         piece: count.toString()
       }));
     } else if (pieceCards.length > 0) {
       setPieceCards([]);
+      lastPieceCardsRef.current = "";
       setForm(prev => ({
         ...prev,
         piece: "0",
@@ -517,6 +518,7 @@ const PackingListAndDetails = ({
   const clearPieceCards = () => {
     setPieceCards([]);
     setPieceInput("");
+    lastPieceCardsRef.current = "";
     setForm(prev => ({
       ...prev,
       piece: "0",
@@ -546,29 +548,6 @@ const PackingListAndDetails = ({
     setPackList(updatedPackList);
   };
 
-  // Calculate totals - only from items with values
-  const calculateTotals = () => {
-    const totals = packList.reduce(
-      (acc, item) => {
-        const qty = parseFloat(item.qty) || 0;
-        const weight = parseFloat(item.weight) || 0;
-        const value = parseFloat(item.value) || 0;
-
-        if (qty > 0 || weight > 0 || value > 0) {
-          return {
-            totalQty: acc.totalQty + qty,
-            totalWeight: acc.totalWeight + qty * weight,
-            totalValue: acc.totalValue + qty * value,
-          };
-        }
-        return acc;
-      },
-      { totalQty: 0, totalWeight: 0, totalValue: 0 }
-    );
-
-    return totals;
-  };
-
   // Parse number safely for display
   const parseNumber = (value) => {
     return value === "" || value == null ? "" : value;
@@ -579,18 +558,17 @@ const PackingListAndDetails = ({
   return (
     <div className="space-y-6">
       {/* Piece Cards Section */}
-      <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-        <div className="bg-blue-900 p-6">
+      <div className="bg-white border rounded-lg">
+        {/* Header */}
+        <div className="p-5 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <FaBox className="text-white text-xl" />
-              </div>
+              <FaBox className="text-gray-700 text-lg" />
               <div>
-                <h4 className="text-white font-semibold text-lg">
+                <h4 className="text-gray-800 font-semibold">
                   مدیریت قطعات بسته
                 </h4>
-                <p className="text-amber-100 text-sm mt-1">
+                <p className="text-gray-500 text-sm">
                   تعداد قطعات را وارد کرده و مشخصات هر قطعه را پر کنید
                 </p>
               </div>
@@ -602,65 +580,83 @@ const PackingListAndDetails = ({
                 min="1"
                 value={pieceInput}
                 onChange={handlePieceInputChange}
-                placeholder="تعداد قطعات"
-                className="bg-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 w-32 text-center"
+                placeholder="تعداد"
+                className="w-24 border rounded px-2 py-1 text-center focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
+
               {pieceCards.length > 0 && (
                 <button
                   type="button"
                   onClick={clearPieceCards}
-                  className="px-4 py-2 bg-red-100 text-red-700 font-semibold rounded-md hover:bg-red-200 transition-colors"
+                  className="px-3 py-1 text-sm border rounded text-red-600 border-red-300 hover:bg-red-50"
                 >
                   پاک کردن
                 </button>
               )}
             </div>
           </div>
+
+          {pieceCards.length > 0 && (
+            <div className="mt-3 text-sm text-gray-600">
+              {pieceCards.length} قطعه | وزن کل:{" "}
+              <span className="font-medium text-gray-800">
+                {weightWithDimensions.toFixed(2)} کیلوگرم
+              </span>
+            </div>
+          )}
         </div>
 
+        {/* Cards */}
         {pieceCards.length > 0 && (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="p-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {pieceCards.map((card, index) => {
                 const actualWeight = parseFloat(card.weight) || 0;
                 const dimensionWeight = parseFloat(card.dimensionWeight) || 0;
-                const finalWeight = card.hasDimensions && dimensionWeight > 0
-                  ? Math.max(actualWeight, dimensionWeight)
-                  : actualWeight;
+                const finalWeight =
+                  card.hasDimensions && dimensionWeight > 0
+                    ? Math.max(actualWeight, dimensionWeight)
+                    : actualWeight;
 
                 return (
-                  <div key={card.id} className="bg-gray-50 border border-gray-300 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h5 className="font-semibold text-gray-800">قطعه #{card.id}</h5>
-                      <span className={`text-xs px-2 py-1 rounded ${card.hasDimensions && dimensionWeight > 0
-                        ? "bg-purple-100 text-purple-800"
-                        : "bg-blue-100 text-blue-800"
-                        }`}>
-                        وزن: {finalWeight.toFixed(2)} کیلوگرم
+                  <div key={card.id} className="border rounded-md p-4 bg-gray-50">
+                    <div className="flex justify-between mb-3">
+                      <h5 className="text-gray-700 font-medium">
+                        قطعه #{card.id}
+                      </h5>
+                      <span className="text-sm text-gray-600">
+                        {finalWeight.toFixed(2)} kg
                       </span>
                     </div>
 
                     <div className="space-y-3">
+                      {/* Weight */}
                       <div>
-                        <label className="block text-sm text-gray-600 mb-1">وزن (کیلوگرم)</label>
+                        <label className="text-sm text-gray-600">
+                          وزن (کیلوگرم)
+                        </label>
                         <input
                           type="number"
                           step="0.01"
                           value={card.weight}
-                          onChange={(e) => handlePieceCardChange(index, "weight", e.target.value)}
-                          placeholder="0.00"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                          onChange={(e) =>
+                            handlePieceCardChange(index, "weight", e.target.value)
+                          }
+                          className="w-full border rounded px-2 py-1 mt-1 focus:outline-none focus:ring-1 focus:ring-gray-400"
                         />
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      {/* Checkbox */}
+                      <div>
                         <button
                           type="button"
-                          onClick={() => handlePieceCardChange(index, "hasDimensions")}
-                          className="flex items-center gap-2 text-sm text-gray-700"
+                          onClick={() =>
+                            handlePieceCardChange(index, "hasDimensions")
+                          }
+                          className="text-sm text-gray-700 flex items-center gap-2"
                         >
                           {card.hasDimensions ? (
-                            <FaCheckSquare className="text-green-600" />
+                            <FaCheckSquare className="text-gray-700" />
                           ) : (
                             <FaSquare className="text-gray-400" />
                           )}
@@ -668,56 +664,57 @@ const PackingListAndDetails = ({
                         </button>
                       </div>
 
+                      {/* Dimensions */}
                       {card.hasDimensions && (
-                        <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <FaRuler className="text-blue-600" />
-                            <span className="text-sm font-medium text-blue-800">ابعاد</span>
-                          </div>
+                        <div className="border rounded p-3 bg-white space-y-2">
                           <div className="grid grid-cols-3 gap-2">
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">طول (سانتی‌متر)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                value={card.length}
-                                onChange={(e) => handlePieceCardChange(index, "length", e.target.value)}
-                                placeholder="0.0"
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">عرض (سانتی‌متر)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                value={card.width}
-                                onChange={(e) => handlePieceCardChange(index, "width", e.target.value)}
-                                placeholder="0.0"
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">ارتفاع (سانتی‌متر)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                value={card.height}
-                                onChange={(e) => handlePieceCardChange(index, "height", e.target.value)}
-                                placeholder="0.0"
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500"
-                              />
-                            </div>
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={card.length}
+                              onChange={(e) =>
+                                handlePieceCardChange(
+                                  index,
+                                  "length",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="طول"
+                              className="border rounded px-2 py-1 text-sm"
+                            />
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={card.width}
+                              onChange={(e) =>
+                                handlePieceCardChange(
+                                  index,
+                                  "width",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="عرض"
+                              className="border rounded px-2 py-1 text-sm"
+                            />
+                            <input
+                              type="number"
+                              step="0.1"
+                              value={card.height}
+                              onChange={(e) =>
+                                handlePieceCardChange(
+                                  index,
+                                  "height",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="ارتفاع"
+                              className="border rounded px-2 py-1 text-sm"
+                            />
                           </div>
 
                           {card.dimensionWeight && (
-                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
-                              <div className="flex items-center gap-2">
-                                <FaCalculator className="text-green-600" />
-                                <span className="text-sm text-green-800">
-                                  وزن ابعادی: <strong>{card.dimensionWeight}</strong> کیلوگرم
-                                </span>
-                              </div>
+                            <div className="text-xs text-gray-600">
+                              وزن ابعادی: {card.dimensionWeight} kg
                             </div>
                           )}
                         </div>
@@ -728,26 +725,19 @@ const PackingListAndDetails = ({
               })}
             </div>
 
-            {/* Total weight from pieces */}
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FaWeight className="text-blue-600 text-xl" />
-                  <div>
-                    <div className="text-sm text-blue-800">مجموع وزن قطعات</div>
-                    <div className="text-2xl font-bold text-blue-700">
-                      {weightWithDimensions.toFixed(2)} کیلوگرم
-                    </div>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {pieceCards.length} قطعه
-                </div>
+            {/* Total */}
+            <div className="mt-6 text-right">
+              <div className="text-sm text-gray-600">
+                مجموع وزن:
+              </div>
+              <div className="text-xl font-semibold text-gray-800">
+                {weightWithDimensions.toFixed(2)} کیلوگرم
               </div>
             </div>
           </div>
         )}
       </div>
+
 
       {/* Date and Tracking Section */}
       <div className="bg-gray-200 rounded-md shadow-md p-6">
@@ -786,19 +776,6 @@ const PackingListAndDetails = ({
               value={form.track_number || ""}
               onChange={handleChange}
               placeholder="شماره رهگیری بسته"
-              className="w-full px-4 py-3 bg-white rounded-md focus:ring-1 focus:ring-primary outline-none transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ارزش بسته
-            </label>
-            <input
-              type="text"
-              name="value"
-              value={form.value || ""}
-              onChange={handleChange}
-              placeholder="ارزش بسته"
               className="w-full px-4 py-3 bg-white rounded-md focus:ring-1 focus:ring-primary outline-none transition-all"
             />
           </div>
