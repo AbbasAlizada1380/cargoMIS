@@ -10,11 +10,11 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 
 	const formatCurrency = (num) => {
 		const number = Number(num || 0);
-		return number.toLocaleString("fa-IR") + " دالر";
+		return number.toLocaleString("eng-en") + " دالر";
 	};
 
 	const formatNumber = (num) => {
-		return Number(num || 0).toLocaleString("fa-IR");
+		return Number(num || 0).toLocaleString("eng-en");
 	};
 
 	const handlePrint = () => window.print();
@@ -23,7 +23,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 		? `${data.id}`
 		: `${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 
-	const dueDate = moment(data.date).format("jYYYY/jMM/jDD");
+	const dueDate = moment(data.date).format("YYYY/MM/DD");
 
 	return (
 		<div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50  print:bg-transparent print:p-0">
@@ -38,19 +38,19 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 					}}
 				>
 					{/* Header */}
-					<div className="bg-primary text-white p-4  flex items-center justify-between">
+					<div className="bg- text-black border-b p-4  flex items-center justify-between">
 						{/* Logo and Company Name */}
 						<div className="flex items-center gap-3 mb-3 md:mb-0">
 							<img
 								src="/logo.png"
-								alt="Afghan Cargo Logo"
+								alt="your Cargo Logo"
 								className="h-16 w-16 object-contain rounded-full border-2 border-white"
 							/>
 							<div className="flex flex-col text-center md:text-left">
 								<h1 className="text-2xl font-bold leading-tight">
-									افغان کارگو
+									کارگوی شما
 								</h1>
-								<p className="text-sm opacity-90">Afghan Cargo Services</p>
+								<p className="text-sm opacity-90">your Cargo Services</p>
 							</div>
 						</div>
 
@@ -60,66 +60,80 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 								<strong>شماره بل:</strong> {formatNumber(billNumber)}
 							</span>
 							<span>
-								<strong>تاریخ:</strong> {dueDate.replace(/\//g, "/")}
+								<strong>تاریخ:</strong> {dueDate}
 							</span>
 						</div>
 					</div>
 
-					{/* Sender Info */}
-					<div className="p-3 border-b border-gray-200">
-						<h2 className="text-sm font-bold text-gray-700 mb-2 border-b pb-1 border-gray-300">
-							معلومات ارسال‌کننده
-						</h2>
-						<div className="grid grid-cols-2 gap-1 text-xs">
-							<p>
-								<span className="font-semibold">نام:</span> {data.Sender.name}
-							</p>
-							<p>
-								<span className="font-semibold">شماره تماس:</span>{" "}
-								{data.Sender.phoneNumber?.replace(
-									/\d/g,
-									(d) => "۰۱۲۳۴۵۶۷۸۹"[d]
-								) || "-"}
-							</p>
-							<p>
-								<span className="font-semibold">آدرس:</span>{" "}
-								{data.Sender.address}
-							</p>
-							<p>
-								<span className="font-semibold">ایمیل:</span>{" "}
-								{data.Sender.email || "-"}
-							</p>
+					<div className="grid md:grid-cols-2 gap-4 p-3">
+						{/* Sender Info */}
+						<div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+							<div className=" px-3 py-2">
+								<h2 className="text-sm font-bold text-black flex items-center gap-2">
+									اطلاعات ارسال‌کننده
+								</h2>
+							</div>
+							<div className="p-3">
+								<div className="grid grid-cols-1 gap-2 text-sm">
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">نام:</span>
+										<span className="text-gray-800">{data.Sender.name}</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">تماس:</span>
+										<span className="text-gray-800" dir="ltr">
+											{data.Sender.phoneNumber|| "-"}
+										</span>
+									</div>
+									<div className="flex items-start gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">آدرس:</span>
+										<span className="text-gray-800 flex-1">{data.Sender.address}</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">ایمیل:</span>
+										<span className="text-gray-800">{data.Sender.email || "-"}</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">کشور:</span>
+										<span className="text-gray-800">{data.Sender.country || "-"}</span>
+									</div>
+								</div>
+							</div>
 						</div>
-					</div>
 
-					{/* Receiver Info */}
-					<div className="p-3 border-b border-gray-200 bg-gray-50">
-						<h2 className="text-sm font-bold text-gray-700 mb-2 border-b pb-1 border-gray-300">
-							معلومات دریافت‌کننده
-						</h2>
-						<div className="grid grid-cols-2 gap-1 text-xs">
-							<p>
-								<span className="font-semibold">نام:</span> {data.Receiver.name}
-							</p>
-							<p>
-								<span className="font-semibold">شماره تماس:</span>{" "}
-								{data.Receiver.phoneNumber?.replace(
-									/\d/g,
-									(d) => "۰۱۲۳۴۵۶۷۸۹"[d]
-								) || "-"}
-							</p>
-							<p>
-								<span className="font-semibold">آدرس:</span>{" "}
-								{data.Receiver.address}
-							</p>
-							<p>
-								<span className="font-semibold">ایمیل:</span>{" "}
-								{data.Receiver.email || "-"}
-							</p>{" "}
-							<p>
-								<span className="font-semibold">کشور:</span>{" "}
-								{data.Receiver.country || "-"}
-							</p>
+						{/* Receiver Info */}
+						<div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+							<div className=" px-3 py-2">
+								<h2 className="text-sm font-bold text-black flex items-center gap-2">
+									اطلاعات دریافت‌کننده
+								</h2>
+							</div>
+							<div className="p-3">
+								<div className="grid grid-cols-1 gap-2 text-sm">
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">نام:</span>
+										<span className="text-gray-800">{data.Receiver.name}</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">تماس:</span>
+										<span className="text-gray-800" dir="ltr">
+											{data.Receiver.phoneNumber|| "-"}
+										</span>
+									</div>
+									<div className="flex items-start gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">آدرس:</span>
+										<span className="text-gray-800 flex-1">{data.Receiver.address}</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">ایمیل:</span>
+										<span className="text-gray-800">{data.Receiver.email || "-"}</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<span className="font-semibold text-gray-600 min-w-[70px]">کشور:</span>
+										<span className="text-gray-800">{data.Receiver.country || "-"}</span>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -148,7 +162,7 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 								</tr>
 								<tr>
 									<td className="border border-gray-300 p-1 font-semibold">
-										قیمت هر کیلو:
+										قیمت هر کیلو/دانه:
 									</td>
 									<td className="border border-gray-300 p-1">
 										{formatCurrency(data.perKgCash)}
@@ -209,9 +223,8 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 													{data.packList.slice(0, 7).map((item, index) => (
 														<tr
 															key={index}
-															className={`${
-																index % 2 === 0 ? "bg-white" : "bg-gray-50"
-															} hover:bg-blue-50`}
+															className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+																} hover:bg-blue-50`}
 														>
 															<td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
 																{formatNumber(index + 1)}
@@ -268,9 +281,8 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 													{data.packList.slice(7).map((item, index) => (
 														<tr
 															key={index + 7}
-															className={`${
-																index % 2 === 0 ? "bg-white" : "bg-gray-50"
-															} hover:bg-blue-50`}
+															className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+																} hover:bg-blue-50`}
 														>
 															<td className="py-2 px-3 text-center font-bold text-gray-800 border border-gray-300">
 																{formatNumber(index + 8)}
@@ -326,9 +338,8 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 											{data.packList.map((item, index) => (
 												<tr
 													key={index}
-													className={`${
-														index % 2 === 0 ? "bg-white" : "bg-gray-50"
-													} hover:bg-blue-50`}
+													className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+														} hover:bg-blue-50`}
 												>
 													<td className="py-2 px-3 text-center font-bold text-gray-800 border-t border-gray-300 border-l">
 														{formatNumber(index + 1)}
@@ -421,14 +432,14 @@ const PrintShippingBill = ({ isOpen, onClose, data }) => {
 					</div>
 
 					{/* Footer */}
-					<div id="footer-area" className="bg-primary text-white  px-4 py-4 ">
+					<div id="footer-area" className="border-t text-black  px-4 py-4 ">
 						{/* Phone Numbers */}
 						<div className="flex items-center  text-base gap-2 pb-2 ">
 							<span>تماس: ۰۷۸۰۱۷۷۰۶۰ - ۰۷۷۹۷۱۰۹۹۶ </span>
 						</div>
 
 						{/* Address */}
-						<p className="text-white font-semibold text-base  pb-2">
+						<p className="text-black font-semibold text-base  pb-2">
 							آدرس: مارکیت بهار سراب، تانک تیل، دشت برچی، کابل، افغانستان
 						</p>
 					</div>

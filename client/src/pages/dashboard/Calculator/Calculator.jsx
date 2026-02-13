@@ -198,14 +198,14 @@ const Calculator = ({ onResult, initialValue = "0", className = "" }) => {
   // Button styles
   const buttonClass = "p-4 text-lg font-semibold rounded-lg transition-all duration-200 hover:shadow-md active:scale-95";
   const numberButtonClass = `${buttonClass} bg-gray-100 hover:bg-gray-200 text-gray-800`;
-  const operatorButtonClass = `${buttonClass} bg-cyan-100 hover:bg-cyan-200 text-cyan-800`;
+  const operatorButtonClass = `${buttonClass} bg-blue-100 hover:bg-blue-200 text-blue-800`;
   const functionButtonClass = `${buttonClass} bg-gray-200 hover:bg-gray-300 text-gray-700`;
-  const equalsButtonClass = `${buttonClass} bg-gradient-to-r from-cyan-600 to-cyan-500 text-white hover:from-cyan-700 hover:to-cyan-600`;
+  const equalsButtonClass = `${buttonClass} bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600`;
 
   return (
     <div className={`bg-white rounded-xl shadow-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-cyan-800 to-cyan-600 text-white p-4">
+      <div className="bg-gradient-to-r from-blue-800 to-blue-600 text-white p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FaCalculator className="text-xl" />

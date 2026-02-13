@@ -7,7 +7,7 @@ import { signOutSuccess } from "../../state/userSlice/userSlice";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import { MdLocalShipping } from "react-icons/md";
+import { MdLocalShipping, MdPayments } from "react-icons/md";
 import { FaMapMarkedAlt } from "react-icons/fa";
 import { HiOutlineTruck } from "react-icons/hi";
 import { LuUserPlus } from "react-icons/lu";
@@ -91,6 +91,11 @@ const Sidebar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
       name: "مدیریت لیست قیمت ها",
       value: "PriceListManagement",
       icon: <BsCurrencyDollar />,
+    },
+    {
+      name: "مصارف",
+      value: "ExpenseManager",
+      icon: <MdPayments />,
     },
     {
       name: "ثبت کاربر جدید",
@@ -189,7 +194,7 @@ const Sidebar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
               />
             </div>
             <span className="text-2xl font-semibold text-amber-500 whitespace-nowrap">
-              افغان کارگو
+             کارگوی شما
             </span>
           </header>
         )}

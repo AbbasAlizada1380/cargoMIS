@@ -268,7 +268,7 @@ const sendCustomerNotification = async (email, subject, message, packageData = n
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Method:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${'Afghan Cargo' || 'N/A'}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${'your Cargo' || 'N/A'}</td>
               </tr>
               <tr>
               </tr>
@@ -641,7 +641,7 @@ const sendPackageNotification = async (subject, message, packageData = null) => 
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Transit Way:</td>
-                <td style="padding: 8px; border: 1px solid #ddd;">${'Afghan Cargo' || 'N/A'}</td>
+                <td style="padding: 8px; border: 1px solid #ddd;">${'your Cargo' || 'N/A'}</td>
               </tr>
               <tr>
                 <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Total Cash:</td>
@@ -712,7 +712,7 @@ export const createPackage = async (req, res) => {
     const newPackage = await Package.create({
       sender: newSender.id,
       receiver: newReceiver.id,
-      location: "Afghan Cargo Stock",
+      location: "your Cargo Stock",
       idDocument: packageData.idDocument || null,
       idDocumentMetadata: packageData.idDocumentMetadata || {},
       ...packageData,

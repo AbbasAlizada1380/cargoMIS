@@ -571,19 +571,19 @@ const PackageCrud = () => {
           <div className="lg:col-span-1 order-2 lg:order-1">
             <div className="bg-white rounded-md shadow-md overflow-hidden sticky top-4 max-h-[calc(100vh-2rem)] flex flex-col">
               {/* Fixed Header */}
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 flex-shrink-0">
+             <div className="bg-blue-600 p-4 flex-shrink-0">
                 <h3 className="text-white font-semibold text-lg flex items-center gap-2">
                   <FaTruck />
                   گزینه‌های حمل و نقل
                 </h3>
-                <p className="text-green-100 text-sm mt-1">
+                <p className="text-white-100 text-sm mt-1">
                   {form.receiverCountry ? (
                     <>مقصد: {form.receiverCountry} • وزن: {form.totalWeight || '0'} کیلوگرم</>
                   ) : (
                     'لطفاً کشور گیرنده را انتخاب کنید'
                   )}
                 </p>
-              </div>
+              </div> 
 
               {/* Scrollable Content Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -631,7 +631,7 @@ const PackageCrud = () => {
                                   منطقه: {option.zoneId}
                                 </div>
                                 {isCheapest && (
-                                  <div className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                  <div className="mt-1 inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-green-800 text-xs rounded-full">
                                     <FaCheck className="text-xs" />
                                     ارزانترین گزینه
                                   </div>
@@ -746,10 +746,6 @@ const PackageCrud = () => {
 
                 {/* Calculator Section - Always visible */}
                 <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <FaCalculator className="text-purple-600" />
-                    <h4 className="font-semibold text-gray-700">ماشین حساب</h4>
-                  </div>
                   <Calculator />
                 </div>
               </div>

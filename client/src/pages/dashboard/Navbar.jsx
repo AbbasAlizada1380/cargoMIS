@@ -100,12 +100,12 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
         {/* Left Section - Logo/Brand */}
         <div className="flex  items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-md shadow-lg">
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-md shadow-lg">
               <MdDashboard size={20} className="text-white" />
             </div>
             <div className="">
-              <h1 className="text-lg font-bold text-gray-800"> افغان کارگو</h1>
-              <p className="text-xs text-gray-500">سیستم مدیریت افغان کارگو</p>
+              <h1 className="text-lg font-bold text-gray-800">  کارگوی شما</h1>
+              <p className="text-xs text-gray-500">سیستم مدیریت کارگوی شما</p>
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
           <div className="">
             <div className="text-center flex items-center gap-4">
               <div className="text-right flex items-center gap-x-3">
-                <p className="text-xl font-bold text-cyan-800">
+                <p className="text-xl font-bold text-blue-800">
                   {dateInfo.day}
                 </p>
                 <p className="text-sm text-gray-600 font-medium">
@@ -130,7 +130,7 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
         <div className="flex items-center justify-end gap-x-4">
           {/* Notifications Bell */}
           <div className="relative">
-            <button className="relative p-2 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all duration-200 group">
+            <button className="relative p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group">
               <FaBell size={18} />
               {notificationCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
@@ -143,7 +143,7 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
           {/* User Profile Dropdown */}
           <div ref={profileDropdownRef} className="relative">
             <button
-              className="flex items-center gap-3 group bg-white hover:bg-gray-50 rounded-2xl  py-2 transition-all duration-200 border border-transparent hover:border-cyan-200"
+              className="flex items-center gap-3 group bg-white hover:bg-gray-50 rounded-2xl  py-2 transition-all duration-200 border border-transparent hover:border-blue-200"
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
             >
               <div className="flex items-center gap-3">
@@ -151,18 +151,18 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
                   <img
                     src={currentUser.profile_picture}
                     alt="User Avatar"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-cyan-500 transition-all duration-300 shadow-sm"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 shadow-sm"
                   />
                 ) : currentUser?.first_name || currentUser?.last_name ? (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-lg">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-lg">
                     {getInitials(currentUser.first_name, currentUser.last_name)}
                   </div>
                 ) : (
-                  <FaUserCircle className="text-3xl text-gray-400 group-hover:text-cyan-600 transition-colors" />
+                  <FaUserCircle className="text-3xl text-gray-400 group-hover:text-blue-600 transition-colors" />
                 )}
 
                 <div className="hidden lg:block text-right">
-                  <p className="text-sm font-semibold text-gray-800 group-hover:text-cyan-800">
+                  <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-800">
                     {currentUser
                       ? `${currentUser.first_name || ""} ${
                           currentUser.last_name || ""
@@ -199,10 +199,10 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
                         <img
                           src={currentUser.profile_picture}
                           alt="User Avatar"
-                          className="w-12 h-12 rounded-full object-cover border-2 border-cyan-100"
+                          className="w-12 h-12 rounded-full object-cover border-2 border-blue-100"
                         />
                       ) : currentUser?.first_name || currentUser?.last_name ? (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-lg">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg border-2 border-white shadow-lg">
                           {getInitials(
                             currentUser.first_name,
                             currentUser.last_name
@@ -219,7 +219,7 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
                         <p className="text-xs text-gray-500 truncate">
                           {currentUser?.email}
                         </p>
-                        <p className="text-xs text-cyan-600 font-medium capitalize mt-1">
+                        <p className="text-xs text-blue-600 font-medium capitalize mt-1">
                           {currentUser?.role || "کاربر"}
                         </p>
                       </div>
@@ -230,9 +230,9 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
                   <div className="p-2 space-y-1">
                     <button
                       onClick={handleOpenProfileModal}
-                      className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-cyan-50 rounded-xl transition-all duration-200 group"
+                      className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 rounded-xl transition-all duration-200 group"
                     >
-                      <FaUser className="ml-3 text-gray-500 group-hover:text-cyan-600" />
+                      <FaUser className="ml-3 text-gray-500 group-hover:text-blue-600" />
                       <span className="flex-1 text-right">پروفایل کاربری</span>
                     </button>
 
@@ -254,7 +254,7 @@ const Navbar = ({ setActiveComponent, setIsMobileOpen, isMobileOpen }) => {
             <div className="flex items-center ">
               <button
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
-                className="p-2 hover:bg-cyan-600 text-gray-700 rounded-md hover:text-white transition-colors cursor-pointer duration-200"
+                className="p-2 hover:bg-blue-600 text-gray-700 rounded-md hover:text-white transition-colors cursor-pointer duration-200"
               >
                 {isMobileOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
               </button>

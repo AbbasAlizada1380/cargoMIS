@@ -4,7 +4,7 @@ import Dashboard from "./pages/dashboard";
 import Report from "./pages/reports";
 import AddUser from "./pages/AddUser";
 import Packages from "./pages/Packages";
-import PackageList from "./pages/PackageList";
+import ExpenseManager from "./pages/expense/ExpenseManages.jsx"
 import ZoneManager from "./pages/management/ZoneManager";
 import TransitWayManager from "./pages/management/TranistWayManager";
 import PriceListManager from "./pages/management/PriceList";
@@ -20,6 +20,8 @@ const MainContent = ({ activeComponent }) => {
         return <TransitWayManager />;
       case "PriceListManagement":
         return <PriceListManager />;
+      case "ExpenseManager":
+        return <ExpenseManager />;
       case "BlockManager":
         return <BlockManager />;
       case "user managements":
