@@ -123,7 +123,7 @@ const ExpenseManager = () => {
             {/* Form Section */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                 {/* Form Header */}
-                <div className="bg-gradient-to-r from-cyan-800 to-cyan-600 text-white p-4">
+                <div className="bg-gradient-to-r from-blue-800 to-blue-600 text-white p-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/20 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,7 +155,7 @@ const ExpenseManager = () => {
                                     placeholder="مثال: خرید تجهیزات اداری"
                                     value={form.purpose}
                                     onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                 />
                             </div>
 
@@ -169,7 +169,7 @@ const ExpenseManager = () => {
                                     placeholder="مثال: مدیریت مالی"
                                     value={form.by}
                                     onChange={(e) => setForm({ ...form, by: e.target.value })}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                 />
                             </div>
                         </div>
@@ -191,7 +191,7 @@ const ExpenseManager = () => {
                                     onChange={(e) =>
                                         setForm({ ...form, amount: parseInt(e.target.value || 0, 10) })
                                     }
-                                    className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                                    className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                 />
 
                             </div>
@@ -207,7 +207,7 @@ const ExpenseManager = () => {
                                 value={form.description}
                                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                                 rows={3}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-none"
+                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
                             />
                         </div>
 
@@ -228,7 +228,7 @@ const ExpenseManager = () => {
                                 className={`px-6 py-3 rounded-lg font-medium shadow-md transition
         ${submitting
                                         ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-gradient-to-r from-cyan-800 to-cyan-600 hover:from-cyan-900 hover:to-cyan-700 text-white"
+                                        : "bg-gradient-to-r from-blue-800 to-blue-600 hover:from-blue-900 hover:to-blue-700 text-white"
                                     }`}
                             >
                                 <div className="flex items-center gap-2">

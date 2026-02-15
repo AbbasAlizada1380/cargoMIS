@@ -17,7 +17,7 @@ const ExpenseTable = ({
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
       {/* Table Header */}
-      <div className="bg-gradient-to-r from-cyan-800 to-cyan-600 text-white p-4">
+      <div className="bg-gradient-to-r from-blue-800 to-blue-600 text-white p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-full">
@@ -27,18 +27,16 @@ const ExpenseTable = ({
             </div>
             <div>
               <h2 className="text-xl font-bold">لیست هزینه‌ها</h2>
-
             </div>
             <div><ExpenseDateDownload /></div>
           </div>
-
         </div>
       </div>
 
       {/* Table Content */}
       <div className="overflow-x-auto">
         <table className="w-full text-center">
-          <thead className="bg-cyan-50 text-cyan-800">
+          <thead className="bg-blue-50 text-blue-800">
             <tr>
               <th className="p-3 border-b font-semibold">#</th>
               <th className="p-3 border-b font-semibold">هدف هزینه</th>
@@ -52,9 +50,9 @@ const ExpenseTable = ({
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6" className="p-8">
+                <td colSpan="7" className="p-8">
                   <div className="flex flex-col items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-cyan-200 border-t-cyan-800 rounded-full animate-spin mb-3"></div>
+                    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-800 rounded-full animate-spin mb-3"></div>
                     <p className="text-gray-600">در حال بارگذاری...</p>
                   </div>
                 </td>
@@ -81,7 +79,7 @@ const ExpenseTable = ({
                   <td className="p-3">
                     <div className="flex flex-col items-center">
                       <span className="text-purple-700 font-bold text-lg">
-                        {parseFloat(e.amount || 0)}
+                        {parseFloat(e.amount || 0).toLocaleString('en-US')}
                       </span>
                       <span className="text-xs text-gray-500">افغانی</span>
                     </div>
@@ -100,33 +98,36 @@ const ExpenseTable = ({
                   <td className="p-3">
                     {e.createdAt ?
                       new Date(e.createdAt)
-                        .toLocaleDateString('eng-en')
+                        .toLocaleDateString('en-GB')
                         .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
                       : '—'
                     }
                   </td>
                   <td className="p-3">
-                    {currentUser.role == "admin" ? (<div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => onEdit(e)}
-                        className="p-2 text-cyan-700 hover:bg-cyan-50 rounded-lg transition"
-                        title="ویرایش"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => onDelete(e.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                        title="حذف"
-                      ><FaTrash />
-                      </button>
-                    </div>) : "--"}
+                    {currentUser?.role === "admin" ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => onEdit(e)}
+                          className="p-2 text-blue-700 hover:bg-blue-50 rounded-lg transition"
+                          title="ویرایش"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => onDelete(e.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                          title="حذف"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    ) : "--"}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="p-8">
+                <td colSpan="7" className="p-8">
                   <div className="flex flex-col items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

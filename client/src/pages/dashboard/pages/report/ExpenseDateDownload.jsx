@@ -126,7 +126,7 @@ const ExpenseDateDownload = () => {
                     onChange={(e) => setFrom(e.target.value)}
                     className="border p-2 rounded w-full sm:w-auto"
                 />
-                <span className="text-gray-500">تا</span>
+                <span className="text-white">تا</span>
                 <input
                     type="date"
                     value={to}
@@ -138,7 +138,7 @@ const ExpenseDateDownload = () => {
             <button
                 onClick={handleDownload}
                 disabled={loading}
-                className="bg-cyan-800 text-white px-6 py-2 rounded hover:bg-cyan-700 disabled:bg-gray-400 w-full sm:w-auto"
+                className="border bg-blue-800 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 w-full sm:w-auto"
             >
                 {loading ? "در حال ساخت PDF..." : "دانلود گزارش هزینه‌ها"}
             </button>
